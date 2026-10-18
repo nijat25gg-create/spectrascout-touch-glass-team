@@ -1,4 +1,6 @@
-# How a Spectroscopic Analysis Method Is Selected
+# SpectraScout: How a Spectroscopic Analysis Method Is Selected
+
+SpectraScout (Touch Glass team, schubKI 2026, Art Fiber Systems challenge) prepares a first technical assessment of an in-line spectroscopy request for an AFS expert. Quick start, API keys and costs: see [Quick start](#quick-start) at the end. Deutsch: [README.de.md](README.de.md).
 
 The customer describes their business problem, material, and process conditions. The system turns the request into structured facts, compares spectroscopic measurement options, and produces a preliminary recommendation: suitable methods and sample interfaces, a configuration concept, the reasons for the recommendation, significant unknowns, and an initial experiment. An expert confirms the final technical assessment.
 
@@ -13,18 +15,18 @@ Customer text and clarifications
   → extract facts with supporting quotes
   → task × sample × process conditions
   → assess methods and method–interface pairs
-  → Configuration concepts
+  → configuration concepts
   → suitability + separate confidence assessment
   → follow-up questions and an experiment
 ```
 
-`MeasurementTask`, `Sample`, and `ProcessContext` describe a specific case. `Method` and `SampleInterface` are shared catalogs with versioned properties, relationships, and constraints, compiled from spreadsheets, PDF files, and DOCX files and reviewed by an expert. They are reused across customers; the applicability of each property depends on the sample and conditions.
+`MeasurementTask`, `Sample`, and `ProcessContext` describe a specific case. `Method` and `SampleInterface` are shared catalogs with versioned properties, relationships, and constraints, compiled from spreadsheets, PDF files, and DOCX files. The current catalog is a draft that still has to be reviewed by a process chemist. They are reused across customers; the applicability of each property depends on the sample and conditions.
 
 `Configuration` is constructed for the case from permitted combinations and contains one or more `MeasurementChannel` records. The catalog does not need to enumerate every possible assembly in advance. The measurement concept is established first, followed by component selection. `SuitabilityEvidence` stores sources and verification results together with their scope of applicability.
 
 Each fact retains its value, unit or category, source quote, and status: explicitly reported, inferred, confirmed, unknown, or conflicting. Missing information does not become a negative answer.
 
-An LLM extracts free text and supporting quotes. JEV can verify categories and individual semantic claims. The rule engine computes numerical comparisons, constraints, factor weights, transitions, and the final ranking. JEV provides typed judgments and verification; the final decision is not delegated to a standalone “choose the best method” question.
+An LLM extracts free text and supporting quotes. JEV can verify categories and individual semantic claims. The rule engine computes numerical comparisons, constraints, factor weights, transitions, and the final ranking. JEV provides typed judgments and verification; the final decision is not delegated to a standalone “choose the best method” question. In the current version JEV runs only in the extraction step (Choice questions on extracted attributes, switched on with `JEV_LIVE=1`): it can lower the confidence of an extracted value, but it never adds a fact or chooses a method. The other JEV uses in the table below are planned.
 
 This decomposition follows the TypeSafe approach: assess individual claims and combine the results in code. Within a single call, questions share the same `state` but do not see one another’s answers. If a later stage needs an earlier result, the code updates the state first. This does not establish statistical independence between the events being assessed. [TypeSafe Introduction](https://docs.typesafe.ai/introduction)
 
@@ -32,9 +34,9 @@ This decomposition follows the TypeSafe approach: assess individual claims and c
 
 | Stage | Question | What is compared | Tool and metric | Output used by the next step |
 |---|---|---|---|---|
-| Extraction | What must be measured, and what is known about the sample and process? | Customer text and clarifications → MeasurementTask, Sample, ProcessContext | LLM: facts and quotes. When verification is enabled: **JEV Choice** — a category question, returning a category and probability distribution; **JEV Noul** — a question about whether an individual claim is true, returning a probability of “yes” from 0 to 1 | A specific Case and a list of unknowns |
-| Q1 | Can the method produce a distinguishable signal for the target property? | target, matrix, components, and optical properties ↔ observable_properties, signal_prerequisites, interferences | Rule predicates; where needed, **JEV Noul** verifies an individual claim about the target–signal relationship or an interference, returning a probability of “yes” from 0 to 1. Code calculates a score from 0 to 9 | Candidate methods, interference risks, and calibration risks |
-| Q1b | Can the concentration, error, and timing requirements be met? | Customer requirements ↔ applicable LOD/LOQ, error, and total latency profiles | Numerical comparisons in code; where needed, **JEV Choice** assesses attainability from the supplied evidence, returning “attainable / conditional / unattainable / unknown” and a probability distribution. Code calculates a score from 0 to 9 | An assessment of requirements and checks that remain unconfirmed |
+| Extraction | What must be measured, and what is known about the sample and process? | Customer text and clarifications → MeasurementTask, Sample, ProcessContext | LLM: facts and quotes. When verification is enabled: **JEV Choice** — a category question, returning a category and probability distribution; planned: **JEV Noul** — a question about whether an individual claim is true, returning a probability of “yes” from 0 to 1 | A specific Case and a list of unknowns |
+| Q1 | Can the method produce a distinguishable signal for the target property? | target, matrix, components, and optical properties ↔ observable_properties, signal_prerequisites, interferences | Rule predicates; planned: **JEV Noul** could verify an individual claim about the target–signal relationship or an interference, returning a probability of “yes” from 0 to 1. Code calculates a score from 0 to 9 | Candidate methods, interference risks, and calibration risks |
+| Q1b | Can the concentration, error, and timing requirements be met? | Customer requirements ↔ applicable LOD/LOQ, error, and total latency profiles | Numerical comparisons in code (the current catalog has no numeric LOD/LOQ, error or latency profiles, so Q1b mostly stays UNKNOWN); planned: **JEV Choice** could assess attainability from the supplied evidence, returning “attainable / conditional / unattainable / unknown” and a probability distribution. Code calculates a score from 0 to 9 | An assessment of requirements and checks that remain unconfirmed |
 | Q2 | Can the interface obtain a representative signal from this sample? | phase, form, opacity, heterogeneity, and spatial_scope ↔ geometry, contact, sample_region, path/depth | Compatibility and optical access rules; score from 0 to 9 | Permitted Method × SampleInterface pairs and Configuration concepts |
 | Q3 | Can the configuration operate in the customer’s process? | Temperature, pressure, environment, distance, resources, and constraints ↔ concept/component properties | Rules for classes of conditions first, followed by checks against component ratings; score from 0 to 9 | An assembly assessment and its stage of development |
 | Q4 | How well is suitability supported for this target, sample, and set of conditions? | SuitabilityEvidence ↔ Case and Configuration | Evidence matching rules; evidence score from 0 to 3 and a separate project confidence assessment | A confidence label, limitations on transferring evidence, and an initial experiment |
@@ -148,9 +150,9 @@ This characterizes the certainty of the model’s response. It does not establis
 
 ### API Contract Clarification
 
-In the official HTTP API, the number of Score levels is defined by the length of the ordered `criteria` array: ten descriptions define levels 0–9. The `levels: 10` field in the project contract may be a setting of our adapter; it should not automatically be treated as a TypeSafe request field. The native `score` has a numeric type and allows fractional values. [TypeSafe API reference](https://docs.typesafe.ai/api)
+In the official HTTP API, the number of Score levels is defined by the length of the ordered `criteria` array: ten descriptions define levels 0–9. A `levels: 10` field in our design would be a setting of our adapter; it should not automatically be treated as a TypeSafe request field. The native `score` has a numeric type and allows fractional values. [TypeSafe API reference](https://docs.typesafe.ai/api)
 
-The integer stage score and fractional JEV response are therefore stored separately as `stage_score` and `jev_score`, together with `probabilities`, `confidence`, and the rubric version. Rejecting fractional values is appropriate for an internal `stage_score`, but not for the original `jev_score`.
+The integer stage score and the fractional JEV response should therefore be stored separately (planned for the JEV adapter) as `stage_score` and `jev_score`, together with `probabilities`, `confidence`, and the rubric version. Rejecting fractional values is appropriate for an internal `stage_score`, but not for the original `jev_score`.
 
 ## How the Algorithm Calculates Its Metrics
 
@@ -224,12 +226,12 @@ $$
 C_{\mathrm{recommendation}}(c)=
 \begin{cases}
 \mathrm{high}, & E\ge2,\ coverage\ge0.80,\ \text{no critical unknowns},\\
-\mathrm{medium}, & E\ge1,\ coverage\ge0.50,\ \text{no source conflicts},\\
+\mathrm{medium}, & E\ge1,\ coverage\ge0.50,\\
 \mathrm{low}, & \text{otherwise}.
 \end{cases}
 $$
 
-The first matching branch applies. This is **project-specific confidence**, distinct from JEV’s $C_{\mathrm{Choice}}$ and $C_{\mathrm{Score}}$. Q4 is not included in $S(c)$, and high model confidence does not replace a relevant experiment.
+The first matching branch applies; $E=0$ or unknown coverage always gives low. A check for source conflicts is planned. This is **project-specific confidence**, distinct from JEV’s $C_{\mathrm{Choice}}$ and $C_{\mathrm{Score}}$. Q4 is not included in $S(c)$, and high model confidence does not replace a relevant experiment.
 
 ### Ranking and Active Questioning
 
@@ -241,9 +243,9 @@ Each follow-up question explains how the answer could affect the decision. The i
 
 ## What the Expert Receives
 
-The ranked list includes the method, sample interface, configuration concept, four technical scores, suitability from 0 to 36, a separate confidence assessment, and traceable factor contributions. It also provides reasons for exclusions, assumptions, decision-sensitive follow-up questions, and an initial experiment. The expert can correct a fact or condition and obtain a recalculated result with an updated trace.
+The ranked list includes the method, sample interface, configuration concept, four technical scores, suitability from 0 to 36, a separate confidence assessment, and traceable factor contributions. It also provides reasons for exclusions, assumptions, decision-sensitive follow-up questions, and an initial experiment. The expert can correct a fact or condition and obtain a recalculated result with an updated trace through the API (`POST /assessments/recalculate`). In the current web interface the answers to the questions are added to the customer text and the analysis is run again.
 
-Detailed specification: [rule registry and engine contract (Russian)](spectroscopy-rules/00-README.md). Its thresholds and weights are initial project parameters. The clarifications of official Noul/Score semantics and the API in this README should be considered when implementing the JEV adapter.
+Detailed description of method B: [docs/method-b.md](docs/method-b.md) (Russian); rules in [rules/b/rules_b.yaml](rules/b/rules_b.yaml), catalog in [rules/b/catalog_b.yaml](rules/b/catalog_b.yaml). Its thresholds and weights are initial project parameters. The clarifications of the official Noul and Score semantics and of the API in this README apply when the JEV adapter is extended.
 
 Official TypeSafe pages were checked on 18 October 2026. The sources used are typesafe.ai and docs.typesafe.ai; similarly named sites and third-party summaries were not used as the basis for the formulas.
 
@@ -263,7 +265,10 @@ LLM_MOCK=0
 ```
 
 `.env` is git-ignored; keys never go into the repository.
-Web app: `cd backend && pip install -r requirements.txt && uvicorn app.main:app`, then `cd frontend && npm install && npm run dev`.
+Web app: `pip install -r backend/requirements.txt`, then `cd backend && uvicorn app.main:app` (port 8000), and in a second terminal `cd frontend && npm install && npm run dev`. Open the address that Vite prints.
+
+Tests: `python contracts/check_contracts.py`, `python -m pytest -q engine/test_gates.py engine/b/test_b.py`, `cd backend && pytest -q`.
+
+Example results for the six evaluation cases H01–H06 (live run, method B): [cases/](cases/).
 
 API costs per analysis (about $0.06): [docs/api-costs.md](docs/api-costs.md).
-Deutsch: [README.de.md](README.de.md).

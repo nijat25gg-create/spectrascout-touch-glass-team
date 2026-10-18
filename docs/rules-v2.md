@@ -189,7 +189,7 @@ v1 была хорошей общей рамкой, но для нас не ра
 | Что | Кто | Когда |
 |---|---|---|
 | Проверить химию и страницы в `gates.yaml` (особенно S-AQUEOUS-*, S-RAMAN-COMPOSITION, I-SAMPLE-TYPE, диапазоны `methods:`, `fiber_full_overlap`) | Никита | вс |
-| Подключить оверлей gates в бэкенд: `handoff/patches/backend-gates-overlay.patch` (C8 `attributes` и `assessment`, пересчёт на recalculate) | Семён | вс |
+| Подключить оверлей gates в бэкенд: the backend gates overlay (applied) (C8 `attributes` и `assessment`, пересчёт на recalculate) | Семён | вс |
 | `engine/completeness.py`: перебор поверх `Evaluator.run` (`completeness_score_fn`) | Гаджи | до фриза |
 | ~~Старый движок `rules.yaml`~~ — выведен 18.10, лежит в `legacy/`; удалить папку одним коммитом после демо | команда | после демо |
 | `must_not_claim` из golden проверять в `/eval` на тексте шага B | Ниджат | вс |

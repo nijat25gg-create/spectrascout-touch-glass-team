@@ -1,4 +1,6 @@
-# Auswahl einer Methode für die spektroskopische Analyse
+# SpectraScout: Auswahl einer Methode für die spektroskopische Analyse
+
+SpectraScout (Team Touch Glass, schubKI 2026, Challenge von Art Fiber Systems) erstellt für einen AFS-Experten eine erste technische Einschätzung einer Anfrage zur Inline-Spektroskopie. Schnellstart, API-Schlüssel und Kosten: siehe [Schnellstart](#schnellstart) am Ende. English: [README.md](README.md).
 
 Der Kunde beschreibt seine geschäftliche Fragestellung, das Material und die Prozessbedingungen. Das System überführt die Anfrage in strukturierte Fakten, vergleicht spektroskopische Messansätze und erstellt eine vorläufige Empfehlung: geeignete Methoden und Schnittstellen zur Probe, ein Konfigurationskonzept, die Begründung der Auswahl, wesentliche offene Punkte und einen ersten Versuch. Die abschließende fachliche Bewertung bestätigt ein Experte.
 
@@ -18,13 +20,13 @@ Kundentext und ergänzende Angaben
   → Rückfragen und ein Versuch
 ```
 
-`MeasurementTask`, `Sample` und `ProcessContext` beschreiben einen konkreten Anwendungsfall. `Method` und `SampleInterface` sind gemeinsame Kataloge mit versionierten Eigenschaften, Beziehungen und Einschränkungen. Sie werden aus Tabellen, PDF- und DOCX-Dateien zusammengestellt und von einem Experten geprüft. Sie werden für verschiedene Kunden wiederverwendet; die Anwendbarkeit jeder Eigenschaft hängt von der Probe und den Bedingungen ab.
+`MeasurementTask`, `Sample` und `ProcessContext` beschreiben einen konkreten Anwendungsfall. `Method` und `SampleInterface` sind gemeinsame Kataloge mit versionierten Eigenschaften, Beziehungen und Einschränkungen. Sie werden aus Tabellen, PDF- und DOCX-Dateien zusammengestellt. Der aktuelle Katalog ist ein Entwurf, den ein Prozesschemiker noch prüfen muss. Sie werden für verschiedene Kunden wiederverwendet; die Anwendbarkeit jeder Eigenschaft hängt von der Probe und den Bedingungen ab.
 
 `Configuration` wird für den Anwendungsfall aus zulässigen Kombinationen zusammengestellt und enthält einen oder mehrere `MeasurementChannel`-Datensätze. Der Katalog muss nicht sämtliche möglichen Aufbauten im Voraus aufzählen. Zunächst wird das Messkonzept festgelegt, anschließend werden die Komponenten konkretisiert. `SuitabilityEvidence` speichert Quellen und Prüfergebnisse zusammen mit ihrem Geltungsbereich.
 
 Zu jedem Fakt werden der Wert, die Einheit oder Kategorie, das ursprüngliche Zitat und der Status gespeichert: ausdrücklich angegeben, abgeleitet, bestätigt, unbekannt oder widersprüchlich. Fehlende Informationen werden nicht als negative Antwort behandelt.
 
-Ein LLM extrahiert Freitext und zugehörige Zitate. JEV kann Kategorien und einzelne inhaltliche Aussagen überprüfen. Die Regelengine berechnet numerische Vergleiche, Einschränkungen, Faktorgewichte, Übergänge und die endgültige Rangfolge. JEV liefert typisierte Beurteilungen und Überprüfungen; die endgültige Entscheidung wird nicht an eine einzelne Frage „Wähle die beste Methode“ delegiert.
+Ein LLM extrahiert Freitext und zugehörige Zitate. JEV kann Kategorien und einzelne inhaltliche Aussagen überprüfen. In der aktuellen Version läuft JEV nur im Extraktionsschritt (Choice-Fragen zu extrahierten Attributen, aktiviert mit `JEV_LIVE=1`): Es kann die Konfidenz eines extrahierten Werts senken, fügt aber nie einen Fakt hinzu und wählt nie eine Methode. Die übrigen JEV-Einsätze in der Tabelle unten sind geplant. Die Regelengine berechnet numerische Vergleiche, Einschränkungen, Faktorgewichte, Übergänge und die endgültige Rangfolge. JEV liefert typisierte Beurteilungen und Überprüfungen; die endgültige Entscheidung wird nicht an eine einzelne Frage „Wähle die beste Methode“ delegiert.
 
 Diese Zerlegung entspricht dem Ansatz von TypeSafe: einzelne Aussagen bewerten und die Ergebnisse im Code zusammenführen. Innerhalb eines Aufrufs verwenden die Fragen denselben `state`, sehen jedoch die Antworten auf die anderen Fragen nicht. Benötigt ein späterer Schritt ein vorheriges Ergebnis, aktualisiert der Code zunächst den Zustand. Daraus folgt keine statistische Unabhängigkeit der bewerteten Ereignisse. [TypeSafe Introduction](https://docs.typesafe.ai/introduction)
 
@@ -32,9 +34,9 @@ Diese Zerlegung entspricht dem Ansatz von TypeSafe: einzelne Aussagen bewerten u
 
 | Schritt | Frage | Was wird verglichen? | Werkzeug und Kennzahl | Ergebnis für den nächsten Schritt |
 |---|---|---|---|---|
-| Extraktion | Was soll gemessen werden, und was ist über die Probe und den Prozess bekannt? | Kundentext und ergänzende Angaben → MeasurementTask, Sample, ProcessContext | LLM: Fakten und Zitate. Bei aktivierter Überprüfung: **JEV Choice** — Frage nach einer Kategorie; Antwort: Kategorie und Wahrscheinlichkeitsverteilung. **JEV Noul** — Frage nach dem Wahrheitsgehalt einer einzelnen Aussage; Antwort: Wahrscheinlichkeit für „Ja“ von 0 bis 1 | Ein konkreter Case und eine Liste offener Punkte |
-| Q1 | Kann die Methode ein unterscheidbares Signal für die Zielgröße liefern? | target, matrix, Komponenten und optische Eigenschaften ↔ observable_properties, signal_prerequisites, interferences | Regelprädikate; bei Bedarf **JEV Noul** zur Überprüfung einer einzelnen Aussage über den Zusammenhang zwischen Zielgröße und Signal oder über eine Störung; Antwort: Wahrscheinlichkeit für „Ja“ von 0 bis 1. Der Code berechnet einen Punktwert von 0 bis 9 | Methodenkandidaten sowie Risiken durch Störungen und Kalibrierung |
-| Q1b | Lassen sich die Anforderungen an Konzentration, Messfehler und Zeit erfüllen? | Kundenanforderungen ↔ anwendbare Profile für LOD/LOQ, Messfehler und Gesamtlatenz | Numerische Vergleiche im Code; bei Bedarf **JEV Choice** zur Bewertung der Erreichbarkeit anhand der vorliegenden Belege; Antwort: „erreichbar / bedingt erreichbar / nicht erreichbar / unbekannt“ und Wahrscheinlichkeitsverteilung. Der Code berechnet einen Punktwert von 0 bis 9 | Bewertung der Anforderungen und noch nicht bestätigte Prüfpunkte |
+| Extraktion | Was soll gemessen werden, und was ist über die Probe und den Prozess bekannt? | Kundentext und ergänzende Angaben → MeasurementTask, Sample, ProcessContext | LLM: Fakten und Zitate. Bei aktivierter Überprüfung: **JEV Choice** — Frage nach einer Kategorie; Antwort: Kategorie und Wahrscheinlichkeitsverteilung. geplant: **JEV Noul** — Frage nach dem Wahrheitsgehalt einer einzelnen Aussage; Antwort: Wahrscheinlichkeit für „Ja“ von 0 bis 1 | Ein konkreter Case und eine Liste offener Punkte |
+| Q1 | Kann die Methode ein unterscheidbares Signal für die Zielgröße liefern? | target, matrix, Komponenten und optische Eigenschaften ↔ observable_properties, signal_prerequisites, interferences | Regelprädikate; geplant: **JEV Noul** zur Überprüfung einer einzelnen Aussage über den Zusammenhang zwischen Zielgröße und Signal oder über eine Störung; Antwort: Wahrscheinlichkeit für „Ja“ von 0 bis 1. Der Code berechnet einen Punktwert von 0 bis 9 | Methodenkandidaten sowie Risiken durch Störungen und Kalibrierung |
+| Q1b | Lassen sich die Anforderungen an Konzentration, Messfehler und Zeit erfüllen? | Kundenanforderungen ↔ anwendbare Profile für LOD/LOQ, Messfehler und Gesamtlatenz | Numerische Vergleiche im Code (der aktuelle Katalog enthält keine numerischen Profile für LOD/LOQ, Messfehler oder Latenz, daher bleibt Q1b meist UNKNOWN); geplant: **JEV Choice** zur Bewertung der Erreichbarkeit anhand der vorliegenden Belege; Antwort: „erreichbar / bedingt erreichbar / nicht erreichbar / unbekannt“ und Wahrscheinlichkeitsverteilung. Der Code berechnet einen Punktwert von 0 bis 9 | Bewertung der Anforderungen und noch nicht bestätigte Prüfpunkte |
 | Q2 | Kann die Schnittstelle ein repräsentatives Signal von dieser Probe erfassen? | phase, form, opacity, heterogeneity und spatial_scope ↔ geometry, contact, sample_region, path/depth | Regeln zur Kompatibilität und zum optischen Zugang; Punktwert von 0 bis 9 | Zulässige Kombinationen Method × SampleInterface und Konzepte für Configuration |
 | Q3 | Kann die Konfiguration im Prozess des Kunden eingesetzt werden? | Temperatur, Druck, Umgebung, Entfernung, Ressourcen und Einschränkungen ↔ Eigenschaften des Konzepts bzw. der Komponenten | Zunächst Regeln für Klassen von Bedingungen, anschließend Prüfung der spezifizierten Komponentengrenzen; Punktwert von 0 bis 9 | Bewertung des Aufbaus und Stand seiner Ausarbeitung |
 | Q4 | Wie gut ist die Eignung für diese Zielgröße, Probe und Bedingungen belegt? | SuitabilityEvidence ↔ Case und Configuration | Regeln zur Prüfung der Übertragbarkeit von Belegen; Evidenzbewertung von 0 bis 3 und separate Konfidenzbewertung des Projekts | Konfidenzstufe, Grenzen der Übertragbarkeit und ein erster Versuch |
@@ -50,7 +52,7 @@ Die Regelengine berechnet die Punktwerte der Schritte von 0 bis 9. Dies sind int
 5. **Erreichbarkeit der Anforderungen — Q1b:** Gibt es eine belastbare Grundlage für die erwartete Genauigkeit, Nachweisgrenze und Messgeschwindigkeit?
 6. **Überprüfbarkeit — Q4:** Stehen repräsentative Proben und eine unabhängige Referenz zur Verfügung, um das Ergebnis zu bestätigen?
 
-Die Vollständigkeit dieser Prüfungen hängt vom Inhalt der Regeln und des Katalogs ab und wird anhand von Experten geprüfter Anwendungsfälle bewertet.
+Die Vollständigkeit dieser Prüfungen hängt vom Inhalt der Regeln und des Katalogs ab und wird anhand von Anwendungsfällen bewertet, die von Experten geprüft wurden.
 
 **Stand der Algorithmuskalibrierung.** Zur Verbesserung der Empfehlungsgenauigkeit ist eine Kalibrierung der Faktorgewichte, Schwellenwerte, JEV-Bewertungsraster und Konfidenzregeln anhand von Experten bewerteter Anwendungsfälle geplant. Diese Kalibrierung wurde bislang noch nicht durchgeführt. Die nachfolgenden Einstellungen sind daher Ausgangsparameter; die damit erzielte Empfehlungsgenauigkeit ist noch nicht bestätigt. Die Kalibrierung des Algorithmus und die analytische Kalibrierung einer spektroskopischen Messung sind getrennte Verfahren.
 
@@ -148,13 +150,13 @@ Dieser Wert beschreibt die Bestimmtheit der Modellantwort. Er bestätigt nicht d
 
 ### Klarstellung zum API-Vertrag
 
-In der offiziellen HTTP-API wird die Anzahl der Score-Stufen durch die Länge des geordneten Arrays `criteria` festgelegt: Zehn Beschreibungen definieren die Stufen 0–9. Das Feld `levels: 10` im Projektvertrag kann eine Einstellung unseres Adapters sein; es ist nicht automatisch ein Feld der TypeSafe-Anfrage. Der native Wert `score` ist numerisch und erlaubt Nachkommastellen. [TypeSafe API reference](https://docs.typesafe.ai/api)
+In der offiziellen HTTP-API wird die Anzahl der Score-Stufen durch die Länge des geordneten Arrays `criteria` festgelegt: Zehn Beschreibungen definieren die Stufen 0–9. Ein Feld `levels: 10` in unserem Entwurf wäre eine Einstellung unseres Adapters; es ist nicht automatisch ein Feld der TypeSafe-Anfrage. Der native Wert `score` ist numerisch und erlaubt Nachkommastellen. [TypeSafe API reference](https://docs.typesafe.ai/api)
 
-Der ganzzahlige Punktwert eines Schritts und die JEV-Antwort mit möglichen Nachkommastellen werden deshalb getrennt als `stage_score` und `jev_score` gespeichert, zusammen mit `probabilities`, `confidence` und der Version des Bewertungsrasters. Werte mit Nachkommastellen dürfen für einen internen `stage_score` abgelehnt werden, jedoch nicht für den ursprünglichen `jev_score`.
+Der ganzzahlige Punktwert eines Schritts und die JEV-Antwort mit möglichen Nachkommastellen sollen deshalb getrennt als `stage_score` und `jev_score` gespeichert werden (geplant für den JEV-Adapter), zusammen mit `probabilities`, `confidence` und der Version des Bewertungsrasters. Werte mit Nachkommastellen dürfen für einen internen `stage_score` abgelehnt werden, jedoch nicht für den ursprünglichen `jev_score`.
 
 ## Berechnung der Kennzahlen des Algorithmus
 
-Die folgenden Formeln definieren das Rankingmodell des Projekts. Seine Gewichte, Gruppenbegrenzungen und Schwellenwerte müssen anhand von Experten geprüfter Anwendungsfälle kalibriert werden; es handelt sich nicht um TypeSafe-Formeln.
+Die folgenden Formeln definieren das Rankingmodell des Projekts. Seine Gewichte, Gruppenbegrenzungen und Schwellenwerte müssen anhand von Anwendungsfällen kalibriert werden, die von Experten geprüft wurden; es handelt sich nicht um TypeSafe-Formeln.
 
 ### Faktoren und Punktwerte der Schritte
 
@@ -224,12 +226,12 @@ $$
 C_{\mathrm{recommendation}}(c)=
 \begin{cases}
 \mathrm{high}, & E\ge2,\ coverage\ge0.80,\ \text{keine kritischen Unbekannten},\\
-\mathrm{medium}, & E\ge1,\ coverage\ge0.50,\ \text{keine Quellenkonflikte},\\
+\mathrm{medium}, & E\ge1,\ coverage\ge0.50,\\
 \mathrm{low}, & \text{sonst}.
 \end{cases}
 $$
 
-Es gilt der erste zutreffende Zweig. Dies ist die **projektspezifische Konfidenz**; sie unterscheidet sich von $C_{\mathrm{Choice}}$ und $C_{\mathrm{Score}}$ aus JEV. Q4 geht nicht in $S(c)$ ein, und eine hohe Modellkonfidenz ersetzt keinen relevanten Versuch.
+Es gilt der erste zutreffende Zweig; $E=0$ oder unbekannte Abdeckung ergibt immer low. Eine Prüfung auf Quellenkonflikte ist geplant. Dies ist die **projektspezifische Konfidenz**; sie unterscheidet sich von $C_{\mathrm{Choice}}$ und $C_{\mathrm{Score}}$ aus JEV. Q4 geht nicht in $S(c)$ ein, und eine hohe Modellkonfidenz ersetzt keinen relevanten Versuch.
 
 ### Rangfolge und gezielte Rückfragen
 
@@ -241,9 +243,9 @@ Jede Rückfrage erläutert, wie die Antwort die Entscheidung beeinflussen könnt
 
 ## Was der Experte erhält
 
-Die Rangliste enthält die Methode, die Schnittstelle zur Probe, das Konfigurationskonzept, vier technische Punktwerte, die Eignung von 0 bis 36, eine separate Konfidenzbewertung und nachvollziehbare Faktorbeiträge. Zusätzlich werden Ausschlussgründe, Annahmen, entscheidungsrelevante Rückfragen und ein erster Versuch ausgegeben. Der Experte kann einen Fakt oder eine Bedingung korrigieren und erhält ein neu berechnetes Ergebnis mit aktualisiertem Regelprotokoll.
+Die Rangliste enthält die Methode, die Schnittstelle zur Probe, das Konfigurationskonzept, vier technische Punktwerte, die Eignung von 0 bis 36, eine separate Konfidenzbewertung und nachvollziehbare Faktorbeiträge. Zusätzlich werden Ausschlussgründe, Annahmen, entscheidungsrelevante Rückfragen und ein erster Versuch ausgegeben. Der Experte kann einen Fakt oder eine Bedingung korrigieren und erhält über die API (`POST /assessments/recalculate`) ein neu berechnetes Ergebnis mit aktualisiertem Regelprotokoll. In der aktuellen Weboberfläche werden die Antworten auf die Rückfragen im Kundentext ergänzt und die Analyse erneut gestartet.
 
-Detaillierte Spezifikation: [Regelverzeichnis und Vertrag der Regelengine (Russisch)](spectroscopy-rules/00-README.md). Die dortigen Schwellenwerte und Gewichte sind Ausgangsparameter des Projekts. Die Klarstellungen zur offiziellen Noul-/Score-Semantik und zur API in dieser README sind bei der Implementierung des JEV-Adapters zu berücksichtigen.
+Detaillierte Spezifikation: [docs/method-b.md](docs/method-b.md) (Russisch); Regeln in [rules/b/rules_b.yaml](rules/b/rules_b.yaml), Katalog in [rules/b/catalog_b.yaml](rules/b/catalog_b.yaml). Die dortigen Schwellenwerte und Gewichte sind Ausgangsparameter des Projekts. Die Klarstellungen zur offiziellen Noul-/Score-Semantik und zur API in dieser README sind bei der Implementierung des JEV-Adapters zu berücksichtigen.
 
 Die offiziellen TypeSafe-Seiten wurden am 18. Oktober 2026 geprüft. Als Quellen wurden typesafe.ai und docs.typesafe.ai verwendet; ähnlich benannte Websites und Zusammenfassungen Dritter dienten nicht als Grundlage für die Formeln.
 
@@ -263,7 +265,10 @@ LLM_MOCK=0
 ```
 
 `.env` ist in `.gitignore`; Schlüssel gelangen nie ins Repository.
-Web-App: `cd backend && pip install -r requirements.txt && uvicorn app.main:app`, danach `cd frontend && npm install && npm run dev`.
+Web-App: `pip install -r backend/requirements.txt`, dann `cd backend && uvicorn app.main:app` (Port 8000) und in einem zweiten Terminal `cd frontend && npm install && npm run dev`. Die von Vite ausgegebene Adresse im Browser öffnen.
+
+Tests: `python contracts/check_contracts.py`, `python -m pytest -q engine/test_gates.py engine/b/test_b.py`, `cd backend && pytest -q`.
+
+Beispielergebnisse für die sechs Evaluationsfälle H01–H06 (Live-Lauf, Methode B): [cases/](cases/).
 
 API-Kosten pro Analyse (etwa 0,06 $): [docs/api-costs.md](docs/api-costs.md) (Englisch).
-English: [README.md](README.md).

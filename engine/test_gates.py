@@ -286,7 +286,7 @@ def test_blend_potency_application_does_not_support_moisture():
 
 
 # ---------------------------------------------------------------- completeness adapter: status vocabulary (18.10)
-# The unified model (docs/specs/2026-10-17-unified-model-design.md §6) names the statuses stated / inferred;
+# The unified model design names the statuses stated / inferred;
 # the C3 contract names them known / assumed. Both must count as facts; a status the adapter does not know
 # must be reported, never silently turn the case into insufficient_information.
 
