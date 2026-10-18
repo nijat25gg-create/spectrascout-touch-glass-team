@@ -246,3 +246,24 @@ The ranked list includes the method, sample interface, configuration concept, fo
 Detailed specification: [rule registry and engine contract (Russian)](spectroscopy-rules/00-README.md). Its thresholds and weights are initial project parameters. The clarifications of official Noul/Score semantics and the API in this README should be considered when implementing the JEV adapter.
 
 Official TypeSafe pages were checked on 18 October 2026. The sources used are typesafe.ai and docs.typesafe.ai; similarly named sites and third-party summaries were not used as the basis for the formulas.
+
+## Quick start
+
+```bash
+pip install -r requirements.txt
+LLM_MOCK=1 python run_case.py          # full pipeline with built-in examples, no API key, no cost
+```
+
+Live mode with real model calls: copy `.env.example` to `.env`, replace `[API KEY needed]` with your key and set `LLM_MOCK=0`:
+
+```
+ANTHROPIC_API_KEY=[API KEY needed]      # steps A and B (Claude)
+OPENROUTER_API_KEY=[API KEY needed]     # optional Jev cross-check (JEV_LIVE=1)
+LLM_MOCK=0
+```
+
+`.env` is git-ignored; keys never go into the repository.
+Web app: `cd backend && pip install -r requirements.txt && uvicorn app.main:app`, then `cd frontend && npm install && npm run dev`.
+
+API costs per analysis (about $0.06): [docs/api-costs.md](docs/api-costs.md).
+Deutsch: [README.de.md](README.de.md).

@@ -246,3 +246,24 @@ Die Rangliste enthält die Methode, die Schnittstelle zur Probe, das Konfigurati
 Detaillierte Spezifikation: [Regelverzeichnis und Vertrag der Regelengine (Russisch)](spectroscopy-rules/00-README.md). Die dortigen Schwellenwerte und Gewichte sind Ausgangsparameter des Projekts. Die Klarstellungen zur offiziellen Noul-/Score-Semantik und zur API in dieser README sind bei der Implementierung des JEV-Adapters zu berücksichtigen.
 
 Die offiziellen TypeSafe-Seiten wurden am 18. Oktober 2026 geprüft. Als Quellen wurden typesafe.ai und docs.typesafe.ai verwendet; ähnlich benannte Websites und Zusammenfassungen Dritter dienten nicht als Grundlage für die Formeln.
+
+## Schnellstart
+
+```bash
+pip install -r requirements.txt
+LLM_MOCK=1 python run_case.py          # komplette Pipeline mit eingebauten Beispielen, ohne API-Schlüssel und ohne Kosten
+```
+
+Live-Betrieb mit echten Modellaufrufen: `.env.example` nach `.env` kopieren, `[API KEY needed]` durch den eigenen Schlüssel ersetzen und `LLM_MOCK=0` setzen:
+
+```
+ANTHROPIC_API_KEY=[API KEY needed]      # Schritte A und B (Claude)
+OPENROUTER_API_KEY=[API KEY needed]     # optionaler Jev-Abgleich (JEV_LIVE=1)
+LLM_MOCK=0
+```
+
+`.env` ist in `.gitignore`; Schlüssel gelangen nie ins Repository.
+Web-App: `cd backend && pip install -r requirements.txt && uvicorn app.main:app`, danach `cd frontend && npm install && npm run dev`.
+
+API-Kosten pro Analyse (etwa 0,06 $): [docs/api-costs.md](docs/api-costs.md) (Englisch).
+English: [README.md](README.md).
