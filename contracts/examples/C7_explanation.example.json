@@ -1,0 +1,102 @@
+{
+  "questions": [
+    {
+      "id": "q1",
+      "text": "Welche Messgenauigkeit brauchen Sie für die Restfeuchte, zum Beispiel ±0,2 %?",
+      "priority": "high",
+      "why": "Bestimmt, ob NIR ausreicht und wie aufwendig die Kalibrierung wird.",
+      "parameter_id": "required_accuracy",
+      "feature": "accuracy_need",
+      "attribute": "acceptance_criteria"
+    },
+    {
+      "id": "q2",
+      "text": "Wie weit wäre das Spektrometer vom Messpunkt entfernt?",
+      "priority": "high",
+      "why": "Bestimmt Faserlänge und Verlegung; die Faser muss AFS bestätigen.",
+      "parameter_id": "distance_to_instrument",
+      "feature": "distance_class",
+      "attribute": "distance"
+    },
+    {
+      "id": "q3",
+      "text": "Können Sie Proben mit Karl-Fischer-Referenzwerten über den ganzen Feuchtebereich bereitstellen?",
+      "priority": "high",
+      "why": "Ohne Referenzproben ist keine Machbarkeitsstudie möglich.",
+      "parameter_id": "samples_available",
+      "feature": null,
+      "attribute": "reference_uncertainty"
+    },
+    {
+      "id": "q4",
+      "text": "Liegt der Trockner in einer ATEX-Zone?",
+      "priority": "medium",
+      "why": "Ändert die Anforderungen an Sonde und Lichtquelle.",
+      "parameter_id": "regulatory",
+      "feature": "hazardous_area",
+      "attribute": null
+    },
+    {
+      "id": "q5",
+      "text": "Bei welcher Temperatur läuft die Trocknung?",
+      "priority": "low",
+      "why": "Wichtig für Sondenmaterial und Temperaturkompensation.",
+      "parameter_id": "temperature",
+      "feature": "temperature_class",
+      "attribute": "temperature"
+    }
+  ],
+  "rationale": [
+    {
+      "method": "nir",
+      "claims": [
+        {
+          "claim": "Wasser zeigt im NIR charakteristische Banden, die sich zur Feuchtebestimmung eignen.",
+          "kb_card": "card-nir",
+          "source": "S01 p.10"
+        },
+        {
+          "claim": "Diffuse Reflexion ist der übliche Modus für Pulver und Granulate.",
+          "kb_card": "card-nir",
+          "source": null
+        }
+      ]
+    }
+  ],
+  "experiment": {
+    "goal": "Prüfen, ob NIR-Spektren die Restfeuchte im Bereich 1–5 % mit der geforderten Genauigkeit abbilden.",
+    "sample_count": "mit dem Kunden abstimmen, über den ganzen Feuchtebereich",
+    "sample_design": "Gleichmäßig über 1–5 % verteilt, aus mindestens zwei Chargen",
+    "interferents": [
+      "Partikelgröße",
+      "Temperatur",
+      "Chargenvariation"
+    ],
+    "reference_method": "Karl-Fischer-Titration",
+    "methods_compared": [
+      "nir"
+    ],
+    "steps": [
+      "Proben beim Kunden ziehen und sofort per Karl-Fischer messen",
+      "Offline-Messung im AFS-Labor mit NIR-Reflexionssonde (Kontakt) und berührungslos aus Abstand",
+      "Spektren vorverarbeiten und visuell vergleichen",
+      "PCA und einfaches PLS-Modell gegen Karl-Fischer-Werte"
+    ],
+    "success_criterion": "Vorhersagefehler kleiner als die vom Kunden geforderte Genauigkeit",
+    "duration_estimate": "mit AFS abstimmen"
+  },
+  "risks": [
+    {
+      "text": "Belag auf dem Sondenfenster durch Pulverstaub verfälscht die Messung.",
+      "severity": "high"
+    },
+    {
+      "text": "Partikelgrößenänderung während der Trocknung beeinflusst das NIR-Signal.",
+      "severity": "medium"
+    },
+    {
+      "text": "Genauigkeitsanforderung ist noch unbekannt.",
+      "severity": "medium"
+    }
+  ]
+}

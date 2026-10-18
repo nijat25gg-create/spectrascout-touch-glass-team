@@ -1,0 +1,115 @@
+{
+  "decision_status": "provisional",
+  "selected": [
+    "K10 FLUORESCENCE fluorimetric probe",
+    "K01 MIR ATR probe"
+  ],
+  "excluded": [],
+  "premises": [],
+  "steps": [
+    {
+      "title": "Q1 Task",
+      "shown": [],
+      "hidden": 2
+    },
+    {
+      "title": "Q2 Signal",
+      "shown": [
+        {
+          "rule_id": "P-NO-FLUOROPHORE",
+          "row": "K10",
+          "row_label": "FLUORESCENCE fluorimetric probe",
+          "effect": "needs_info",
+          "because": "Fluorescence needs a defined fluorescent species or a justified indicator; most chemicals do not fluoresce",
+          "source": [
+            "S01 p.5",
+            "AFS ref §5 (fluorescence row)"
+          ]
+        }
+      ],
+      "hidden": 1
+    },
+    {
+      "title": "Q3 Interface and fiber",
+      "shown": [],
+      "hidden": 31
+    },
+    {
+      "title": "Q4 Premises and evidence",
+      "shown": [
+        {
+          "rule_id": "APP-TISSUE-LAB",
+          "row": "K01",
+          "row_label": "MIR ATR probe",
+          "effect": "support_application",
+          "because": "A combined MIR ATR + fluorescence probe separated model tissues in a laboratory study",
+          "source": [
+            "S04 p.1",
+            "S04 p.3–4"
+          ]
+        },
+        {
+          "rule_id": "APP-TISSUE-LAB",
+          "row": "K10",
+          "row_label": "FLUORESCENCE fluorimetric probe",
+          "effect": "support_application",
+          "because": "A combined MIR ATR + fluorescence probe separated model tissues in a laboratory study",
+          "source": [
+            "S04 p.1",
+            "S04 p.3–4"
+          ]
+        }
+      ],
+      "hidden": 0
+    }
+  ],
+  "questions": [
+    {
+      "attribute": "fluorophore",
+      "kind": "method",
+      "strength": 0.6667,
+      "forced": true,
+      "text": "Is there a fluorescent target or marker (e.g. NADH, tryptophan, riboflavin) with a known relationship to the variable?"
+    },
+    {
+      "attribute": "fouling",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Can deposits form at the probe window, and how is the line cleaned (CIP, temperature, chemicals)?"
+    },
+    {
+      "attribute": "physical_variation",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Which physical and formulation changes occur between runs (temperature, texture, particle size, air bubbles, recipe)?"
+    },
+    {
+      "attribute": "temperature",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "What temperature, pressure and flow occur at the measurement point?"
+    },
+    {
+      "attribute": "reference_method",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Which independent reference method and sampling time can be used?"
+    },
+    {
+      "attribute": "acceptance_criteria",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "What concentration range, accuracy and response time must the measurement meet?"
+    }
+  ],
+  "lab_checks": [],
+  "evidence": {
+    "K10": "application",
+    "K01": "application"
+  }
+}

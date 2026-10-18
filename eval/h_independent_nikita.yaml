@@ -1,0 +1,64 @@
+# Независимые ожидания по тестовому набору H01–H06. Заполняет Никита.
+#
+# Правила заполнения:
+# - Опирайся только на текст H (materials/customer_scenarios_for_final_evaluation.txt) и материалы AFS.
+# - НЕ открывай eval/golden_cases.yaml, outputs/ и вывод check_gates.py, пока не заполнишь.
+# - Где не уверен, пиши "?" — это тоже результат.
+# - Строки каталога: K01 MIR ATR · K02 NIR transmission/transflection · K03 NIR diffuse reflection ·
+#   K04 NIR surface at a distance · K05 Raman probe · K06 UV/Vis ATR · K07 UV/Vis diffuse reflection ·
+#   K08 UV/Vis transmission/transflection · K09 UV/Vis probe+lens · K10 fluorimetric probe.
+# После заполнения Ниджат сравнит с черновиком Claude. Расхождения — честные ошибки движка,
+# их не правим подгонкой под H.
+
+author: Nikita
+date: ""
+
+cases:
+  H01:
+    status: ""            # provisional | insufficient_information | outside_scope
+    top_rows: []          # 1–3 строки каталога, которые стоит проверить первыми
+    excluded_rows: []     # что исключено физикой (с источником)
+    premises: {}          # утверждение клиента → contradicted | not_supported | ok, с источником
+    must_ask: []          # вопросы клиенту, которые меняют метод или установку
+    plan_topics: []       # темы для плана эксперимента
+    sources: []           # страницы AFS
+  H02:
+    status: ""
+    top_rows: {whey: [], concentrate: []}
+    excluded_rows: []
+    premises: {}
+    must_ask: []
+    plan_topics: []
+    sources: []
+  H03:
+    status: ""
+    top_rows: {glucose: [], viable_biomass: []}
+    excluded_rows: []
+    premises: {}
+    must_ask: []
+    plan_topics: []
+    sources: []
+  H04:
+    status: ""
+    top_rows: []
+    excluded_rows: []
+    premises: {}
+    must_ask: []
+    plan_topics: []
+    sources: []
+  H05:
+    status: ""
+    top_rows: []
+    excluded_rows: []
+    premises: {}
+    must_ask: []
+    plan_topics: []
+    sources: []
+  H06:
+    status: ""
+    top_rows: []
+    excluded_rows: []
+    premises: {}
+    must_ask: []
+    plan_topics: []
+    sources: []

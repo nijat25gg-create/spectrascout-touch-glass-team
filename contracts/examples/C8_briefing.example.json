@@ -1,0 +1,1194 @@
+{
+  "schema_version": "0.2",
+  "case_id": "case-2026-10-17-001",
+  "language": "de",
+  "summary": "Restfeuchte eines pharmazeutischen Pulvers inline im Wirbelschichttrockner messen, statt stündlich Proben zu ziehen.",
+  "parameters": [
+    {
+      "id": "measurand",
+      "value": "Restfeuchte (Wasser)",
+      "status": "known",
+      "evidence_quote": "die Restfeuchte inline messen",
+      "source": "customer_text"
+    },
+    {
+      "id": "measurand_type",
+      "value": "Feuchte",
+      "status": "known",
+      "evidence_quote": "Restfeuchte",
+      "source": "customer_text"
+    },
+    {
+      "id": "matrix",
+      "value": "pharmazeutisches Pulver",
+      "status": "known",
+      "evidence_quote": "ein pharmazeutisches Pulver",
+      "source": "customer_text"
+    },
+    {
+      "id": "phase",
+      "value": "Pulver im Wirbelbett",
+      "status": "known",
+      "evidence_quote": "Pulver im Wirbelschichttrockner",
+      "source": "customer_text"
+    },
+    {
+      "id": "water_content",
+      "value": "1–5 %",
+      "status": "known",
+      "evidence_quote": "Zielbereich etwa 1–5 %",
+      "source": "customer_text"
+    },
+    {
+      "id": "concentration_range",
+      "value": "1–5 % Wasser",
+      "status": "known",
+      "evidence_quote": "Zielbereich etwa 1–5 %",
+      "source": "customer_text"
+    },
+    {
+      "id": "required_accuracy",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "temperature",
+      "value": "erhöht (Trocknung), genaue Temperatur nicht genannt",
+      "status": "assumed",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "pressure",
+      "value": "Normaldruck",
+      "status": "assumed",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "aggressiveness_fouling",
+      "value": "Staub, mögliche Ablagerung am Fenster",
+      "status": "assumed",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "installation_point",
+      "value": "Wirbelschichttrockner",
+      "status": "known",
+      "evidence_quote": "im Wirbelschichttrockner",
+      "source": "customer_text"
+    },
+    {
+      "id": "distance_to_instrument",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "measurement_frequency",
+      "value": "deutlich häufiger als stündlich",
+      "status": "assumed",
+      "evidence_quote": "stündlich Proben",
+      "source": "llm_assumption"
+    },
+    {
+      "id": "reference_method",
+      "value": "Karl-Fischer-Titration",
+      "status": "known",
+      "evidence_quote": "für Karl-Fischer-Titration",
+      "source": "customer_text"
+    },
+    {
+      "id": "samples_available",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "regulatory",
+      "value": "GMP wahrscheinlich, ATEX wegen Pulverstaub prüfen",
+      "status": "assumed",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    }
+  ],
+  "features": {
+    "phase": {
+      "value": "solid_powder",
+      "status": "known"
+    },
+    "water_level": {
+      "value": "low",
+      "status": "known"
+    },
+    "analyte_type": {
+      "value": "moisture",
+      "status": "known"
+    },
+    "concentration_level": {
+      "value": "low_percent",
+      "status": "known"
+    },
+    "accuracy_need": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "temperature_class": {
+      "value": "elevated",
+      "status": "assumed"
+    },
+    "pressure_class": {
+      "value": "ambient",
+      "status": "assumed"
+    },
+    "fouling_risk": {
+      "value": "medium",
+      "status": "assumed"
+    },
+    "distance_class": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "fluorescence_risk": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "turbidity": {
+      "value": "opaque",
+      "status": "assumed"
+    },
+    "hazardous_area": {
+      "value": "unknown",
+      "status": "unknown"
+    }
+  },
+  "questions": [
+    {
+      "id": "q1",
+      "text": "Welche Messgenauigkeit brauchen Sie für die Restfeuchte, zum Beispiel ±0,2 %?",
+      "priority": "high",
+      "why": "Bestimmt, ob NIR ausreicht und wie aufwendig die Kalibrierung wird.",
+      "parameter_id": "required_accuracy",
+      "feature": "accuracy_need",
+      "attribute": "acceptance_criteria",
+      "answer": null
+    },
+    {
+      "id": "q2",
+      "text": "Wie weit wäre das Spektrometer vom Messpunkt entfernt?",
+      "priority": "high",
+      "why": "Bestimmt Faserlänge und Verlegung; die Faser muss AFS bestätigen.",
+      "parameter_id": "distance_to_instrument",
+      "feature": "distance_class",
+      "attribute": "distance",
+      "answer": null
+    },
+    {
+      "id": "q3",
+      "text": "Können Sie Proben mit Karl-Fischer-Referenzwerten über den ganzen Feuchtebereich bereitstellen?",
+      "priority": "high",
+      "why": "Ohne Referenzproben ist keine Machbarkeitsstudie möglich.",
+      "parameter_id": "samples_available",
+      "feature": null,
+      "attribute": "reference_uncertainty",
+      "answer": null
+    },
+    {
+      "id": "q4",
+      "text": "Liegt der Trockner in einer ATEX-Zone?",
+      "priority": "medium",
+      "why": "Ändert die Anforderungen an Sonde und Lichtquelle.",
+      "parameter_id": "regulatory",
+      "feature": "hazardous_area",
+      "attribute": null,
+      "answer": null
+    },
+    {
+      "id": "q5",
+      "text": "Bei welcher Temperatur läuft die Trocknung?",
+      "priority": "low",
+      "why": "Wichtig für Sondenmaterial und Temperaturkompensation.",
+      "parameter_id": "temperature",
+      "feature": "temperature_class",
+      "attribute": "temperature",
+      "answer": null
+    }
+  ],
+  "methods": {
+    "ranked": [
+      {
+        "rank": 1,
+        "method": "nir",
+        "mode": "diffuse_reflectance",
+        "spectral_range": "780–2500 nm (nominal; S01 p.10)",
+        "fiber": "silica_vis_nir, fluoride; length and routing to be confirmed by AFS",
+        "probe": "diffuse reflection probe (K03); alternative: surface at a distance (K04)",
+        "score_total": 2.0,
+        "scores": [
+          {
+            "criterion": "evidence: physical principle",
+            "score": 1.0,
+            "rule_id": "S-WATER",
+            "note": "Water has -OH bands: overtones in NIR, strong fundamental absorption in MIR"
+          },
+          {
+            "criterion": "evidence: physical principle",
+            "score": 1.0,
+            "rule_id": "S-VIBRATIONAL-MAJOR",
+            "note": "NIR and MIR carry composition information (-OH, -NH, -CH groups; MIR fingerprint bands)"
+          }
+        ],
+        "confidence": "medium",
+        "claims": [
+          {
+            "claim": "Wasser zeigt im NIR charakteristische Banden, die sich zur Feuchtebestimmung eignen.",
+            "kb_card": "card-nir",
+            "source": "S01 p.10"
+          },
+          {
+            "claim": "Diffuse Reflexion ist der übliche Modus für Pulver und Granulate.",
+            "kb_card": "card-nir",
+            "source": null
+          }
+        ]
+      }
+    ],
+    "rejected": [
+      {
+        "method": "uv_vis",
+        "reason": "Needs information (K06): This sample type is not listed for this technique in Table 1 (catalog mapping, see catalog notes); not recommended unless AFS confirms the geometry",
+        "rule_id": "I-SAMPLE-TYPE",
+        "blocker": false
+      },
+      {
+        "method": "mir",
+        "reason": "Needs information (K01): This sample type is not listed for this technique in Table 1 (catalog mapping, see catalog notes); not recommended unless AFS confirms the geometry",
+        "rule_id": "I-SAMPLE-TYPE",
+        "blocker": false
+      },
+      {
+        "method": "raman",
+        "reason": "No AFS application and no physical support for this target in the rules",
+        "rule_id": null,
+        "blocker": false
+      },
+      {
+        "method": "fluorescence",
+        "reason": "Needs information (K10): Fluorescence needs a defined fluorescent species or a justified indicator; most chemicals do not fluoresce",
+        "rule_id": "P-NO-FLUOROPHORE",
+        "blocker": false
+      },
+      {
+        "method": "scattering",
+        "reason": "Not an in-line row of the AFS method catalog (S01 Table 1, p.6)",
+        "rule_id": null,
+        "blocker": true
+      }
+    ]
+  },
+  "experiment": {
+    "goal": "Prüfen, ob NIR-Spektren die Restfeuchte im Bereich 1–5 % mit der geforderten Genauigkeit abbilden.",
+    "sample_count": "mit dem Kunden abstimmen, über den ganzen Feuchtebereich",
+    "sample_design": "Gleichmäßig über 1–5 % verteilt, aus mindestens zwei Chargen",
+    "interferents": [
+      "Partikelgröße",
+      "Temperatur",
+      "Chargenvariation"
+    ],
+    "reference_method": "Karl-Fischer-Titration",
+    "methods_compared": [
+      "nir"
+    ],
+    "steps": [
+      "Proben beim Kunden ziehen und sofort per Karl-Fischer messen",
+      "Offline-Messung im AFS-Labor mit NIR-Reflexionssonde (Kontakt) und berührungslos aus Abstand",
+      "Spektren vorverarbeiten und visuell vergleichen",
+      "PCA und einfaches PLS-Modell gegen Karl-Fischer-Werte"
+    ],
+    "success_criterion": "Vorhersagefehler kleiner als die vom Kunden geforderte Genauigkeit",
+    "duration_estimate": "mit AFS abstimmen"
+  },
+  "risks": [
+    {
+      "text": "Belag auf dem Sondenfenster durch Pulverstaub verfälscht die Messung.",
+      "severity": "high"
+    },
+    {
+      "text": "Partikelgrößenänderung während der Trocknung beeinflusst das NIR-Signal.",
+      "severity": "medium"
+    },
+    {
+      "text": "Genauigkeitsanforderung ist noch unbekannt.",
+      "severity": "medium"
+    }
+  ],
+  "expert_flags": [
+    {
+      "target": "parameters.temperature",
+      "reason": "Annahme, nicht vom Kunden bestätigt"
+    },
+    {
+      "target": "parameters.pressure",
+      "reason": "Annahme, nicht vom Kunden bestätigt"
+    },
+    {
+      "target": "parameters.aggressiveness_fouling",
+      "reason": "Annahme, nicht vom Kunden bestätigt"
+    },
+    {
+      "target": "parameters.measurement_frequency",
+      "reason": "Annahme, nicht vom Kunden bestätigt"
+    },
+    {
+      "target": "parameters.regulatory",
+      "reason": "Annahme, nicht vom Kunden bestätigt"
+    },
+    {
+      "target": "methods.ranked[0]",
+      "reason": "Sicherheit: medium"
+    }
+  ],
+  "changes": [],
+  "meta": {
+    "model": "claude-sonnet-5-5",
+    "generated_at": "2026-10-17T10:00:00Z",
+    "rules_version": "rules-gates-v2-draft",
+    "kb_version": "kb-draft-0",
+    "recomputed": false
+  },
+  "attributes": [
+    {
+      "name": "target_defined",
+      "value": "yes",
+      "status": "known",
+      "quote": "die Restfeuchte inline messen"
+    },
+    {
+      "name": "target_kind",
+      "value": "water",
+      "status": "known",
+      "quote": "Restfeuchte"
+    },
+    {
+      "name": "target_class",
+      "value": "major_component",
+      "status": "known",
+      "quote": "Zielbereich etwa 1–5 %"
+    },
+    {
+      "name": "targets_count",
+      "value": "1",
+      "status": "assumed",
+      "quote": null
+    },
+    {
+      "name": "quantitative",
+      "value": "yes",
+      "status": "known",
+      "quote": "Zielbereich etwa 1–5 %"
+    },
+    {
+      "name": "reference_method",
+      "value": "available",
+      "status": "known",
+      "quote": "Karl-Fischer-Titration"
+    },
+    {
+      "name": "reference_uncertainty",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "acceptance_criteria",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "concentration_range",
+      "value": "given",
+      "status": "known",
+      "quote": "Zielbereich etwa 1–5 %"
+    },
+    {
+      "name": "intended_use",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "domain",
+      "value": "pharma_solid",
+      "status": "known",
+      "quote": "pharmazeutisches Pulver"
+    },
+    {
+      "name": "sample_form",
+      "value": "powder",
+      "status": "known",
+      "quote": "pharmazeutisches Pulver"
+    },
+    {
+      "name": "optical_density",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "matrix_aqueous",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "heterogeneous",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "fluorophore",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "chromophore",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "matrix_fluorescence",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "formulation_changed",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "streams",
+      "value": "1",
+      "status": "assumed",
+      "quote": null
+    },
+    {
+      "name": "physical_variation",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "temperature",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "fouling",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "distance",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "link_confirmed",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "existing_fiber",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "gmp",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "client_method",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "reuse_calibration",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "add_method_to_keep_calibration",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "justification",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "asks",
+      "value": "assessment",
+      "status": "assumed",
+      "quote": null
+    },
+    {
+      "name": "cited_evidence",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "own_validation",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    }
+  ],
+  "assessment": {
+    "rules_version": "gates-v2-draft",
+    "decision_status": "provisional",
+    "selected": [
+      "K03",
+      "K04"
+    ],
+    "combinations": [],
+    "rows": [
+      {
+        "row": "K01",
+        "method": "mir",
+        "technique": "ATR probe",
+        "status": "needs_info",
+        "evidence": "physics_only",
+        "risks": [],
+        "reasons": [
+          "S-WATER:support_physics",
+          "S-VIBRATIONAL-MAJOR:support_physics",
+          "I-SAMPLE-TYPE:needs_info",
+          "I-FOULING-CONTACT:plan_question",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K02",
+        "method": "nir",
+        "technique": "transmission / transflection probe",
+        "status": "needs_info",
+        "evidence": "physics_only",
+        "risks": [
+          "I-OPAQUE-TRANSMISSION:risk"
+        ],
+        "reasons": [
+          "S-WATER:support_physics",
+          "S-VIBRATIONAL-MAJOR:support_physics",
+          "I-SAMPLE-TYPE:needs_info",
+          "I-OPAQUE-TRANSMISSION:risk",
+          "I-FOULING-CONTACT:plan_question",
+          "I-PHYSICAL-VARIATION:plan_question",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K03",
+        "method": "nir",
+        "technique": "diffuse reflection probe",
+        "status": "candidate",
+        "evidence": "physics_only",
+        "risks": [],
+        "reasons": [
+          "S-WATER:support_physics",
+          "S-VIBRATIONAL-MAJOR:support_physics",
+          "I-FOULING-CONTACT:plan_question",
+          "I-PHYSICAL-VARIATION:plan_question",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K04",
+        "method": "nir",
+        "technique": "surface at a distance",
+        "status": "candidate",
+        "evidence": "physics_only",
+        "risks": [],
+        "reasons": [
+          "S-WATER:support_physics",
+          "S-VIBRATIONAL-MAJOR:support_physics",
+          "I-PHYSICAL-VARIATION:plan_question",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K05",
+        "method": "raman",
+        "technique": "Raman probe",
+        "status": "candidate",
+        "evidence": "none",
+        "risks": [
+          "S-RAMAN-FLUOR-BG:risk"
+        ],
+        "reasons": [
+          "S-RAMAN-FLUOR-BG:risk",
+          "I-FOULING-CONTACT:plan_question",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K06",
+        "method": "uv_vis",
+        "technique": "ATR probe",
+        "status": "needs_info",
+        "evidence": "none",
+        "risks": [],
+        "reasons": [
+          "I-SAMPLE-TYPE:needs_info",
+          "I-FOULING-CONTACT:plan_question",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K07",
+        "method": "uv_vis",
+        "technique": "diffuse reflection probe",
+        "status": "needs_info",
+        "evidence": "none",
+        "risks": [],
+        "reasons": [
+          "I-SAMPLE-TYPE:needs_info",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K08",
+        "method": "uv_vis",
+        "technique": "transmission / transflection probe",
+        "status": "needs_info",
+        "evidence": "none",
+        "risks": [
+          "I-OPAQUE-TRANSMISSION:risk"
+        ],
+        "reasons": [
+          "I-SAMPLE-TYPE:needs_info",
+          "I-OPAQUE-TRANSMISSION:risk",
+          "I-FOULING-CONTACT:plan_question",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K09",
+        "method": "uv_vis",
+        "technique": "probe, lens (emission of the sample)",
+        "status": "needs_info",
+        "evidence": "none",
+        "risks": [],
+        "reasons": [
+          "I-SAMPLE-TYPE:needs_info",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K10",
+        "method": "fluorescence",
+        "technique": "fluorimetric probe",
+        "status": "needs_info",
+        "evidence": "none",
+        "risks": [],
+        "reasons": [
+          "P-NO-FLUOROPHORE:needs_info",
+          "I-SAMPLE-TYPE:needs_info",
+          "I-FOULING-CONTACT:plan_question",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      }
+    ],
+    "premise_flags": [],
+    "questions": [
+      {
+        "attribute": "fouling",
+        "kind": "plan",
+        "strength": null,
+        "forced": false,
+        "text": "Can deposits form at the probe window, and how is the line cleaned (CIP, temperature, chemicals)?"
+      },
+      {
+        "attribute": "physical_variation",
+        "kind": "plan",
+        "strength": null,
+        "forced": false,
+        "text": "Which physical and formulation changes occur between runs (temperature, texture, particle size, air bubbles, recipe)?"
+      },
+      {
+        "attribute": "temperature",
+        "kind": "plan",
+        "strength": null,
+        "forced": false,
+        "text": "What temperature, pressure and flow occur at the measurement point?"
+      },
+      {
+        "attribute": "reference_uncertainty",
+        "kind": "plan",
+        "strength": null,
+        "forced": false,
+        "text": "Which assay, uncertainty and sampling time provide the reference values?"
+      },
+      {
+        "attribute": "acceptance_criteria",
+        "kind": "plan",
+        "strength": null,
+        "forced": false,
+        "text": "What concentration range, accuracy and response time must the measurement meet?"
+      },
+      {
+        "attribute": "gmp",
+        "kind": "plan",
+        "strength": null,
+        "forced": false,
+        "text": "Which GMP, cleaning and sterilisation requirements apply at the measurement point?"
+      }
+    ],
+    "lab_checks": [],
+    "trace": [
+      {
+        "step": "Q2",
+        "rule_id": "P-NO-FLUOROPHORE",
+        "target": "K10",
+        "effect": "needs_info",
+        "source": [
+          "S01 p.5",
+          "AFS ref §5 (fluorescence row)"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-WATER",
+        "target": "K01",
+        "effect": "support_physics",
+        "source": [
+          "S01 p.10",
+          "S01 p.16 (strong water absorption in IR)",
+          "S02 p.13"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-WATER",
+        "target": "K02",
+        "effect": "support_physics",
+        "source": [
+          "S01 p.10",
+          "S01 p.16 (strong water absorption in IR)",
+          "S02 p.13"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-WATER",
+        "target": "K03",
+        "effect": "support_physics",
+        "source": [
+          "S01 p.10",
+          "S01 p.16 (strong water absorption in IR)",
+          "S02 p.13"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-WATER",
+        "target": "K04",
+        "effect": "support_physics",
+        "source": [
+          "S01 p.10",
+          "S01 p.16 (strong water absorption in IR)",
+          "S02 p.13"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-VIBRATIONAL-MAJOR",
+        "target": "K01",
+        "effect": "support_physics",
+        "source": [
+          "S01 p.4–5",
+          "S01 p.9–10"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-VIBRATIONAL-MAJOR",
+        "target": "K02",
+        "effect": "support_physics",
+        "source": [
+          "S01 p.4–5",
+          "S01 p.9–10"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-VIBRATIONAL-MAJOR",
+        "target": "K03",
+        "effect": "support_physics",
+        "source": [
+          "S01 p.4–5",
+          "S01 p.9–10"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-VIBRATIONAL-MAJOR",
+        "target": "K04",
+        "effect": "support_physics",
+        "source": [
+          "S01 p.4–5",
+          "S01 p.9–10"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-RAMAN-FLUOR-BG",
+        "target": "K05",
+        "effect": "risk",
+        "source": [
+          "S01 p.11",
+          "AFS ref D01 ('Check fluorescence background and signal quality')"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-SAMPLE-TYPE",
+        "target": "K01",
+        "effect": "needs_info",
+        "source": [
+          "S01 Table 1 (p.6)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-SAMPLE-TYPE",
+        "target": "K02",
+        "effect": "needs_info",
+        "source": [
+          "S01 Table 1 (p.6)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-SAMPLE-TYPE",
+        "target": "K06",
+        "effect": "needs_info",
+        "source": [
+          "S01 Table 1 (p.6)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-SAMPLE-TYPE",
+        "target": "K07",
+        "effect": "needs_info",
+        "source": [
+          "S01 Table 1 (p.6)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-SAMPLE-TYPE",
+        "target": "K08",
+        "effect": "needs_info",
+        "source": [
+          "S01 Table 1 (p.6)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-SAMPLE-TYPE",
+        "target": "K09",
+        "effect": "needs_info",
+        "source": [
+          "S01 Table 1 (p.6)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-SAMPLE-TYPE",
+        "target": "K10",
+        "effect": "needs_info",
+        "source": [
+          "S01 Table 1 (p.6)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-OPAQUE-TRANSMISSION",
+        "target": "K02",
+        "effect": "risk",
+        "source": [
+          "S01 p.16",
+          "S01 p.18"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-OPAQUE-TRANSMISSION",
+        "target": "K08",
+        "effect": "risk",
+        "source": [
+          "S01 p.16",
+          "S01 p.18"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-FOULING-CONTACT",
+        "target": "K01",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §5 (MIR: contact, fouling)",
+          "AFS ref D07, D02"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-FOULING-CONTACT",
+        "target": "K02",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §5 (MIR: contact, fouling)",
+          "AFS ref D07, D02"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-FOULING-CONTACT",
+        "target": "K03",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §5 (MIR: contact, fouling)",
+          "AFS ref D07, D02"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-FOULING-CONTACT",
+        "target": "K05",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §5 (MIR: contact, fouling)",
+          "AFS ref D07, D02"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-FOULING-CONTACT",
+        "target": "K06",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §5 (MIR: contact, fouling)",
+          "AFS ref D07, D02"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-FOULING-CONTACT",
+        "target": "K08",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §5 (MIR: contact, fouling)",
+          "AFS ref D07, D02"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-FOULING-CONTACT",
+        "target": "K10",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §5 (MIR: contact, fouling)",
+          "AFS ref D07, D02"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-PHYSICAL-VARIATION",
+        "target": "K02",
+        "effect": "plan_question",
+        "source": [
+          "S01 p.17",
+          "AFS ref D02 (risks)",
+          "AFS ref D01 (risks: physical variation of the powder)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-PHYSICAL-VARIATION",
+        "target": "K03",
+        "effect": "plan_question",
+        "source": [
+          "S01 p.17",
+          "AFS ref D02 (risks)",
+          "AFS ref D01 (risks: physical variation of the powder)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-PHYSICAL-VARIATION",
+        "target": "K04",
+        "effect": "plan_question",
+        "source": [
+          "S01 p.17",
+          "AFS ref D02 (risks)",
+          "AFS ref D01 (risks: physical variation of the powder)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K01",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K02",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K03",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K04",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K05",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K06",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K07",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K08",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K09",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K10",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q1",
+        "rule_id": "T-REFERENCE-QUALITY",
+        "target": null,
+        "effect": "plan_question",
+        "source": [
+          "AFS ref D01 (clarification: 'Which assay, uncertainty and sampling time provide the reference concentrations?')",
+          "AFS ref D02"
+        ]
+      },
+      {
+        "step": "Q1",
+        "rule_id": "T-PLAN-MINIMUM",
+        "target": null,
+        "effect": "plan_question",
+        "source": [
+          "AFS ref D01 'Decision basis'",
+          "AFS Q&A 17.10 (lab screening: range, resolution, concentration level)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-GMP",
+        "target": null,
+        "effect": "plan_question",
+        "source": [
+          "AFS Q&A 17.10"
+        ]
+      }
+    ],
+    "ignored_inputs": null
+  }
+}

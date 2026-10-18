@@ -1,0 +1,131 @@
+{
+  "decision_status": "provisional",
+  "selected": [
+    "K01 MIR ATR probe",
+    "K03 NIR diffuse reflection probe"
+  ],
+  "excluded": [],
+  "premises": [],
+  "steps": [
+    {
+      "title": "Q1 Task",
+      "shown": [],
+      "hidden": 2
+    },
+    {
+      "title": "Q2 Signal",
+      "shown": [
+        {
+          "rule_id": "S-VIBRATIONAL-MAJOR",
+          "row": "K01",
+          "row_label": "MIR ATR probe",
+          "effect": "support_physics",
+          "because": "NIR and MIR carry composition information (-OH, -NH, -CH groups; MIR fingerprint bands)",
+          "source": [
+            "S01 p.4–5",
+            "S01 p.9–10"
+          ]
+        },
+        {
+          "rule_id": "S-VIBRATIONAL-MAJOR",
+          "row": "K03",
+          "row_label": "NIR diffuse reflection probe",
+          "effect": "support_physics",
+          "because": "NIR and MIR carry composition information (-OH, -NH, -CH groups; MIR fingerprint bands)",
+          "source": [
+            "S01 p.4–5",
+            "S01 p.9–10"
+          ]
+        }
+      ],
+      "hidden": 9
+    },
+    {
+      "title": "Q3 Interface and fiber",
+      "shown": [],
+      "hidden": 30
+    },
+    {
+      "title": "Q4 Premises and evidence",
+      "shown": [
+        {
+          "rule_id": "APP-EXTRUSION",
+          "row": "K01",
+          "row_label": "MIR ATR probe",
+          "effect": "support_application",
+          "because": "NIR reflection and MIR ATR (diamond cone, PIR fiber) are shown for API in hot polymer extrusion",
+          "source": [
+            "S02 p.14"
+          ]
+        },
+        {
+          "rule_id": "APP-EXTRUSION",
+          "row": "K03",
+          "row_label": "NIR diffuse reflection probe",
+          "effect": "support_application",
+          "because": "NIR reflection and MIR ATR (diamond cone, PIR fiber) are shown for API in hot polymer extrusion",
+          "source": [
+            "S02 p.14"
+          ]
+        }
+      ],
+      "hidden": 0
+    }
+  ],
+  "questions": [
+    {
+      "attribute": "distance",
+      "kind": "method",
+      "strength": 0.6667,
+      "forced": false,
+      "text": "Where would the analyzer stand relative to the measurement point (at the line, outside the process area, another building)?"
+    },
+    {
+      "attribute": "heterogeneous",
+      "kind": "method",
+      "strength": 0.5,
+      "forced": false,
+      "text": "Is the sample heterogeneous, so that different measurements must see the same spot?"
+    },
+    {
+      "attribute": "fouling",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Can deposits form at the probe window, and how is the line cleaned (CIP, temperature, chemicals)?"
+    },
+    {
+      "attribute": "physical_variation",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Which physical and formulation changes occur between runs (temperature, texture, particle size, air bubbles, recipe)?"
+    },
+    {
+      "attribute": "temperature",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "What temperature, pressure and flow occur at the measurement point?"
+    },
+    {
+      "attribute": "reference_uncertainty",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Which assay, uncertainty and sampling time provide the reference values?"
+    },
+    {
+      "attribute": "acceptance_criteria",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "What concentration range, accuracy and response time must the measurement meet?"
+    }
+  ],
+  "lab_checks": [],
+  "evidence": {
+    "K01": "application",
+    "K03": "application"
+  }
+}

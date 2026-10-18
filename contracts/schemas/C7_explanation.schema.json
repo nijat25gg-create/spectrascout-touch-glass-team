@@ -1,0 +1,299 @@
+{
+  "$defs": {
+    "Claim": {
+      "additionalProperties": false,
+      "properties": {
+        "claim": {
+          "title": "Claim",
+          "type": "string"
+        },
+        "kb_card": {
+          "description": "Id of the knowledge card that supports the claim, e.g. card-nir",
+          "title": "Kb Card",
+          "type": "string"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "v0.3: AFS source of the claim as given in the engine trace (e.g. 'S01 p.4'), null if none",
+          "title": "Source"
+        }
+      },
+      "required": [
+        "claim",
+        "kb_card"
+      ],
+      "title": "Claim",
+      "type": "object"
+    },
+    "Experiment": {
+      "additionalProperties": false,
+      "properties": {
+        "goal": {
+          "title": "Goal",
+          "type": "string"
+        },
+        "sample_count": {
+          "title": "Sample Count",
+          "type": "string"
+        },
+        "sample_design": {
+          "title": "Sample Design",
+          "type": "string"
+        },
+        "interferents": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Interferents",
+          "type": "array"
+        },
+        "reference_method": {
+          "title": "Reference Method",
+          "type": "string"
+        },
+        "methods_compared": {
+          "items": {
+            "enum": [
+              "uv_vis",
+              "nir",
+              "mir",
+              "raman",
+              "fluorescence",
+              "scattering"
+            ],
+            "type": "string"
+          },
+          "title": "Methods Compared",
+          "type": "array"
+        },
+        "steps": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Steps",
+          "type": "array"
+        },
+        "success_criterion": {
+          "title": "Success Criterion",
+          "type": "string"
+        },
+        "duration_estimate": {
+          "title": "Duration Estimate",
+          "type": "string"
+        }
+      },
+      "required": [
+        "goal",
+        "sample_count",
+        "sample_design",
+        "interferents",
+        "reference_method",
+        "methods_compared",
+        "steps",
+        "success_criterion",
+        "duration_estimate"
+      ],
+      "title": "Experiment",
+      "type": "object"
+    },
+    "MethodRationale": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "enum": [
+            "uv_vis",
+            "nir",
+            "mir",
+            "raman",
+            "fluorescence",
+            "scattering"
+          ],
+          "title": "Method",
+          "type": "string"
+        },
+        "claims": {
+          "items": {
+            "$ref": "#/$defs/Claim"
+          },
+          "title": "Claims",
+          "type": "array"
+        }
+      },
+      "required": [
+        "method",
+        "claims"
+      ],
+      "title": "MethodRationale",
+      "type": "object"
+    },
+    "Question": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "text": {
+          "description": "Question to the customer, in the case language",
+          "title": "Text",
+          "type": "string"
+        },
+        "priority": {
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ],
+          "title": "Priority",
+          "type": "string"
+        },
+        "why": {
+          "description": "How the answer can change the recommendation",
+          "title": "Why",
+          "type": "string"
+        },
+        "parameter_id": {
+          "enum": [
+            "measurand",
+            "measurand_type",
+            "matrix",
+            "phase",
+            "water_content",
+            "concentration_range",
+            "required_accuracy",
+            "temperature",
+            "pressure",
+            "aggressiveness_fouling",
+            "installation_point",
+            "distance_to_instrument",
+            "measurement_frequency",
+            "reference_method",
+            "samples_available",
+            "regulatory"
+          ],
+          "title": "Parameter Id",
+          "type": "string"
+        },
+        "feature": {
+          "anyOf": [
+            {
+              "enum": [
+                "phase",
+                "water_level",
+                "analyte_type",
+                "concentration_level",
+                "accuracy_need",
+                "temperature_class",
+                "pressure_class",
+                "fouling_risk",
+                "distance_class",
+                "fluorescence_risk",
+                "turbidity",
+                "hazardous_area"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Feature the answer sets, null if it only adds context",
+          "title": "Feature"
+        },
+        "attribute": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "v0.3: gates attribute the answer sets (from assessment.questions), null if none",
+          "title": "Attribute"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "priority",
+        "why",
+        "parameter_id",
+        "feature"
+      ],
+      "title": "Question",
+      "type": "object"
+    },
+    "Risk": {
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ],
+          "title": "Severity",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "severity"
+      ],
+      "title": "Risk",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "C7 · Nidzhat (Claude step B) -> Semyon",
+  "properties": {
+    "questions": {
+      "items": {
+        "$ref": "#/$defs/Question"
+      },
+      "title": "Questions",
+      "type": "array"
+    },
+    "rationale": {
+      "description": "One entry per ranked method",
+      "items": {
+        "$ref": "#/$defs/MethodRationale"
+      },
+      "title": "Rationale",
+      "type": "array"
+    },
+    "experiment": {
+      "$ref": "#/$defs/Experiment"
+    },
+    "risks": {
+      "items": {
+        "$ref": "#/$defs/Risk"
+      },
+      "title": "Risks",
+      "type": "array"
+    }
+  },
+  "required": [
+    "questions",
+    "rationale",
+    "experiment",
+    "risks"
+  ],
+  "title": "Explanation",
+  "type": "object",
+  "$id": "spectrascout/0.2/C7"
+}

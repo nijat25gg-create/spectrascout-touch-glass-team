@@ -1,0 +1,131 @@
+{
+  "decision_status": "provisional",
+  "selected": [
+    "K08 UV_VIS transmission / transflection probe",
+    "K06 UV_VIS ATR probe"
+  ],
+  "excluded": [],
+  "premises": [],
+  "steps": [
+    {
+      "title": "Q1 Task",
+      "shown": [
+        {
+          "rule_id": "T-SPLIT-TARGETS",
+          "row": null,
+          "row_label": null,
+          "effect": "split_case",
+          "because": "Different targets can need different methods; each is assessed on its own",
+          "source": [
+            "AFS ref D05 'target variables still need definition'",
+            "S01 p.16"
+          ]
+        }
+      ],
+      "hidden": 3
+    },
+    {
+      "title": "Q2 Signal",
+      "shown": [],
+      "hidden": 6
+    },
+    {
+      "title": "Q3 Interface and fiber",
+      "shown": [
+        {
+          "rule_id": "I-UV-HIGH-OD",
+          "row": "K06",
+          "row_label": "UV_VIS ATR probe",
+          "effect": "fit",
+          "because": "UV-ATR uses a micrometre evanescent path and works in highly scattering or dark fluids",
+          "source": [
+            "S01 p.16"
+          ]
+        }
+      ],
+      "hidden": 27
+    },
+    {
+      "title": "Q4 Premises and evidence",
+      "shown": [
+        {
+          "rule_id": "APP-BIO-BIOMASS",
+          "row": "K08",
+          "row_label": "UV_VIS transmission / transflection probe",
+          "effect": "support_application",
+          "because": "UV/Vis is a low-cost tool for biomass trends because turbidity correlates with cell density",
+          "source": [
+            "S01 p.16"
+          ]
+        },
+        {
+          "rule_id": "APP-BIO-BIOMASS",
+          "row": "K06",
+          "row_label": "UV_VIS ATR probe",
+          "effect": "support_application",
+          "because": "UV/Vis is a low-cost tool for biomass trends because turbidity correlates with cell density",
+          "source": [
+            "S01 p.16"
+          ]
+        }
+      ],
+      "hidden": 0
+    }
+  ],
+  "questions": [
+    {
+      "attribute": "optical_density",
+      "kind": "method",
+      "strength": null,
+      "forced": true,
+      "text": "Over which range does turbidity change (process states, cleaning, concentration)?"
+    },
+    {
+      "attribute": "target_defined",
+      "kind": "method",
+      "strength": null,
+      "forced": true,
+      "text": "Which variables exactly should be reported, each with its own reference measurement?"
+    },
+    {
+      "attribute": "fouling",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Can deposits form at the probe window, and how is the line cleaned (CIP, temperature, chemicals)?"
+    },
+    {
+      "attribute": "physical_variation",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Which physical and formulation changes occur between runs (temperature, texture, particle size, air bubbles, recipe)?"
+    },
+    {
+      "attribute": "temperature",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "What temperature, pressure and flow occur at the measurement point?"
+    },
+    {
+      "attribute": "reference_method",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Which independent reference method and sampling time can be used?"
+    },
+    {
+      "attribute": "acceptance_criteria",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "What concentration range, accuracy and response time must the measurement meet?"
+    }
+  ],
+  "lab_checks": [],
+  "evidence": {
+    "K08": "application",
+    "K06": "application"
+  }
+}

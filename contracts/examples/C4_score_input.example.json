@@ -1,0 +1,259 @@
+{
+  "case_id": "case-2026-10-17-001",
+  "features": {
+    "phase": {
+      "value": "solid_powder",
+      "status": "known"
+    },
+    "water_level": {
+      "value": "low",
+      "status": "known"
+    },
+    "analyte_type": {
+      "value": "moisture",
+      "status": "known"
+    },
+    "concentration_level": {
+      "value": "low_percent",
+      "status": "known"
+    },
+    "accuracy_need": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "temperature_class": {
+      "value": "elevated",
+      "status": "assumed"
+    },
+    "pressure_class": {
+      "value": "ambient",
+      "status": "assumed"
+    },
+    "fouling_risk": {
+      "value": "medium",
+      "status": "assumed"
+    },
+    "distance_class": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "fluorescence_risk": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "turbidity": {
+      "value": "opaque",
+      "status": "assumed"
+    },
+    "hazardous_area": {
+      "value": "unknown",
+      "status": "unknown"
+    }
+  },
+  "attributes": [
+    {
+      "name": "target_defined",
+      "value": "yes",
+      "status": "known",
+      "quote": "die Restfeuchte inline messen"
+    },
+    {
+      "name": "target_kind",
+      "value": "water",
+      "status": "known",
+      "quote": "Restfeuchte"
+    },
+    {
+      "name": "target_class",
+      "value": "major_component",
+      "status": "known",
+      "quote": "Zielbereich etwa 1–5 %"
+    },
+    {
+      "name": "targets_count",
+      "value": "1",
+      "status": "assumed",
+      "quote": null
+    },
+    {
+      "name": "quantitative",
+      "value": "yes",
+      "status": "known",
+      "quote": "Zielbereich etwa 1–5 %"
+    },
+    {
+      "name": "reference_method",
+      "value": "available",
+      "status": "known",
+      "quote": "Karl-Fischer-Titration"
+    },
+    {
+      "name": "reference_uncertainty",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "acceptance_criteria",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "concentration_range",
+      "value": "given",
+      "status": "known",
+      "quote": "Zielbereich etwa 1–5 %"
+    },
+    {
+      "name": "intended_use",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "domain",
+      "value": "pharma_solid",
+      "status": "known",
+      "quote": "pharmazeutisches Pulver"
+    },
+    {
+      "name": "sample_form",
+      "value": "powder",
+      "status": "known",
+      "quote": "pharmazeutisches Pulver"
+    },
+    {
+      "name": "optical_density",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "matrix_aqueous",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "heterogeneous",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "fluorophore",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "chromophore",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "matrix_fluorescence",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "formulation_changed",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "streams",
+      "value": "1",
+      "status": "assumed",
+      "quote": null
+    },
+    {
+      "name": "physical_variation",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "temperature",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "fouling",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "distance",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "link_confirmed",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "existing_fiber",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "gmp",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "client_method",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "reuse_calibration",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "add_method_to_keep_calibration",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "justification",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "asks",
+      "value": "assessment",
+      "status": "assumed",
+      "quote": null
+    },
+    {
+      "name": "cited_evidence",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "own_validation",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    }
+  ]
+}

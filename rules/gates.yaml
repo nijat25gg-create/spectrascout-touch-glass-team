@@ -1,0 +1,938 @@
+# SpectraScout pass rules v2 (gates). Draft 17.10, Nidzhat + Claude. Chemistry: to be checked by Nikita.
+#
+# What this file is
+#   Executable rules for the 4 questions of the 17.10 model:
+#     Q1 task defined? -> Q2 can the method give the signal? -> Q3 can the interface/configuration
+#     get it from this sample in this process? -> Q4 do the client's premises and the evidence hold?
+#   then OUT: case status, order (sufficiency), questions (enumeration), experiment.
+#   Since 18.10 this is the only rules engine: engine.score_methods fills C5 from it (rules/rules.yaml retired, legacy/).
+#
+# Design constraints (checked by rules/check_gates.py)
+#   1. Every rule reads only attributes from `attributes:` and every attribute has a FINITE value list
+#      that contains "unknown". Gadzhi's enumeration (completeness) can then try every value.
+#   2. Every rule says what happens when an input is unknown (`on_unknown`).
+#   3. `exclude` / `exclude_config` only for physical impossibility or a mandatory condition, with a source.
+#      Everything else is risk / needs_info. No invented numbers (AFS ref: "Do not invent").
+#   4. Every rule has `source` (AFS page is enough, Q&A 17.10) and `tests` (golden case ids).
+#
+# Rule fields
+#   id          unique, UPPER-CASE
+#   step        Q1 | Q2 | Q3 | Q4 | OUT
+#   applies_to  case | method | row | combination
+#   targets     methods (nir, mir, raman, uv_vis, fluorescence) or catalog rows (K01..K10); empty for case rules
+#   guard       optional {attribute: [values]}: the rule is considered only if these are KNOWN and match
+#               (no on_unknown for the guard; keeps needs_info from firing in every case)
+#   when        {attribute: [values]}  all must match (AND). `computed:` names allowed as keys.
+#               If a `when` input is unknown, `on_unknown` decides.
+#   effect      see `effects:`
+#   on_unknown  ignore | needs_info | plan_question | case_insufficient
+#   because     one line an AFS expert understands (EN, goes into the briefing)
+#   source      list of citations
+#   ask         optional {kind: method|plan, attribute, text}
+#   premise     optional: verdict recorded for the client's premise when the rule fires
+#   untested    reason, required when tests is empty
+#   ask_even_if_known  ask the rule's question even if the attribute is known (clarify a range)
+#   tests       golden case ids that must fire this rule
+
+version: gates-v2-draft
+schema: 1
+
+effects:
+  exclude:               "candidate removed: physical impossibility for this target/method (reason + source shown)"
+  exclude_config:        "this configuration removed (e.g. this fiber); the method may stay with another configuration"
+  needs_info:            "candidate kept, status needs_info until the input is known"
+  risk_high:             "candidate kept, high risk; ordered after candidates without high risks"
+  risk:                  "candidate kept, risk listed"
+  support_application:   "AFS material shows the same application family (evidence level = application)"
+  support_physics:       "physical basis only (evidence level = physics_only)"
+  fit:                   "the probe geometry suits this sample (Q3). Not evidence that the method sees the target"
+  premise_contradicted:  "client's premise is contradicted by the sources; say so and give a corrected concept"
+  premise_not_supported: "client's request cannot be confirmed with the facts given"
+  case_insufficient:     "case status = insufficient_information"
+  clarify:               "ask the rule's method question even though the attribute is known (it is not specific enough)"
+  case_outside_scope:    "case status = outside_scope (for the stated use)"
+  cap_provisional:       "case status can never be better than provisional"
+  split_case:            "evaluate each stream / target as its own case"
+  plan_question:         "question for the experiment plan, asked always, does not change the method"
+
+precedence: |
+  Row status from fired effects: exclude > exclude_config > needs_info > candidate.
+  exclude_config removes only that configuration (e.g. the client's silica link): the row stays a candidate
+  with "configuration change required" and ranks like a row with one more high risk; the client's own
+  configuration counts as not approvable (any_needs_info_on_requested).
+  support_application on a row cancels needs_info that came from Q2 signal rules
+  (the application family covers the signal question, it still has to be tested).
+  Evidence level of a row: application if any support_application, else physics_only if any support_physics, else none.
+  Q3 `fit` never raises evidence: a suitable geometry does not show that the method sees the target.
+  Rows with evidence none are not recommended (they replace the old min_score).
+
+statuses:
+  candidate:  [excluded, needs_info, candidate]
+  evidence:   [application, analogy, physics_only, none]
+  premise:    [ok, not_supported, contradicted]
+  case:       [provisional, insufficient_information, outside_scope]
+
+# ---------------------------------------------------------------- attributes (plan v4 §2, entities 17.10)
+attributes:
+  # MeasurementTask
+  target_defined:      {entity: MeasurementTask, values: [yes, partial, no, unknown]}
+  target_kind:         {entity: MeasurementTask, values: [api, fat, protein, glucose, lactate, metabolite_other, biomass, water, contaminant, tissue_type, other, unknown]}
+  target_class:        {entity: MeasurementTask, values: [major_component, minor_component, trace, unknown]}   # concentration level; usually unknown
+  targets_count:       {entity: MeasurementTask, values: ["1", "2plus", unknown]}
+  quantitative:        {entity: MeasurementTask, values: [yes, no, unknown]}
+  reference_method:    {entity: MeasurementTask, values: [available, none, unknown]}
+  reference_uncertainty: {entity: MeasurementTask, values: [given, unknown]}
+  acceptance_criteria: {entity: MeasurementTask, values: [given, unknown]}
+  concentration_range: {entity: MeasurementTask, values: [given, unknown]}
+  intended_use:        {entity: MeasurementTask, values: [lab_research, pilot, production, clinical_in_vivo, unknown]}
+  # Sample
+  domain:              {entity: Sample, values: [pharma_solid, dairy, bioprocess, petroleum, polymer_melt, tissue, other, unknown]}
+  sample_form:         {entity: Sample, values: [powder, liquid, paste_melt, soft_solid, solid, gas, unknown]}
+  optical_density:     {entity: Sample, values: [clear, turbid, opaque, varies, unknown]}
+  matrix_aqueous:      {entity: Sample, values: [yes, no, unknown]}
+  heterogeneous:       {entity: Sample, values: [yes, no, unknown]}
+  fluorophore:         {entity: Sample, values: [named, indicator_justified, not_identified, unknown]}
+  chromophore:         {entity: Sample, values: [yes, no, unknown]}
+  matrix_fluorescence: {entity: Sample, values: [high, low, unknown]}
+  formulation_changed: {entity: Sample, values: [yes, no, unknown]}
+  streams:             {entity: Sample, values: ["1", "2plus", unknown]}
+  physical_variation:  {entity: Sample, values: [yes, no, unknown]}   # temperature, texture, particle size, bubbles, recipe between runs
+  # ProcessContext
+  temperature:         {entity: ProcessContext, values: [ambient, elevated, high, unknown]}
+  fouling:             {entity: ProcessContext, values: [low, high, unknown]}
+  distance:            {entity: ProcessContext, values: [at_process, outside_area, other_building, unknown]}
+  link_confirmed:      {entity: ProcessContext, values: [yes, no, unknown]}   # fiber type, length and routing confirmed by AFS
+  existing_fiber:      {entity: ProcessContext, values: [silica_uv_vis, silica_vis_nir, chalcogenide, polycrystalline, hollow_waveguide, fluoride, none, unknown]}
+  gmp:                 {entity: ProcessContext, values: [yes, no, unknown]}
+  # Client premises (CustomerRequest.client_claims)
+  client_method:       {entity: CustomerRequest, values: [mir, nir, raman, uv_vis, fluorescence, none, unknown]}
+  reuse_calibration:   {entity: CustomerRequest, values: [yes, no, unknown]}
+  add_method_to_keep_calibration: {entity: CustomerRequest, values: [yes, no, unknown]}
+  justification:       {entity: CustomerRequest, values: [sensitivity_only, physical_basis, none_given, unknown]}
+  asks:                {entity: CustomerRequest, values: [assessment, approve_concept, exact_config_now, readiness_proof, unknown]}
+  cited_evidence:      {entity: CustomerRequest, values: [research_paper, afs_application, business_material, none, unknown]}
+  own_validation:      {entity: CustomerRequest, values: [yes, no, unknown]}
+
+# ---------------------------------------------------------------- questions (one per attribute)
+# Text shown to the client (EN, like the briefing). kind: method (can change the method or status),
+# plan (needed for the experiment plan, asked always when unknown), lab_check (answered by measuring
+# samples in step 0 of the plan, never asked to the client: AFS ref D01 'Check fluorescence background';
+# AFS Q&A 17.10 lab screening), never (client premise or context we check, not ask). probe: false = not tried in the enumeration (chosen later with AFS).
+question_policy:
+  min_strength: 0.3          # enumeration questions weaker than this are dropped (forced ones stay)
+  max_method: 5              # at most 5 method questions, strongest first
+  ignore_outside_scope_only: true   # an answer that only turns the case outside_scope is not a method change
+  decision: top1             # the decision = selected row (top-1) + case status, as in Gadzhi's completeness and AFS ref §3 ('change the method or the setup')
+
+questions:
+  target_defined:      {kind: method, text: "Which substance, property or deviation must be detected, and how is off-spec defined today?"}
+  target_kind:         {kind: method, text: "What exactly should the measurement report (which component, property or class)?"}
+  target_class:        {kind: method, text: "Roughly what concentration level is expected: main component (percent range) or traces below about 0.1 %?"}
+  targets_count:       {kind: method, text: "Is this one target variable or several that should be reported separately?"}
+  quantitative:        {kind: method, text: "Do you need a concentration value, or is detecting a change or classifying enough?"}
+  reference_method:    {kind: plan,   text: "Which independent reference method and sampling time can be used?"}
+  reference_uncertainty: {kind: plan, text: "Which assay, uncertainty and sampling time provide the reference values?"}
+  physical_variation:  {kind: plan,   text: "Which physical and formulation changes occur between runs (temperature, texture, particle size, air bubbles, recipe)?"}
+  acceptance_criteria: {kind: plan,   text: "What concentration range, accuracy and response time must the measurement meet?"}
+  concentration_range: {kind: plan,   text: "Which concentration range must be covered?"}
+  intended_use:        {kind: method, text: "Is the result for laboratory research, a pilot, production control or a clinical decision?"}
+  domain:              {kind: method, text: "In which process and product is the measurement needed?"}
+  sample_form:         {kind: method, text: "What is the physical form of the sample at the measurement point (powder, liquid, paste/melt, soft solid)?"}
+  optical_density:     {kind: method, text: "Is the liquid clear, turbid or opaque at the measurement point, and does it change?"}
+  matrix_aqueous:      {kind: method, text: "Is the matrix mainly water-based?"}
+  heterogeneous:       {kind: method, text: "Is the sample heterogeneous, so that different measurements must see the same spot?"}
+  fluorophore:         {kind: method, text: "Is there a fluorescent target or marker (e.g. NADH, tryptophan, riboflavin) with a known relationship to the variable?"}
+  chromophore:         {kind: lab_check, text: "Check on samples whether the target has a usable UV/Vis absorption."}
+  matrix_fluorescence: {kind: lab_check, text: "Check on representative samples whether fluorescence background swamps the Raman signal."}
+  formulation_changed: {kind: method, text: "Which API, excipients and concentration range differ from the calibrated formulation?"}
+  streams:             {kind: method, text: "Is it one stream or several streams with different optical behaviour?"}
+  temperature:         {kind: plan,   text: "What temperature, pressure and flow occur at the measurement point?"}
+  fouling:             {kind: plan,   text: "Can deposits form at the probe window, and how is the line cleaned (CIP, temperature, chemicals)?"}
+  distance:            {kind: method, text: "Where would the analyzer stand relative to the measurement point (at the line, outside the process area, another building)?"}
+  link_confirmed:      {kind: method, text: "Where would the analyzer stand, and what fiber length and routing would the link need?"}
+  existing_fiber:      {kind: method, probe: false, text: "Which fiber type is planned or already installed?"}
+  gmp:                 {kind: plan,   text: "Which GMP, cleaning and sterilisation requirements apply at the measurement point?"}
+  client_method:                  {kind: never}
+  reuse_calibration:              {kind: never}
+  add_method_to_keep_calibration: {kind: never}
+  justification:                  {kind: never}
+  asks:                           {kind: never}
+  cited_evidence:                 {kind: never}
+  own_validation:                 {kind: plan, text: "Is there own data or validation on the intended setup?"}
+
+# Derived predicates the engine computes from attributes + catalog (not extracted).
+computed:
+  sample_form_not_in_row: "sample_form is known and not in catalog[row].sample_types"
+  fiber_overlap_none:     "existing_fiber transmits nothing of method_range_nm (or of the needed band)"
+  fiber_overlap_partial:  "existing_fiber covers only part of method_range_nm"
+  combination_listed:     "the method pair is in `combinations:`"
+  any_needs_info_on_requested: "no row of the client's method is a candidate with the client's own configuration (final row statuses)"
+
+# ---------------------------------------------------------------- static data
+methods:
+  nir:          {range_nm: [780, 2500],  source: "S01 p.10"}
+  mir:          {range_nm: [2500, 25000], source: "S01 p.9 (4000–400 cm-1)"}
+  raman:        {range_nm: [400, 1100],  source: "S01 p.11 (detector region; Raman shift stated separately), S01 p.15 (785 nm excitation)"}
+  uv_vis:       {range_nm: [190, 780],   source: "S01 p.5 (UV 190–360 nm); upper end = start of NIR S01 p.10. Target-dependent."}
+  fluorescence: {range_nm: [190, 780],   source: "ASSUMPTION: S01 p.12 says UV/Vis excitation and longer-wavelength emission, no numbers; nominal UV-Vis range used. Species-dependent."}
+
+fibers:   # S02 p.6 is a figure; values transcribed in AFS ref §5. Check the figure before quoting a number.
+  silica_uv_vis:    {range_nm: [190, 1200]}
+  silica_vis_nir:   {range_nm: [350, 2400]}
+  chalcogenide:     {range_nm: [1100, 6500]}
+  polycrystalline:  {range_nm: [3000, 17000], note: "AFS ref §5: 3–17 µm; S02 p.8 title: 3–16 µm. Check the S02 p.6 figure"}
+  hollow_waveguide: {range_nm: [2000, 18000]}
+  fluoride:         {range_nm: [300, 5500], note: "indium fluoride 0.3–5.5 µm; zirconium fluoride 0.3–4.5 µm"}
+
+catalog:  # 10 in-line rows, plan v4 §1A, from S01 Table 1 (p.6) / AFS_method_comparison_table.xlsx
+  K01: {method: mir,          technique: "ATR probe",                         sample_types: [liquid, paste_melt, soft_solid], path: "1–6 µm",  sensitivity: average, selectivity: high,    cost: high, note: "Table 1: liquid, paste, soft. 'melt' is our mapping (S02 p.14 hot polymer)"}
+  K02: {method: nir,          technique: "transmission / transflection probe", sample_types: [liquid],                         path: "1–10 mm", sensitivity: average, selectivity: average, cost: average}
+  K03: {method: nir,          technique: "diffuse reflection probe",          sample_types: [powder, liquid, paste_melt, soft_solid], path: "0.5–1 mm", sensitivity: average, selectivity: average, cost: average, note: "Table 1: scattering media, powder. liquid/paste_melt/soft_solid = our mapping for scattering media (S01 p.17: yogurt, butter, concentrates); clear liquids get I-CLEAR-REFLECTION"}
+  K04: {method: nir,          technique: "surface at a distance",             sample_types: [solid, powder],                  path: "2–5 mm",  sensitivity: average, selectivity: average, cost: average}
+  K05: {method: raman,        technique: "Raman probe",                       sample_types: [liquid, powder, solid],          path: "2–5 mm",  sensitivity: average, selectivity: high,    cost: high}
+  K06: {method: uv_vis,       technique: "ATR probe",                         sample_types: [liquid],                         path: "0.1–1 µm", sensitivity: low,    selectivity: low,     cost: average}
+  K07: {method: uv_vis,       technique: "diffuse reflection probe",          sample_types: [solid],                          path: "1–5 mm",  sensitivity: low,     selectivity: low,     cost: low, note: "Table 1: solid, pill"}
+  K08: {method: uv_vis,       technique: "transmission / transflection probe", sample_types: [liquid],                         path: "1–10 mm", sensitivity: low,     selectivity: low,     cost: low}
+  K09: {method: uv_vis,       technique: "probe, lens (emission of the sample)", sample_types: [radiating_sample],             path: "any",     sensitivity: high,    selectivity: low,     cost: low}
+  K10: {method: fluorescence, technique: "fluorimetric probe",                sample_types: [liquid, solid, soft_solid],      path: "1–5 mm",  sensitivity: high,    selectivity: low,     cost: low, note: "Table 1: liquid, solid. soft_solid = our mapping (tissue, S04)"}
+
+combinations:   # post-step only (O-COMBINATION). plan v4 §1C
+  - {pair: [nir, raman],        source: "S01 p.14–15", context: "powder blend, feed frame"}
+  - {pair: [mir, fluorescence], source: "S04 p.1, 3–4; S02 p.15; S01 p.8", context: "same spot, heterogeneous tissue"}
+  - {pair: [mir, raman],        source: "S02 p.16; S01 p.11", context: "combi ATR + Raman"}
+  - {pair: [nir, fluorescence], source: "S01 p.7", context: "yeast fermentation biomass"}
+  - {pair: [nir, mir],          source: "S01 p.7–8", context: "tissue, different depths"}
+  - {pair: [uv_vis, raman],     source: "S01 p.16", context: "biomass + metabolites in one reactor"}
+
+# Fiber transmission ranges are nominal (S02 p.6): an overlap of at least this share of the method's
+# nominal range counts as full (silica Vis-NIR 350-2400 nm vs NIR 780-2500 nm = 94 %). Engineering choice.
+# Per method (18.10): no MIR fiber covers 90 % of 2.5-25 µm, but polycrystalline (62 %) and hollow
+# waveguide (69 %) are the usual MIR links, so MIR uses 0.6. Engineering choice, to be confirmed by AFS.
+fiber_full_overlap: {default: 0.9, mir: 0.6}
+
+cost_order: [low, average, high]   # sufficiency tie-break, S01 Table 1 (p.6) column "cost"
+
+# Order inside a group, after evidence and risks (the retired rules.yaml points play no role).
+# All keys are S01 Table 1 (p.6) columns; which column decides depends on the case.
+tie_break:
+  - {when: {target_class: [trace]}, column: sensitivity, prefer: high,
+     source: "S01 Table 1 (p.6); S01 p.16 (NIR may lack sensitivity below 0.1 %)"}
+  - {when: {domain: [dairy, bioprocess, petroleum, tissue, polymer_melt]}, column: selectivity, prefer: high,
+     source: "S01 p.7 (oil, milk, process media, fermentation media, tissue = complex multicomponent mixtures); S01 Table 1 (p.6). polymer_melt counted as process medium: our interpretation, Nikita to check"}
+  - {column: cost, prefer: low, source: "S01 Table 1 (p.6); AFS Q&A 17.10 ('you don't need a Bentley'); AFS ref D01 'simplest configuration'"}
+
+# ---------------------------------------------------------------- rules
+rules:
+
+  # ======================= Q1 task: is the measurement task defined?
+  - id: P-TARGET-UNDEFINED
+    step: Q1
+    applies_to: case
+    targets: []
+    when: {target_defined: [no]}
+    effect: case_insufficient
+    on_unknown: needs_info
+    because: "The target substance or quality variable is not named, so no method can be justified yet"
+    source: ["AFS ref §3 'Insufficient information can be the right answer'", "S01 p.3 (samples of incompletely known composition: test several approaches to select the method)"]
+    ask: {kind: method, attribute: target_defined, text: "Which substance, property or deviation must be detected, and how is off-spec defined today?"}
+    tests: [H05]
+
+  - id: T-TARGET-PARTIAL
+    step: Q1
+    applies_to: case
+    targets: []
+    when: {target_defined: [partial]}
+    effect: clarify
+    on_unknown: ignore
+    because: "Targets are mentioned but not defined as separate variables; each needs its own method check and reference"
+    source: ["AFS ref D05 ('target variables still need definition')", "AFS ref §3 (clarification questions first)"]
+    ask: {kind: method, attribute: target_defined, text: "Which variables exactly should be reported, each with its own reference measurement?"}
+    tests: [D05]
+
+  - id: T-SPLIT-TARGETS
+    step: Q1
+    applies_to: case
+    targets: []
+    when: {targets_count: ["2plus"]}
+    effect: split_case
+    on_unknown: ignore
+    because: "Different targets can need different methods; each is assessed on its own"
+    source: ["AFS ref D05 'target variables still need definition'", "S01 p.16"]
+    tests: [H03, D02, D04, D05]
+
+  - id: T-SPLIT-STREAMS
+    step: Q1
+    applies_to: case
+    targets: []
+    when: {streams: ["2plus"]}
+    effect: split_case
+    on_unknown: ignore
+    because: "Streams with different optical behaviour need their own interface choice"
+    source: ["S01 p.17–18"]
+    tests: [H02]
+
+  - id: T-NO-REFERENCE
+    step: Q1
+    applies_to: case
+    targets: []
+    when: {quantitative: [yes], reference_method: [none]}
+    effect: cap_provisional
+    on_unknown: plan_question
+    because: "A quantitative result needs an independent reference to build and test a calibration"
+    source: ["AFS ref §3 (feasibility plan: independent reference measurements)"]
+    ask: {kind: plan, attribute: reference_method, text: "Which independent reference method and sampling time can be used?"}
+    tests: [H03, H05, D05, D08]
+
+  - id: T-REFERENCE-QUALITY
+    step: Q1
+    applies_to: case
+    targets: []
+    guard: {reference_method: [available]}
+    when: {reference_uncertainty: [given]}
+    effect: plan_question
+    on_unknown: plan_question
+    because: "A reference exists, but its uncertainty and sampling time decide what error the spectroscopic model can reach"
+    source: ["AFS ref D01 (clarification: 'Which assay, uncertainty and sampling time provide the reference concentrations?')", "AFS ref D02"]
+    ask: {kind: plan, attribute: reference_uncertainty, text: "Which assay, uncertainty and sampling time provide the reference values?"}
+    tests: [D01, D02, D03, D04, D06]
+
+  - id: T-PLAN-MINIMUM
+    step: Q1
+    applies_to: case
+    targets: []
+    when: {acceptance_criteria: [unknown]}
+    effect: plan_question
+    on_unknown: plan_question
+    because: "Go/no-go needs client-agreed acceptance criteria and concentration range; none are invented"
+    source: ["AFS ref D01 'Decision basis'", "AFS Q&A 17.10 (lab screening: range, resolution, concentration level)"]
+    ask: {kind: plan, attribute: acceptance_criteria, text: "What concentration range, accuracy and response time must the measurement meet?"}
+    tests: [D01, D02, D03, D04, D06, D07]
+
+  # ======================= Q2 signal: can the method produce the needed signal?
+  - id: P-NO-FLUOROPHORE
+    step: Q2
+    applies_to: method
+    targets: [fluorescence]
+    when: {fluorophore: [not_identified]}
+    effect: exclude
+    on_unknown: needs_info
+    because: "Fluorescence needs a defined fluorescent species or a justified indicator; most chemicals do not fluoresce"
+    source: ["S01 p.5", "AFS ref §5 (fluorescence row)"]
+    ask: {kind: method, attribute: fluorophore, text: "Is there a fluorescent target or marker (e.g. NADH, tryptophan, riboflavin) with a known relationship to the variable?"}
+    tests: [H03]
+
+  - id: S-FLUOR-INDICATOR
+    step: Q2
+    applies_to: method
+    targets: [fluorescence]
+    when: {fluorophore: [indicator_justified]}
+    effect: risk
+    on_unknown: ignore
+    because: "An indicator is indirect: the link to the requested variable must be shown against a reference"
+    source: ["AFS ref §5 ('a justified indicator')", "S01 p.16 (NADH, tryptophan, riboflavin as fluorescence targets)"]
+    tests: []
+    untested: "no case names an indicator; D05 needs target definition first"
+
+  - id: S-UV-NO-CHROMOPHORE
+    step: Q2
+    applies_to: method
+    targets: [uv_vis]
+    when: {chromophore: [no], target_kind: [api, fat, protein, glucose, lactate, metabolite_other, water, contaminant, tissue_type, other]}
+    effect: exclude
+    on_unknown: ignore
+    because: "UV-Vis needs a defined absorption of the target (biomass trends use turbidity instead, S01 p.16)"
+    source: ["S01 p.5", "AFS ref §5 (UV-Vis row)"]
+    tests: []
+    untested: "no D/H case states a non-absorbing target; Nikita: add a case or confirm"
+
+  - id: S-UV-OVERLAP
+    step: Q2
+    applies_to: method
+    targets: [uv_vis]
+    when: {target_kind: [api, fat, protein, glucose, lactate, metabolite_other]}
+    effect: risk
+    on_unknown: ignore
+    because: "UV spectra overlap strongly in real mixtures; chemometrics is required"
+    source: ["S01 p.5"]
+    tests: [D04]
+
+  - id: S-WATER
+    step: Q2
+    applies_to: method
+    targets: [nir, mir]
+    when: {target_kind: [water]}
+    effect: support_physics
+    on_unknown: ignore
+    because: "Water has -OH bands: overtones in NIR, strong fundamental absorption in MIR"
+    source: ["S01 p.10", "S01 p.16 (strong water absorption in IR)", "S02 p.13"]
+    tests: [D06, H04]
+
+  - id: S-VIBRATIONAL-MAJOR
+    step: Q2
+    applies_to: method
+    targets: [nir, mir]
+    when: {target_kind: [api, fat, protein, glucose, lactate, water]}
+    effect: support_physics
+    on_unknown: ignore
+    because: "NIR and MIR carry composition information (-OH, -NH, -CH groups; MIR fingerprint bands)"
+    source: ["S01 p.4–5", "S01 p.9–10"]
+    tests: [D01, D02, D04, D06, H01, H04]
+
+  - id: S-RAMAN-COMPOSITION
+    step: Q2
+    applies_to: method
+    targets: [raman]
+    when: {target_kind: [api, fat, protein, glucose, lactate]}
+    effect: support_physics
+    on_unknown: ignore
+    because: "Raman gives vibrational composition information (molecular backbone, symmetric groups) for organic components"
+    source: ["S01 p.11–12", "S01 p.14–15", "S01 p.16"]
+    note: "no source supports Raman for water content, so water is not listed"
+    tests: [D01, D02, D04, H01]
+
+  - id: S-TRACE-NIR
+    step: Q2
+    applies_to: method
+    targets: [nir]
+    when: {target_class: [trace]}
+    effect: risk_high
+    on_unknown: ignore
+    because: "NIR may lack sensitivity for components below about 0.1 %"
+    source: ["S01 p.16"]
+    tests: []
+    untested: "no case states a trace level; enumeration still asks the concentration level when it flips NIR"
+
+  - id: S-AQUEOUS-IR
+    step: Q2
+    applies_to: method
+    targets: [mir]
+    when: {matrix_aqueous: [yes], target_kind: [glucose, lactate, metabolite_other, protein]}
+    effect: risk
+    on_unknown: ignore
+    because: "Water absorbs strongly in the infrared; Raman has low water absorbance in comparison"
+    source: ["S01 p.16"]
+    tests: [D04, H03]
+
+  - id: S-AQUEOUS-NIR
+    step: Q2
+    applies_to: method
+    targets: [nir]
+    when: {matrix_aqueous: [yes], target_kind: [lactate, metabolite_other]}
+    effect: risk
+    on_unknown: ignore
+    because: "Water absorbs in the infrared; the materials support NIR in bioprocess only for major components such as glucose or glycerol"
+    source: ["S01 p.16"]
+    tests: [D04]
+
+  - id: S-AQUEOUS-RAMAN
+    step: Q2
+    applies_to: method
+    targets: [raman]
+    when: {matrix_aqueous: [yes], target_kind: [glucose, lactate, metabolite_other]}
+    effect: support_physics
+    on_unknown: ignore
+    because: "Raman suits aqueous media (low water absorbance compared to IR) for metabolites such as glucose, acetate, lactate"
+    source: ["S01 p.16"]
+    tests: [D04, H03]
+
+  - id: S-RAMAN-FLUOR-BG
+    step: Q2
+    applies_to: method
+    targets: [raman]
+    when: {matrix_fluorescence: [high]}
+    effect: risk_high
+    on_unknown: risk
+    because: "Fluorescence of many organic samples can swamp the weak Raman signal"
+    source: ["S01 p.11", "AFS ref D01 ('Check fluorescence background and signal quality')"]
+    ask: {kind: lab_check, attribute: matrix_fluorescence, text: "Check on representative samples whether fluorescence background swamps the Raman signal."}
+    tests: [D01, H01]
+
+  - id: S-OD-NOT-VIABLE
+    step: Q2
+    applies_to: method
+    targets: [uv_vis]
+    when: {target_kind: [biomass]}
+    effect: risk
+    on_unknown: ignore
+    because: "Turbidity correlates with cell density, but optical density is not a viable cell count"
+    source: ["S01 p.16", "AFS ref §5 (UV-Vis row)"]
+    tests: [H03, D05]
+
+  # ======================= Q3a interface: can this probe geometry get the signal from this sample?
+  - id: I-SAMPLE-TYPE
+    step: Q3
+    applies_to: row
+    targets: [K01, K02, K03, K04, K05, K06, K07, K08, K09, K10]
+    when: {sample_form_not_in_row: [true]}
+    effect: needs_info
+    on_unknown: needs_info
+    because: "This sample type is not listed for this technique in Table 1 (catalog mapping, see catalog notes); not recommended unless AFS confirms the geometry"
+    source: ["S01 Table 1 (p.6)"]
+    ask: {kind: method, attribute: sample_form, text: "What is the physical form of the sample at the measurement point (powder, liquid, paste/melt, soft solid)?"}
+    tests: [D01, D07, D08]
+
+  - id: I-GAS-OUT-OF-SCOPE
+    step: Q3
+    applies_to: case
+    targets: []
+    when: {sample_form: [gas]}
+    effect: case_outside_scope
+    on_unknown: ignore
+    because: "No probe in the supplied catalog is a gas interface (Table 1 lists liquid, paste, powder and solid samples)"
+    source: ["S01 Table 1 (p.6)", "AFS ref §3 (decision status: outside the supported scope)"]
+    tests: []
+    untested: "no D/H case is a gas; covered by engine/test_gates.py"
+
+  - id: I-OPAQUE-TRANSMISSION
+    step: Q3
+    applies_to: row
+    targets: [K02, K08]
+    when: {optical_density: [opaque]}
+    effect: needs_info        # 18.10: known opaque keeps transmission out of the selection (short path to be checked)
+    on_unknown: risk          # 18.10: unknown must not be stricter than the known bad value (was needs_info)
+    because: "In opaque or thick media light cannot pass the path length; transmission saturates or fails"
+    source: ["S01 p.16", "S01 p.18"]
+    ask: {kind: method, attribute: optical_density, text: "Is the liquid clear, turbid or opaque at the measurement point, and does it change?"}
+    tests: [D02, H02]
+
+  - id: I-OPAQUE-REFLECTION
+    step: Q3
+    applies_to: row
+    targets: [K03]
+    when: {optical_density: [opaque, turbid]}
+    effect: fit
+    on_unknown: ignore
+    because: "Diffuse reflection is used for opaque or concentrated dairy products"
+    source: ["S01 p.17"]
+    tests: [D02, H02]
+
+  - id: I-CLEAR-TRANSMISSION
+    step: Q3
+    applies_to: row
+    targets: [K02, K08]
+    when: {optical_density: [clear]}
+    effect: fit
+    on_unknown: ignore
+    because: "Transmission/transflection with 1–10 mm path is preferred for clear liquids"
+    source: ["S01 p.16", "S01 p.18"]
+    tests: [H02]
+
+  - id: I-CLEAR-REFLECTION
+    step: Q3
+    applies_to: row
+    targets: [K03]
+    when: {optical_density: [clear], sample_form: [liquid]}
+    effect: risk
+    on_unknown: ignore
+    because: "Reflection can be less representative for clear liquids"
+    source: ["S01 p.18"]
+    tests: [H02]
+
+  - id: I-OD-VARIES
+    step: Q3
+    applies_to: row
+    targets: [K02, K03, K06, K08]
+    when: {optical_density: [varies]}
+    effect: risk
+    on_unknown: ignore
+    because: "Optical density changes: compare transmission, transflection and reflection on real samples before choosing"
+    source: ["S01 p.18 (transflection can cover low- and high-fat products)", "S01 p.16"]
+    ask_even_if_known: true
+    ask: {kind: method, attribute: optical_density, text: "Over which range does turbidity change (process states, cleaning, concentration)?"}
+    tests: [D03, D05]
+
+  - id: I-UV-HIGH-OD
+    step: Q3
+    applies_to: row
+    targets: [K06]
+    when: {optical_density: [opaque, turbid, varies]}
+    effect: fit
+    on_unknown: ignore
+    because: "UV-ATR uses a micrometre evanescent path and works in highly scattering or dark fluids"
+    source: ["S01 p.16"]
+    tests: [D05]
+
+  - id: I-ATR-SURFACE
+    step: Q3
+    applies_to: row
+    targets: [K01, K06]
+    when: {heterogeneous: [yes]}
+    effect: risk
+    on_unknown: ignore
+    because: "ATR probes only a few micrometres of the surface layer; check that this represents the sample"
+    source: ["S01 p.13", "S01 Table 1 (p.6)"]
+    tests: [D08]
+
+  - id: I-FOULING-CONTACT
+    step: Q3
+    applies_to: row
+    targets: [K01, K02, K03, K05, K06, K08, K10]
+    when: {fouling: [high]}
+    effect: risk
+    on_unknown: plan_question
+    because: "Deposits on a contact window change the signal; cleaning and access must be agreed"
+    source: ["AFS ref §5 (MIR: contact, fouling)", "AFS ref D07, D02"]
+    ask_even_if_known: true      # deposits known, cleaning regime and access not
+    ask: {kind: plan, attribute: fouling, text: "Can deposits form at the probe window, and how is the line cleaned (CIP, temperature, chemicals)?"}
+    tests: [D07, D02]
+
+  # ======================= Q3b configuration: fiber link and installation
+  - id: I-PHYSICAL-VARIATION
+    step: Q3
+    applies_to: row
+    targets: [K02, K03, K04]
+    when: {physical_variation: [yes]}
+    effect: risk
+    on_unknown: plan_question
+    because: "Temperature, texture, particle size and scattering changes can mimic composition changes; separate them in the experiment"
+    source: ["S01 p.17", "AFS ref D02 (risks)", "AFS ref D01 (risks: physical variation of the powder)"]
+    ask: {kind: plan, attribute: physical_variation, text: "Which physical and formulation changes occur between runs (temperature, texture, particle size, air bubbles, recipe)?"}
+    tests: [D02, D01]
+
+  - id: P-FIBER-RANGE
+    step: Q3
+    applies_to: row
+    targets: [K01, K02, K03, K04, K05, K06, K07, K08, K09, K10]
+    when: {fiber_overlap_none: [true]}
+    effect: exclude_config
+    premise: contradicted      # when the fiber is the client's own asset (H04)
+    on_unknown: ignore
+    because: "The fiber does not transmit the method's spectral range (e.g. silica ≤2400 nm, MIR needs 2.5–25 µm)"
+    source: ["S02 p.6", "S01 p.9"]
+    ask: {kind: method, attribute: existing_fiber, text: "Which fiber type is planned or already installed?"}
+    tests: [H04]
+
+  - id: L-FIBER-PARTIAL
+    step: Q3
+    applies_to: row
+    targets: [K01, K02, K03, K04, K05, K06, K07, K08, K09, K10]
+    when: {fiber_overlap_partial: [true]}
+    effect: risk
+    on_unknown: ignore
+    because: "The fiber covers only part of the nominal range; state only the usable range of the actual components"
+    source: ["S02 p.6", "AFS ref §3 'Spectral range'"]
+    tests: [H04]
+
+  - id: L-LINK-LENGTH-MIR
+    step: Q3
+    applies_to: row
+    targets: [K01]
+    guard: {distance: [outside_area, other_building]}
+    when: {link_confirmed: ["no"]}
+    effect: needs_info
+    on_unknown: needs_info
+    because: "Materials show 100–300 m silica Vis-NIR cables but only 2 m example IR fiber cables; a long IR link needs AFS confirmation of length and routing"
+    source: ["S02 p.7 (100–300 m silica cables)", "S02 p.9 (PIR, HWG 2 m)", "AFS ref §3 'Do not invent' (fiber lengths)"]
+    ask: {kind: method, attribute: link_confirmed, text: "Where would the analyzer stand, and what fiber length and routing would the link need?"}
+    tests: [H04, D06]
+
+  - id: L-REMOTE-SILICA
+    step: Q3
+    applies_to: row
+    targets: [K02, K03, K05]
+    guard: {distance: [outside_area, other_building]}
+    when: {existing_fiber: [silica_vis_nir, silica_uv_vis, none]}
+    effect: fit
+    on_unknown: ignore
+    because: "Silica fibers carry NIR and Raman light over long distances (100–300 m cables), so the analyzer can stand away from the process"
+    source: ["S02 p.7", "S01 p.5", "S01 p.15"]
+    tests: [H04]
+
+  - id: L-COMPONENT-RATINGS
+    step: Q3
+    applies_to: row
+    targets: [K01, K02, K03, K04, K05, K06, K07, K08, K09, K10]
+    when: {temperature: [elevated, high]}
+    effect: risk
+    on_unknown: plan_question
+    because: "Temperature, pressure and material ratings of probes are not in the sources; AFS must confirm"
+    source: ["AFS ref §3 'Do not invent' (component ratings)", "AFS Q&A 17.10 (temperature is critical)"]
+    ask_even_if_known: true      # 'hot' is known, the actual temperature, pressure and flow are not
+    ask: {kind: plan, attribute: temperature, text: "What temperature, pressure and flow occur at the measurement point?"}
+    tests: [D07]
+
+  - id: L-GMP
+    step: Q3
+    applies_to: case
+    targets: []
+    when: {domain: [pharma_solid]}
+    effect: plan_question
+    on_unknown: ignore
+    because: "Pharma installations need GMP and cleaning/sterilisation conditions agreed"
+    source: ["AFS Q&A 17.10"]
+    ask: {kind: plan, attribute: gmp, text: "Which GMP, cleaning and sterilisation requirements apply at the feed frame?"}
+    tests: [D01, H01]
+
+  # ======================= Q4 premises and evidence
+  - id: P-CALIBRATION
+    step: Q4
+    applies_to: case
+    targets: []
+    guard: {reuse_calibration: [yes]}
+    when: {formulation_changed: [yes]}
+    effect: premise_not_supported
+    on_unknown: needs_info
+    because: "A change of API or excipients can invalidate a calibration; a matrix-specific calibration must be built and tested"
+    source: ["AFS ref D01 (recommendation and risks)"]
+    ask: {kind: method, attribute: formulation_changed, text: "Which API, excipients and concentration range differ from the calibrated formulation?"}
+    tests: [H01]
+
+  - id: P-COMBO-NOT-FIX
+    step: Q4
+    applies_to: case
+    targets: []
+    when: {add_method_to_keep_calibration: [yes]}
+    effect: premise_not_supported
+    on_unknown: ignore
+    because: "No source shows that adding a method keeps an old calibration valid; a combination is assessed after each single method and its gain is a hypothesis to test"
+    source: ["AFS ref D01 (NIR + Raman)", "AFS ref §5 (combinations)", "S01 p.14–15"]
+    tests: [H01]
+
+  - id: P-SENSITIVITY-NOT-SELECTIVITY
+    step: Q4
+    applies_to: case
+    targets: []
+    when: {justification: [sensitivity_only]}
+    effect: premise_contradicted
+    on_unknown: ignore
+    because: "High sensitivity is not selectivity; fluorimetry is rated high sensitivity, low selectivity"
+    source: ["S01 Table 1 (p.6)", "S01 p.5"]
+    tests: [H03]
+
+  - id: P-APPROVE-WITHOUT-DATA
+    step: Q4
+    applies_to: case
+    targets: []
+    guard: {asks: [approve_concept]}
+    when: {any_needs_info_on_requested: [true]}
+    effect: premise_not_supported
+    on_unknown: ignore
+    because: "The concept cannot be approved: a component is incompatible or decisive facts are missing"
+    source: ["AFS ref §3 'An honest provisional plan is more useful than a final configuration built on missing facts'"]
+    tests: [H04]
+
+  - id: P-EXACT-CONFIG-NOW
+    step: Q4
+    applies_to: case
+    targets: []
+    guard: {asks: [exact_config_now]}
+    when: {target_defined: [no, partial]}
+    effect: premise_not_supported
+    on_unknown: ignore
+    because: "An exact sensor configuration cannot be chosen before the target and the deviation are defined"
+    source: ["AFS ref §3 'Insufficient information can be the right answer'"]
+    tests: [H05]
+
+  - id: P-EVIDENCE-SCOPE
+    step: Q4
+    applies_to: case
+    targets: []
+    guard: {cited_evidence: [research_paper]}
+    when: {intended_use: [clinical_in_vivo, production], own_validation: [no]}
+    effect: premise_contradicted
+    on_unknown: needs_info
+    because: "A proof-of-concept laboratory study is not proof of readiness for live surgery or production (S03: 14 in vitro samples from 7 patients)"
+    source: ["S03 p.1", "S03 p.3", "S03 p.14", "AFS ref §3 'Common mistakes'"]
+    tests: [H06]
+
+  - id: P-CLINICAL-SCOPE
+    step: Q4
+    applies_to: case
+    targets: []
+    when: {intended_use: [clinical_in_vivo]}
+    effect: case_outside_scope
+    on_unknown: ignore
+    because: "Clinical decision use needs in vivo validation on the actual setup; the supplied material is a proof of concept on ex vivo samples"
+    source: ["S03 p.3", "S03 p.14", "AFS ref §3 (decision status: outside the supported scope)"]
+    tests: [H06]
+
+  - id: P-ASSET-NOT-EVIDENCE
+    step: Q4
+    applies_to: case
+    targets: []
+    when: {client_method: [mir, nir, raman, uv_vis, fluorescence]}
+    effect: risk
+    on_unknown: ignore
+    because: "An instrument or cable the client already owns is checked for compatibility; owning it is not evidence of suitability"
+    source: ["AFS ref §3 'Common mistakes' (missing facts filled in as if given)"]
+    note: "team principle (rule E04 of v1); no AFS page states it directly"
+    tests: [H01, H03, H04]
+
+  - id: P-BUSINESS-SOURCE
+    step: Q4
+    applies_to: case
+    targets: []
+    when: {cited_evidence: [business_material]}
+    effect: risk
+    on_unknown: ignore
+    because: "S05 flyer and S06 link are business context, not evidence of technical performance"
+    source: ["AFS ref §4 (S05, S06)"]
+    tests: []
+    untested: "no D/H case cites S05/S06; checked by the citation validator"
+
+  # application evidence: same family in AFS material -> evidence level 'application' (reason to test, not proof)
+  - id: APP-PHARMA-BLEND
+    step: Q4
+    applies_to: row
+    targets: [K03, K05]
+    when: {domain: [pharma_solid], sample_form: [powder], target_kind: [api]}   # 18.10: blend potency is API content, not moisture
+    effect: support_application
+    on_unknown: ignore
+    because: "NIR reflection and Raman are used for blend potency in a tablet press feed frame"
+    source: ["S01 p.14–15"]
+    tests: [D01, H01]
+
+  - id: APP-DAIRY
+    step: Q4
+    applies_to: row
+    targets: [K02, K03]
+    when: {domain: [dairy]}
+    effect: support_application
+    on_unknown: ignore
+    because: "NIR reflection (opaque products) and transmission/transflection (whey, skim milk) are used in-line in dairy"
+    source: ["S01 p.17–18"]
+    tests: [D02, D03, H02]
+
+  - id: APP-BIO-METABOLITES
+    step: Q4
+    applies_to: row
+    targets: [K05]
+    when: {domain: [bioprocess], target_kind: [glucose, lactate, metabolite_other]}
+    effect: support_application
+    on_unknown: ignore
+    because: "Raman gives a molecular fingerprint for glucose, acetate or lactate in the same reactor"
+    source: ["S01 p.16"]
+    tests: [D04, H03]
+
+  - id: APP-BIO-NIR-GLUCOSE
+    step: Q4
+    applies_to: row
+    targets: [K02]
+    when: {domain: [bioprocess], target_kind: [glucose]}
+    effect: support_application
+    on_unknown: ignore
+    because: "NIR tracks major components like glucose or glycerol in the millimolar range"
+    source: ["S01 p.16"]
+    tests: [D04, H03]
+
+  - id: APP-BIO-BIOMASS
+    step: Q4
+    applies_to: row
+    targets: [K08, K06]
+    when: {domain: [bioprocess], target_kind: [biomass]}
+    effect: support_application
+    on_unknown: ignore
+    because: "UV/Vis is a low-cost tool for biomass trends because turbidity correlates with cell density"
+    source: ["S01 p.16"]
+    tests: [D05, H03]
+
+  - id: APP-PETRO-WATER
+    step: Q4
+    applies_to: row
+    targets: [K01]
+    when: {domain: [petroleum], target_kind: [water]}
+    effect: support_application
+    on_unknown: ignore
+    because: "MIR ATR probes are shown for water content in petroleum"
+    source: ["S02 p.13"]
+    tests: [D06, H04]
+
+  - id: APP-EXTRUSION
+    step: Q4
+    applies_to: row
+    targets: [K01, K03]
+    when: {domain: [polymer_melt]}
+    effect: support_application
+    on_unknown: ignore
+    because: "NIR reflection and MIR ATR (diamond cone, PIR fiber) are shown for API in hot polymer extrusion"
+    source: ["S02 p.14"]
+    tests: [D07]
+
+  - id: APP-TISSUE-LAB
+    step: Q4
+    applies_to: row
+    targets: [K01, K10]
+    when: {domain: [tissue], intended_use: [lab_research]}
+    effect: support_application
+    on_unknown: ignore
+    because: "A combined MIR ATR + fluorescence probe separated model tissues in a laboratory study"
+    source: ["S04 p.1", "S04 p.3–4"]
+    tests: [D08]
+
+  # ======================= OUT: status, order, combinations, questions, experiment, citations
+  - id: O-STATUS
+    step: OUT
+    applies_to: case
+    targets: []
+    when: {}
+    effect: cap_provisional
+    on_unknown: ignore
+    because: "outside_scope if any case_outside_scope fired; insufficient_information if case_insufficient fired or every non-excluded candidate is needs_info; otherwise provisional. Never 'final'."
+    source: ["AFS ref §3 (decision status)"]
+    tests: [H01, H02, H03, H04, H05, H06]
+
+  - id: O-ORDER
+    step: OUT
+    applies_to: row
+    targets: []
+    when: {}
+    effect: risk
+    on_unknown: ignore
+    because: "Tie-break by S01 Table 1 columns as in `tie_break:` (trace → sensitivity, complex natural media → selectivity, then cost). Only candidates with evidence (application or physics_only) are recommended; rows no rule supports are not shown. Order: evidence application > analogy > physics_only; fewer risk_high, then fewer risks; lower Table 1 cost (simplest sufficient); catalog row id last. Show at most 3 (team choice)."
+    source: ["AFS Q&A 17.10 ('you don't need a Bentley')", "AFS ref D01 'Choose the simplest configuration that meets them'", "S01 Table 1 (p.6) cost"]
+    tests: [D01, D02, H02]
+
+  - id: O-COMBINATION
+    step: OUT
+    applies_to: combination
+    targets: []
+    when: {combination_listed: [true]}
+    effect: risk
+    on_unknown: ignore
+    because: "Propose a combination only if listed in the materials and both single methods are in the top-3 of the case; its gain is a hypothesis tested against the best single method; sampling location and acquisition timing of both methods must be aligned (same spot for heterogeneous samples)"
+    source: ["S01 p.7–9", "S01 p.8 (synchronisation, same spot)", "AFS Q&A 17.10", "AFS ref §5 (combinations)"]
+    tests: [D01, D08]
+
+  - id: O-QUESTIONS
+    step: OUT
+    applies_to: case
+    targets: []
+    when: {}
+    effect: plan_question
+    on_unknown: ignore
+    because: "Method questions: for each unknown input of a fired or skipped rule, try every value; strength = share of values that change top row, an exclusion or the case status. Strongest first, 5–10 questions in total (Q&A 17.10); plan questions (reference, criteria, range) always, as a separate block."
+    source: ["AFS ref §3 'Clarification questions: first the questions whose answers could change the method or the setup'", "AFS Q&A 17.10 (5–10 questions)"]
+    tests: [H02, H04, H05]
+
+  - id: O-EXPERIMENT
+    step: OUT
+    applies_to: case
+    targets: []
+    when: {}
+    effect: plan_question
+    on_unknown: ignore
+    because: "Step 0 lab screening of a few samples (range, resolution, concentration level); step 1 representative samples or in-line pilot with independent reference (sampling + lab assay; Q&A examples: chromatography, MS); single methods first, then a listed combination; step 2 held-out validation against client criteria; note: after confirmation the sensor may be reduced to a few wavelengths."
+    source: ["AFS ref D01, D02 (feasibility experiment)", "AFS Q&A 17.10", "S01 p.9", "S02 p.15"]
+    tests: [D01, D02, H01, H05, H06]
+
+  - id: O-SPECTRAL-RANGE
+    step: OUT
+    applies_to: row
+    targets: []
+    when: {}
+    effect: risk
+    on_unknown: ignore
+    because: "A nominal method range is not the range of an instrument, fiber or probe; for Raman state excitation (nm) and shift (cm-1) separately; µm = 10000 / cm-1"
+    source: ["AFS ref §3 'Spectral range'", "AFS ref §5", "S01 p.11"]
+    tests: [D01, D02]
+
+  - id: O-CITE
+    step: OUT
+    applies_to: case
+    targets: []
+    when: {}
+    effect: risk
+    on_unknown: ignore
+    because: "Every reason carries its source; an AFS page is enough if it directly supports the claim at the same scope (lab/process/clinic); external sources need link and quote"
+    source: ["AFS ref §4 'How to cite'", "AFS Q&A 17.10"]
+    tests: [H06, D08]

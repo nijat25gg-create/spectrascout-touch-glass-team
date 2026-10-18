@@ -1,0 +1,30 @@
+{
+  "additionalProperties": false,
+  "description": "C2 · Semyon -> Nidzhat · call llm.extract(...)",
+  "properties": {
+    "case_id": {
+      "title": "Case Id",
+      "type": "string"
+    },
+    "text": {
+      "title": "Text",
+      "type": "string"
+    },
+    "language": {
+      "enum": [
+        "de",
+        "en"
+      ],
+      "title": "Language",
+      "type": "string"
+    }
+  },
+  "required": [
+    "case_id",
+    "text",
+    "language"
+  ],
+  "title": "ExtractInput",
+  "type": "object",
+  "$id": "spectrascout/0.2/C2"
+}

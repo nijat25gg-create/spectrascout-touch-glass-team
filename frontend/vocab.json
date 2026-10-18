@@ -1,0 +1,762 @@
+{
+ "rules": {
+  "P-TARGET-UNDEFINED": {
+   "because": "The target substance or quality variable is not named, so no method can be justified yet",
+   "source": [
+    "AFS ref §3 'Insufficient information can be the right answer'",
+    "S01 p.3 (samples of incompletely known composition: test several approaches to select the method)"
+   ],
+   "effect": "case_insufficient"
+  },
+  "T-TARGET-PARTIAL": {
+   "because": "Targets are mentioned but not defined as separate variables; each needs its own method check and reference",
+   "source": [
+    "AFS ref D05 ('target variables still need definition')",
+    "AFS ref §3 (clarification questions first)"
+   ],
+   "effect": "clarify"
+  },
+  "T-SPLIT-TARGETS": {
+   "because": "Different targets can need different methods; each is assessed on its own",
+   "source": [
+    "AFS ref D05 'target variables still need definition'",
+    "S01 p.16"
+   ],
+   "effect": "split_case"
+  },
+  "T-SPLIT-STREAMS": {
+   "because": "Streams with different optical behaviour need their own interface choice",
+   "source": [
+    "S01 p.17–18"
+   ],
+   "effect": "split_case"
+  },
+  "T-NO-REFERENCE": {
+   "because": "A quantitative result needs an independent reference to build and test a calibration",
+   "source": [
+    "AFS ref §3 (feasibility plan: independent reference measurements)"
+   ],
+   "effect": "cap_provisional"
+  },
+  "T-REFERENCE-QUALITY": {
+   "because": "A reference exists, but its uncertainty and sampling time decide what error the spectroscopic model can reach",
+   "source": [
+    "AFS ref D01 (clarification: 'Which assay, uncertainty and sampling time provide the reference concentrations?')",
+    "AFS ref D02"
+   ],
+   "effect": "plan_question"
+  },
+  "T-PLAN-MINIMUM": {
+   "because": "Go/no-go needs client-agreed acceptance criteria and concentration range; none are invented",
+   "source": [
+    "AFS ref D01 'Decision basis'",
+    "AFS Q&A 17.10 (lab screening: range, resolution, concentration level)"
+   ],
+   "effect": "plan_question"
+  },
+  "P-NO-FLUOROPHORE": {
+   "because": "Fluorescence needs a defined fluorescent species or a justified indicator; most chemicals do not fluoresce",
+   "source": [
+    "S01 p.5",
+    "AFS ref §5 (fluorescence row)"
+   ],
+   "effect": "exclude"
+  },
+  "S-FLUOR-INDICATOR": {
+   "because": "An indicator is indirect: the link to the requested variable must be shown against a reference",
+   "source": [
+    "AFS ref §5 ('a justified indicator')",
+    "S01 p.16 (NADH, tryptophan, riboflavin as fluorescence targets)"
+   ],
+   "effect": "risk"
+  },
+  "S-UV-NO-CHROMOPHORE": {
+   "because": "UV-Vis needs a defined absorption of the target (biomass trends use turbidity instead, S01 p.16)",
+   "source": [
+    "S01 p.5",
+    "AFS ref §5 (UV-Vis row)"
+   ],
+   "effect": "exclude"
+  },
+  "S-UV-OVERLAP": {
+   "because": "UV spectra overlap strongly in real mixtures; chemometrics is required",
+   "source": [
+    "S01 p.5"
+   ],
+   "effect": "risk"
+  },
+  "S-WATER": {
+   "because": "Water has -OH bands: overtones in NIR, strong fundamental absorption in MIR",
+   "source": [
+    "S01 p.10",
+    "S01 p.16 (strong water absorption in IR)",
+    "S02 p.13"
+   ],
+   "effect": "support_physics"
+  },
+  "S-VIBRATIONAL-MAJOR": {
+   "because": "NIR and MIR carry composition information (-OH, -NH, -CH groups; MIR fingerprint bands)",
+   "source": [
+    "S01 p.4–5",
+    "S01 p.9–10"
+   ],
+   "effect": "support_physics"
+  },
+  "S-RAMAN-COMPOSITION": {
+   "because": "Raman gives vibrational composition information (molecular backbone, symmetric groups) for organic components",
+   "source": [
+    "S01 p.11–12",
+    "S01 p.14–15",
+    "S01 p.16"
+   ],
+   "effect": "support_physics"
+  },
+  "S-TRACE-NIR": {
+   "because": "NIR may lack sensitivity for components below about 0.1 %",
+   "source": [
+    "S01 p.16"
+   ],
+   "effect": "risk_high"
+  },
+  "S-AQUEOUS-IR": {
+   "because": "Water absorbs strongly in the infrared; Raman has low water absorbance in comparison",
+   "source": [
+    "S01 p.16"
+   ],
+   "effect": "risk"
+  },
+  "S-AQUEOUS-NIR": {
+   "because": "Water absorbs in the infrared; the materials support NIR in bioprocess only for major components such as glucose or glycerol",
+   "source": [
+    "S01 p.16"
+   ],
+   "effect": "risk"
+  },
+  "S-AQUEOUS-RAMAN": {
+   "because": "Raman suits aqueous media (low water absorbance compared to IR) for metabolites such as glucose, acetate, lactate",
+   "source": [
+    "S01 p.16"
+   ],
+   "effect": "support_physics"
+  },
+  "S-RAMAN-FLUOR-BG": {
+   "because": "Fluorescence of many organic samples can swamp the weak Raman signal",
+   "source": [
+    "S01 p.11",
+    "AFS ref D01 ('Check fluorescence background and signal quality')"
+   ],
+   "effect": "risk_high"
+  },
+  "S-OD-NOT-VIABLE": {
+   "because": "Turbidity correlates with cell density, but optical density is not a viable cell count",
+   "source": [
+    "S01 p.16",
+    "AFS ref §5 (UV-Vis row)"
+   ],
+   "effect": "risk"
+  },
+  "I-SAMPLE-TYPE": {
+   "because": "This sample type is not listed for this technique in Table 1 (catalog mapping, see catalog notes); not recommended unless AFS confirms the geometry",
+   "source": [
+    "S01 Table 1 (p.6)"
+   ],
+   "effect": "needs_info"
+  },
+  "I-GAS-OUT-OF-SCOPE": {
+   "because": "No probe in the supplied catalog is a gas interface (Table 1 lists liquid, paste, powder and solid samples)",
+   "source": [
+    "S01 Table 1 (p.6)",
+    "AFS ref §3 (decision status: outside the supported scope)"
+   ],
+   "effect": "case_outside_scope"
+  },
+  "I-OPAQUE-TRANSMISSION": {
+   "because": "In opaque or thick media light cannot pass the path length; transmission saturates or fails",
+   "source": [
+    "S01 p.16",
+    "S01 p.18"
+   ],
+   "effect": "needs_info"
+  },
+  "I-OPAQUE-REFLECTION": {
+   "because": "Diffuse reflection is used for opaque or concentrated dairy products",
+   "source": [
+    "S01 p.17"
+   ],
+   "effect": "fit"
+  },
+  "I-CLEAR-TRANSMISSION": {
+   "because": "Transmission/transflection with 1–10 mm path is preferred for clear liquids",
+   "source": [
+    "S01 p.16",
+    "S01 p.18"
+   ],
+   "effect": "fit"
+  },
+  "I-CLEAR-REFLECTION": {
+   "because": "Reflection can be less representative for clear liquids",
+   "source": [
+    "S01 p.18"
+   ],
+   "effect": "risk"
+  },
+  "I-OD-VARIES": {
+   "because": "Optical density changes: compare transmission, transflection and reflection on real samples before choosing",
+   "source": [
+    "S01 p.18 (transflection can cover low- and high-fat products)",
+    "S01 p.16"
+   ],
+   "effect": "risk"
+  },
+  "I-UV-HIGH-OD": {
+   "because": "UV-ATR uses a micrometre evanescent path and works in highly scattering or dark fluids",
+   "source": [
+    "S01 p.16"
+   ],
+   "effect": "fit"
+  },
+  "I-ATR-SURFACE": {
+   "because": "ATR probes only a few micrometres of the surface layer; check that this represents the sample",
+   "source": [
+    "S01 p.13",
+    "S01 Table 1 (p.6)"
+   ],
+   "effect": "risk"
+  },
+  "I-FOULING-CONTACT": {
+   "because": "Deposits on a contact window change the signal; cleaning and access must be agreed",
+   "source": [
+    "AFS ref §5 (MIR: contact, fouling)",
+    "AFS ref D07, D02"
+   ],
+   "effect": "risk"
+  },
+  "I-PHYSICAL-VARIATION": {
+   "because": "Temperature, texture, particle size and scattering changes can mimic composition changes; separate them in the experiment",
+   "source": [
+    "S01 p.17",
+    "AFS ref D02 (risks)",
+    "AFS ref D01 (risks: physical variation of the powder)"
+   ],
+   "effect": "risk"
+  },
+  "P-FIBER-RANGE": {
+   "because": "The fiber does not transmit the method's spectral range (e.g. silica ≤2400 nm, MIR needs 2.5–25 µm)",
+   "source": [
+    "S02 p.6",
+    "S01 p.9"
+   ],
+   "effect": "exclude_config"
+  },
+  "L-FIBER-PARTIAL": {
+   "because": "The fiber covers only part of the nominal range; state only the usable range of the actual components",
+   "source": [
+    "S02 p.6",
+    "AFS ref §3 'Spectral range'"
+   ],
+   "effect": "risk"
+  },
+  "L-LINK-LENGTH-MIR": {
+   "because": "Materials show 100–300 m silica Vis-NIR cables but only 2 m example IR fiber cables; a long IR link needs AFS confirmation of length and routing",
+   "source": [
+    "S02 p.7 (100–300 m silica cables)",
+    "S02 p.9 (PIR, HWG 2 m)",
+    "AFS ref §3 'Do not invent' (fiber lengths)"
+   ],
+   "effect": "needs_info"
+  },
+  "L-REMOTE-SILICA": {
+   "because": "Silica fibers carry NIR and Raman light over long distances (100–300 m cables), so the analyzer can stand away from the process",
+   "source": [
+    "S02 p.7",
+    "S01 p.5",
+    "S01 p.15"
+   ],
+   "effect": "fit"
+  },
+  "L-COMPONENT-RATINGS": {
+   "because": "Temperature, pressure and material ratings of probes are not in the sources; AFS must confirm",
+   "source": [
+    "AFS ref §3 'Do not invent' (component ratings)",
+    "AFS Q&A 17.10 (temperature is critical)"
+   ],
+   "effect": "risk"
+  },
+  "L-GMP": {
+   "because": "Pharma installations need GMP and cleaning/sterilisation conditions agreed",
+   "source": [
+    "AFS Q&A 17.10"
+   ],
+   "effect": "plan_question"
+  },
+  "P-CALIBRATION": {
+   "because": "A change of API or excipients can invalidate a calibration; a matrix-specific calibration must be built and tested",
+   "source": [
+    "AFS ref D01 (recommendation and risks)"
+   ],
+   "effect": "premise_not_supported"
+  },
+  "P-COMBO-NOT-FIX": {
+   "because": "No source shows that adding a method keeps an old calibration valid; a combination is assessed after each single method and its gain is a hypothesis to test",
+   "source": [
+    "AFS ref D01 (NIR + Raman)",
+    "AFS ref §5 (combinations)",
+    "S01 p.14–15"
+   ],
+   "effect": "premise_not_supported"
+  },
+  "P-SENSITIVITY-NOT-SELECTIVITY": {
+   "because": "High sensitivity is not selectivity; fluorimetry is rated high sensitivity, low selectivity",
+   "source": [
+    "S01 Table 1 (p.6)",
+    "S01 p.5"
+   ],
+   "effect": "premise_contradicted"
+  },
+  "P-APPROVE-WITHOUT-DATA": {
+   "because": "The concept cannot be approved: a component is incompatible or decisive facts are missing",
+   "source": [
+    "AFS ref §3 'An honest provisional plan is more useful than a final configuration built on missing facts'"
+   ],
+   "effect": "premise_not_supported"
+  },
+  "P-EXACT-CONFIG-NOW": {
+   "because": "An exact sensor configuration cannot be chosen before the target and the deviation are defined",
+   "source": [
+    "AFS ref §3 'Insufficient information can be the right answer'"
+   ],
+   "effect": "premise_not_supported"
+  },
+  "P-EVIDENCE-SCOPE": {
+   "because": "A proof-of-concept laboratory study is not proof of readiness for live surgery or production (S03: 14 in vitro samples from 7 patients)",
+   "source": [
+    "S03 p.1",
+    "S03 p.3",
+    "S03 p.14",
+    "AFS ref §3 'Common mistakes'"
+   ],
+   "effect": "premise_contradicted"
+  },
+  "P-CLINICAL-SCOPE": {
+   "because": "Clinical decision use needs in vivo validation on the actual setup; the supplied material is a proof of concept on ex vivo samples",
+   "source": [
+    "S03 p.3",
+    "S03 p.14",
+    "AFS ref §3 (decision status: outside the supported scope)"
+   ],
+   "effect": "case_outside_scope"
+  },
+  "P-ASSET-NOT-EVIDENCE": {
+   "because": "An instrument or cable the client already owns is checked for compatibility; owning it is not evidence of suitability",
+   "source": [
+    "AFS ref §3 'Common mistakes' (missing facts filled in as if given)"
+   ],
+   "effect": "risk"
+  },
+  "P-BUSINESS-SOURCE": {
+   "because": "S05 flyer and S06 link are business context, not evidence of technical performance",
+   "source": [
+    "AFS ref §4 (S05, S06)"
+   ],
+   "effect": "risk"
+  },
+  "APP-PHARMA-BLEND": {
+   "because": "NIR reflection and Raman are used for blend potency in a tablet press feed frame",
+   "source": [
+    "S01 p.14–15"
+   ],
+   "effect": "support_application"
+  },
+  "APP-DAIRY": {
+   "because": "NIR reflection (opaque products) and transmission/transflection (whey, skim milk) are used in-line in dairy",
+   "source": [
+    "S01 p.17–18"
+   ],
+   "effect": "support_application"
+  },
+  "APP-BIO-METABOLITES": {
+   "because": "Raman gives a molecular fingerprint for glucose, acetate or lactate in the same reactor",
+   "source": [
+    "S01 p.16"
+   ],
+   "effect": "support_application"
+  },
+  "APP-BIO-NIR-GLUCOSE": {
+   "because": "NIR tracks major components like glucose or glycerol in the millimolar range",
+   "source": [
+    "S01 p.16"
+   ],
+   "effect": "support_application"
+  },
+  "APP-BIO-BIOMASS": {
+   "because": "UV/Vis is a low-cost tool for biomass trends because turbidity correlates with cell density",
+   "source": [
+    "S01 p.16"
+   ],
+   "effect": "support_application"
+  },
+  "APP-PETRO-WATER": {
+   "because": "MIR ATR probes are shown for water content in petroleum",
+   "source": [
+    "S02 p.13"
+   ],
+   "effect": "support_application"
+  },
+  "APP-EXTRUSION": {
+   "because": "NIR reflection and MIR ATR (diamond cone, PIR fiber) are shown for API in hot polymer extrusion",
+   "source": [
+    "S02 p.14"
+   ],
+   "effect": "support_application"
+  },
+  "APP-TISSUE-LAB": {
+   "because": "A combined MIR ATR + fluorescence probe separated model tissues in a laboratory study",
+   "source": [
+    "S04 p.1",
+    "S04 p.3–4"
+   ],
+   "effect": "support_application"
+  },
+  "O-STATUS": {
+   "because": "outside_scope if any case_outside_scope fired; insufficient_information if case_insufficient fired or every non-excluded candidate is needs_info; otherwise provisional. Never 'final'.",
+   "source": [
+    "AFS ref §3 (decision status)"
+   ],
+   "effect": "cap_provisional"
+  },
+  "O-ORDER": {
+   "because": "Tie-break by S01 Table 1 columns as in `tie_break:` (trace → sensitivity, complex natural media → selectivity, then cost). Only candidates with evidence (application or physics_only) are recommended; rows no rule supports are not shown. Order: evidence application > analogy > physics_only; fewer risk_high, then fewer risks; lower Table 1 cost (simplest sufficient); catalog row id last. Show at most 3 (team choice).",
+   "source": [
+    "AFS Q&A 17.10 ('you don't need a Bentley')",
+    "AFS ref D01 'Choose the simplest configuration that meets them'",
+    "S01 Table 1 (p.6) cost"
+   ],
+   "effect": "risk"
+  },
+  "O-COMBINATION": {
+   "because": "Propose a combination only if listed in the materials and both single methods are in the top-3 of the case; its gain is a hypothesis tested against the best single method; sampling location and acquisition timing of both methods must be aligned (same spot for heterogeneous samples)",
+   "source": [
+    "S01 p.7–9",
+    "S01 p.8 (synchronisation, same spot)",
+    "AFS Q&A 17.10",
+    "AFS ref §5 (combinations)"
+   ],
+   "effect": "risk"
+  },
+  "O-QUESTIONS": {
+   "because": "Method questions: for each unknown input of a fired or skipped rule, try every value; strength = share of values that change top row, an exclusion or the case status. Strongest first, 5–10 questions in total (Q&A 17.10); plan questions (reference, criteria, range) always, as a separate block.",
+   "source": [
+    "AFS ref §3 'Clarification questions: first the questions whose answers could change the method or the setup'",
+    "AFS Q&A 17.10 (5–10 questions)"
+   ],
+   "effect": "plan_question"
+  },
+  "O-EXPERIMENT": {
+   "because": "Step 0 lab screening of a few samples (range, resolution, concentration level); step 1 representative samples or in-line pilot with independent reference (sampling + lab assay; Q&A examples: chromatography, MS); single methods first, then a listed combination; step 2 held-out validation against client criteria; note: after confirmation the sensor may be reduced to a few wavelengths.",
+   "source": [
+    "AFS ref D01, D02 (feasibility experiment)",
+    "AFS Q&A 17.10",
+    "S01 p.9",
+    "S02 p.15"
+   ],
+   "effect": "plan_question"
+  },
+  "O-SPECTRAL-RANGE": {
+   "because": "A nominal method range is not the range of an instrument, fiber or probe; for Raman state excitation (nm) and shift (cm-1) separately; µm = 10000 / cm-1",
+   "source": [
+    "AFS ref §3 'Spectral range'",
+    "AFS ref §5",
+    "S01 p.11"
+   ],
+   "effect": "risk"
+  },
+  "O-CITE": {
+   "because": "Every reason carries its source; an AFS page is enough if it directly supports the claim at the same scope (lab/process/clinic); external sources need link and quote",
+   "source": [
+    "AFS ref §4 'How to cite'",
+    "AFS Q&A 17.10"
+   ],
+   "effect": "risk"
+  }
+ },
+ "_source": "rules/gates.yaml (attributes, questions), generated by frontend/tools/make_vocab.py",
+ "rules_version": "gates-v2-draft",
+ "attributes": {
+  "target_defined": {
+   "values": [
+    "yes",
+    "partial",
+    "no"
+   ],
+   "kind": "method"
+  },
+  "target_kind": {
+   "values": [
+    "api",
+    "fat",
+    "protein",
+    "glucose",
+    "lactate",
+    "metabolite_other",
+    "biomass",
+    "water",
+    "contaminant",
+    "tissue_type",
+    "other"
+   ],
+   "kind": "method"
+  },
+  "target_class": {
+   "values": [
+    "major_component",
+    "minor_component",
+    "trace"
+   ],
+   "kind": "method"
+  },
+  "targets_count": {
+   "values": [
+    "1",
+    "2plus"
+   ],
+   "kind": "method"
+  },
+  "quantitative": {
+   "values": [
+    "yes",
+    "no"
+   ],
+   "kind": "method"
+  },
+  "reference_method": {
+   "values": [
+    "available",
+    "none"
+   ],
+   "kind": "plan"
+  },
+  "reference_uncertainty": {
+   "values": [
+    "given"
+   ],
+   "kind": "plan"
+  },
+  "acceptance_criteria": {
+   "values": [
+    "given"
+   ],
+   "kind": "plan"
+  },
+  "concentration_range": {
+   "values": [
+    "given"
+   ],
+   "kind": "plan"
+  },
+  "intended_use": {
+   "values": [
+    "lab_research",
+    "pilot",
+    "production",
+    "clinical_in_vivo"
+   ],
+   "kind": "method"
+  },
+  "domain": {
+   "values": [
+    "pharma_solid",
+    "dairy",
+    "bioprocess",
+    "petroleum",
+    "polymer_melt",
+    "tissue",
+    "other"
+   ],
+   "kind": "method"
+  },
+  "sample_form": {
+   "values": [
+    "powder",
+    "liquid",
+    "paste_melt",
+    "soft_solid",
+    "solid",
+    "gas"
+   ],
+   "kind": "method"
+  },
+  "optical_density": {
+   "values": [
+    "clear",
+    "turbid",
+    "opaque",
+    "varies"
+   ],
+   "kind": "method"
+  },
+  "matrix_aqueous": {
+   "values": [
+    "yes",
+    "no"
+   ],
+   "kind": "method"
+  },
+  "heterogeneous": {
+   "values": [
+    "yes",
+    "no"
+   ],
+   "kind": "method"
+  },
+  "fluorophore": {
+   "values": [
+    "named",
+    "indicator_justified",
+    "not_identified"
+   ],
+   "kind": "method"
+  },
+  "chromophore": {
+   "values": [
+    "yes",
+    "no"
+   ],
+   "kind": "lab_check"
+  },
+  "matrix_fluorescence": {
+   "values": [
+    "high",
+    "low"
+   ],
+   "kind": "lab_check"
+  },
+  "formulation_changed": {
+   "values": [
+    "yes",
+    "no"
+   ],
+   "kind": "method"
+  },
+  "streams": {
+   "values": [
+    "1",
+    "2plus"
+   ],
+   "kind": "method"
+  },
+  "physical_variation": {
+   "values": [
+    "yes",
+    "no"
+   ],
+   "kind": "plan"
+  },
+  "temperature": {
+   "values": [
+    "ambient",
+    "elevated",
+    "high"
+   ],
+   "kind": "plan"
+  },
+  "fouling": {
+   "values": [
+    "low",
+    "high"
+   ],
+   "kind": "plan"
+  },
+  "distance": {
+   "values": [
+    "at_process",
+    "outside_area",
+    "other_building"
+   ],
+   "kind": "method"
+  },
+  "link_confirmed": {
+   "values": [
+    "yes",
+    "no"
+   ],
+   "kind": "method"
+  },
+  "existing_fiber": {
+   "values": [
+    "silica_uv_vis",
+    "silica_vis_nir",
+    "chalcogenide",
+    "polycrystalline",
+    "hollow_waveguide",
+    "fluoride",
+    "none"
+   ],
+   "kind": "method"
+  },
+  "gmp": {
+   "values": [
+    "yes",
+    "no"
+   ],
+   "kind": "plan"
+  },
+  "client_method": {
+   "values": [
+    "mir",
+    "nir",
+    "raman",
+    "uv_vis",
+    "fluorescence",
+    "none"
+   ],
+   "kind": "never"
+  },
+  "reuse_calibration": {
+   "values": [
+    "yes",
+    "no"
+   ],
+   "kind": "never"
+  },
+  "add_method_to_keep_calibration": {
+   "values": [
+    "yes",
+    "no"
+   ],
+   "kind": "never"
+  },
+  "justification": {
+   "values": [
+    "sensitivity_only",
+    "physical_basis",
+    "none_given"
+   ],
+   "kind": "never"
+  },
+  "asks": {
+   "values": [
+    "assessment",
+    "approve_concept",
+    "exact_config_now",
+    "readiness_proof"
+   ],
+   "kind": "never"
+  },
+  "cited_evidence": {
+   "values": [
+    "research_paper",
+    "afs_application",
+    "business_material",
+    "none"
+   ],
+   "kind": "never"
+  },
+  "own_validation": {
+   "values": [
+    "yes",
+    "no"
+   ],
+   "kind": "plan"
+  }
+ }
+}

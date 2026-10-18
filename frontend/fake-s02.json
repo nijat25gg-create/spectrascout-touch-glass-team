@@ -1,0 +1,1247 @@
+{
+  "schema_version": "0.2",
+  "case_id": "synthetic-S02",
+  "language": "en",
+  "summary": "The customer wants to monitor ethanol during beer fermentation with MIR ATR and asks AFS to approve an analyzer in a control room in another building, based on a brochure claim of a 50 m fiber.",
+  "parameters": [
+    {
+      "id": "measurand",
+      "value": "ethanol",
+      "status": "known",
+      "evidence_quote": "monitor ethanol",
+      "source": "customer_text"
+    },
+    {
+      "id": "measurand_type",
+      "value": "organic compound (alcohol)",
+      "status": "assumed",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "matrix",
+      "value": "beer fermentation",
+      "status": "known",
+      "evidence_quote": "beer fermentation",
+      "source": "customer_text"
+    },
+    {
+      "id": "phase",
+      "value": "liquid",
+      "status": "assumed",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "water_content",
+      "value": "high (aqueous fermentation medium)",
+      "status": "assumed",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "concentration_range",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "required_accuracy",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "temperature",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "pressure",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "aggressiveness_fouling",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "installation_point",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "distance_to_instrument",
+      "value": "control room in another building",
+      "status": "known",
+      "evidence_quote": "our control room in another building",
+      "source": "customer_text"
+    },
+    {
+      "id": "measurement_frequency",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "reference_method",
+      "value": "none yet",
+      "status": "known",
+      "evidence_quote": "We do not have samples with reference values yet",
+      "source": "customer_text"
+    },
+    {
+      "id": "samples_available",
+      "value": "no samples with reference values yet",
+      "status": "known",
+      "evidence_quote": "We do not have samples with reference values yet",
+      "source": "customer_text"
+    },
+    {
+      "id": "regulatory",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    }
+  ],
+  "features": {
+    "phase": {
+      "value": "liquid",
+      "status": "assumed"
+    },
+    "water_level": {
+      "value": "high",
+      "status": "assumed"
+    },
+    "analyte_type": {
+      "value": "organic_compound",
+      "status": "assumed"
+    },
+    "concentration_level": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "accuracy_need": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "temperature_class": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "pressure_class": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "fouling_risk": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "distance_class": {
+      "value": "long",
+      "status": "assumed"
+    },
+    "fluorescence_risk": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "turbidity": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "hazardous_area": {
+      "value": "unknown",
+      "status": "unknown"
+    }
+  },
+  "questions": [
+    {
+      "id": "q1",
+      "text": "Is MIR ATR a fixed requirement, or is the goal a reliable ethanol reading in the control room? Which data sheet, fiber type and manufacturer does the 50 m claim come from, and do you already own an MIR analyzer or fiber?",
+      "priority": "high",
+      "why": "If the goal is the ethanol reading and not MIR itself, a method with long silica fibers such as Raman stays open. If MIR is fixed, the analyzer has to move next to the fermenter.",
+      "parameter_id": "measurand",
+      "feature": null,
+      "attribute": null,
+      "answer": null
+    },
+    {
+      "id": "q2",
+      "text": "What is the real cable route from the measurement point to the control room, and could the analyzer stand next to the fermenter with the result sent digitally to the control room?",
+      "priority": "high",
+      "why": "A short distance allows an MIR analyzer at the tank. A long distance restricts the choice to methods with long silica fibers.",
+      "parameter_id": "distance_to_instrument",
+      "feature": "distance_class",
+      "attribute": null,
+      "answer": null
+    },
+    {
+      "id": "q3",
+      "text": "Where would the probe go (fermenter wall, bypass loop, outlet line), is there a sampling port next to it, and are there gas bubbles, yeast or solids at that point?",
+      "priority": "high",
+      "why": "The measurement point decides between an immersion probe and optics through a window, and whether reference samples match the measured volume.",
+      "parameter_id": "installation_point",
+      "feature": null,
+      "attribute": null,
+      "answer": null
+    },
+    {
+      "id": "q4",
+      "text": "What ethanol concentration range, accuracy and response time must the measurement meet?",
+      "priority": "medium",
+      "why": "The range and accuracy decide whether a weak signal (Raman) or water-masked signal (NIR, MIR) is sufficient and how strict the success criterion must be.",
+      "parameter_id": "required_accuracy",
+      "feature": "accuracy_need",
+      "attribute": "acceptance_criteria",
+      "answer": null
+    },
+    {
+      "id": "q5",
+      "text": "Can deposits form at the probe window, and how is the line cleaned (CIP, temperature, chemicals)?",
+      "priority": "medium",
+      "why": "Fouling and cleaning chemicals can change the probe type, window material and the choice between contact and non-contact optics.",
+      "parameter_id": "aggressiveness_fouling",
+      "feature": "fouling_risk",
+      "attribute": "fouling",
+      "answer": null
+    },
+    {
+      "id": "q6",
+      "text": "What temperature, pressure and flow occur at the measurement point?",
+      "priority": "low",
+      "why": "Temperature and pressure limit probe, fiber and window choice, and temperature changes the spectra that the calibration must cover.",
+      "parameter_id": "temperature",
+      "feature": "temperature_class",
+      "attribute": "temperature",
+      "answer": null
+    }
+  ],
+  "methods": {
+    "ranked": [
+      {
+        "rank": 1,
+        "method": "raman",
+        "mode": "raman_backscatter",
+        "spectral_range": "excitation 785 nm (also 532 / 1064 nm)",
+        "fiber": "silica, long distances possible",
+        "probe": "immersion probe with sapphire window or non-contact optics",
+        "score_total": 6.5,
+        "scores": [
+          {
+            "criterion": "Analyte",
+            "score": 2.0,
+            "rule_id": "R-ORGANIC",
+            "note": "Organic compounds have specific vibrational bands"
+          },
+          {
+            "criterion": "Matrix water",
+            "score": 2.0,
+            "rule_id": "R-WATER-HIGH",
+            "note": "Water absorbs strongly in MIR and NIR, but is a weak Raman scatterer"
+          },
+          {
+            "criterion": "Sample phase",
+            "score": 1.5,
+            "rule_id": "R-LIQUID",
+            "note": "Liquids suit ATR and immersion probes"
+          },
+          {
+            "criterion": "Fiber length and installation",
+            "score": 1.0,
+            "rule_id": "R-FIBER-SILICA",
+            "note": "Silica fibers allow long distances"
+          }
+        ],
+        "confidence": "medium",
+        "claims": [
+          {
+            "claim": "Raman suits aqueous media because water absorbs little compared with IR. A fermentation medium is such a medium, so the ethanol bands would be seen through an immersion probe or non-contact optics.",
+            "kb_card": "card-raman",
+            "source": "S01 p.16"
+          },
+          {
+            "claim": "An AFS application exists for Raman on fermentation metabolites (glucose, acetate, lactate) in the same reactor, giving a molecular fingerprint.",
+            "kb_card": "card-raman",
+            "source": "S01 p.16"
+          },
+          {
+            "claim": "Ethanol is not among the analytes named in that application, so ethanol in beer fermentation is plausible but not yet shown in an AFS application.",
+            "kb_card": "card-raman",
+            "source": null
+          },
+          {
+            "claim": "Silica fibers allow the analyzer to sit far from the process, which fits a control room in another building. The actual cable length and fiber attenuation for that route are not yet known.",
+            "kb_card": "card-raman",
+            "source": null
+          },
+          {
+            "claim": "Fluorescence of the beer matrix can swamp the Raman signal. This must be checked on representative samples first. A longer excitation wavelength reduces the risk.",
+            "kb_card": "card-raman",
+            "source": null
+          },
+          {
+            "claim": "The Raman signal is intrinsically weak. Whether it is sufficient for ethanol cannot be said, because the concentration range is still unknown.",
+            "kb_card": "card-raman",
+            "source": null
+          }
+        ]
+      }
+    ],
+    "rejected": [
+      {
+        "method": "uv_vis",
+        "reason": "Low total score (1.5), no rule speaks for this method",
+        "rule_id": null,
+        "blocker": false
+      },
+      {
+        "method": "nir",
+        "reason": "Low total score (2.5). Main issue: Water absorbs strongly in MIR and NIR, but is a weak Raman scatterer",
+        "rule_id": "R-WATER-HIGH",
+        "blocker": false
+      },
+      {
+        "method": "mir",
+        "reason": "MIR fibers are only a few meters long, analyzer must be close to the process",
+        "rule_id": "R-MIR-FIBER-LENGTH",
+        "blocker": true
+      },
+      {
+        "method": "fluorescence",
+        "reason": "Low total score (0), no rule speaks for this method",
+        "rule_id": null,
+        "blocker": false
+      },
+      {
+        "method": "scattering",
+        "reason": "Scattering sees particles, not chemical composition",
+        "rule_id": "R-SCATTER-NOT-COMPOSITION",
+        "blocker": true
+      }
+    ]
+  },
+  "experiment": {
+    "goal": "Check on static samples whether ethanol in beer fermentation can be quantified with a fiber-optic Raman probe, and compare with MIR ATR as a check of the customer's premise (fiber length and aqueous medium), before any in-line campaign.",
+    "sample_count": "ca. 100 samples: ca. 40 designed spiked samples, 2 calibration brews with ca. 15 time points each, and 2 independent validation brews with ca. 15 time points each.",
+    "sample_design": "Ethanol and sugar change in opposite directions during fermentation, so real brew samples alone give a correlated calibration. Add designed samples: beer base and wort spiked with ethanol and sugar in a crossed design, so that ethanol varies independently of residual sugar. Cover an ethanol range from zero to above the expected final value (range to be confirmed by the customer). Vary temperature over the expected fermentation range, yeast and turbidity level, dissolved CO2, and recipe. Add brew samples over the whole fermentation time as realistic calibration and validation batches.",
+    "interferents": [
+      "Residual sugar and other extract components (correlate with ethanol)",
+      "Yeast cells and turbidity",
+      "CO2 bubbles",
+      "Temperature",
+      "Colour and fluorescence of the beer matrix (Raman)",
+      "Differences between recipes and brews"
+    ],
+    "reference_method": "No reference method exists yet. Options for the customer: distillation with density measurement, GC-FID, or HPLC with refractive-index detection. Agree the method, its uncertainty and the sampling time before starting.",
+    "methods_compared": [
+      "raman",
+      "mir"
+    ],
+    "steps": [
+      "Step 1: Check on representative samples (several recipes and fermentation stages) whether fluorescence background swamps the Raman signal, with 785 nm and, if available, 1064 nm excitation.",
+      "Step 2: Agree the reference method and its uncertainty, then take the reference values for all samples.",
+      "Step 3: Measure the designed spiked samples with a Raman immersion probe or non-contact optics on a silica fiber, and in parallel with MIR ATR.",
+      "Step 4: Check of the customer's premise: measure the same samples with MIR ATR once with a short fiber and once with the 50 m fiber from the brochure (if the customer owns one), and compare signal level and noise.",
+      "Step 5: Build calibrations on at least two calibration batches (designed samples plus 2 calibration brews), per method.",
+      "Step 6: Validate on independent brews that were not used for calibration. Report bias, RMSEP and any dependence on turbidity, temperature and CO2.",
+      "Step 7: Only after a passed lab study, plan an in-line trial at the fermenter (measurement point, sampling port, cleaning) and the analyzer location."
+    ],
+    "success_criterion": "On the independent validation brews, bias against the chosen reference at most 0.1 % absolute ethanol and RMSEP at most 0.2 % absolute over the full range, with no systematic dependence on temperature or turbidity. These limits are a proposal and are replaced by the customer's accuracy requirement once it is known.",
+    "duration_estimate": "ca. 6–8 weeks, driven by the fermentation time of the calibration and validation brews. An in-line campaign comes afterwards."
+  },
+  "risks": [
+    {
+      "text": "The MIR ATR concept with the analyzer in a control room in another building cannot be approved on the brochure claim. Decisive facts are missing: the real cable route, the fiber type, and the ethanol range. Owning an analyzer or cable, or a 50 m figure from a flyer, is not evidence that it works for this process. What would still meet the goal: place the MIR analyzer next to the fermenter and send the ethanol result digitally to the control room, or use a method with long silica fibers such as Raman.",
+      "severity": "high"
+    },
+    {
+      "text": "Ranking vs assessment: The ranking blocks MIR because MIR fibers are only a few meters long, while the assessment keeps MIR ATR as needs_info with no AFS support and does not exclude it. The fiber-length block rests on a draft card and the customer's 50 m claim is a business source, so neither side is proven. This needs a datasheet check. The ranking also drops NIR with a water penalty, while the assessment lists NIR as a candidate (no evidence). If ethanol is at percent level, which is not yet confirmed, that water penalty is likely too harsh. Raman is the only method with an AFS application (S01 p.16), and the ranking and assessment agree on it. That is the better supported side.",
+      "severity": "medium"
+    },
+    {
+      "text": "No reference values exist yet. A quantitative result needs an independent reference to build and test a calibration, so the status stays provisional until a reference method and samples are available.",
+      "severity": "high"
+    },
+    {
+      "text": "Brochure and flyer figures are business context, not evidence of technical performance. They should not enter the recommendation without a datasheet.",
+      "severity": "medium"
+    },
+    {
+      "text": "Raman: fluorescence background from the beer matrix can swamp the signal. Needs the lab check before anything else. The Raman signal is also weak, and the ethanol range is unknown.",
+      "severity": "medium"
+    },
+    {
+      "text": "Fermentation specifics: CO2 bubbles, yeast and turbidity can disturb the optical signal and foul the window. Ethanol and sugar are correlated in a real brew, so a calibration on brew samples alone can look good and still fail.",
+      "severity": "medium"
+    },
+    {
+      "text": "Water bands: in MIR and NIR strong water absorption limits usable regions and sensitivity in an aqueous medium. Whether this matters depends on the ethanol range, which is not yet known.",
+      "severity": "low"
+    }
+  ],
+  "expert_flags": [],
+  "changes": [],
+  "meta": {
+    "model": "simulated (sonnet subagent, same prompts)",
+    "generated_at": "2026-10-18T08:00:00Z",
+    "rules_version": "rules-draft-0",
+    "kb_version": "kb-draft-0",
+    "recomputed": false
+  },
+  "attributes": [
+    {
+      "name": "target_defined",
+      "value": "yes",
+      "status": "known",
+      "quote": "monitor ethanol during beer fermentation"
+    },
+    {
+      "name": "target_kind",
+      "value": "metabolite_other",
+      "status": "assumed",
+      "quote": null
+    },
+    {
+      "name": "target_class",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "targets_count",
+      "value": "1",
+      "status": "known",
+      "quote": "monitor ethanol during beer fermentation"
+    },
+    {
+      "name": "quantitative",
+      "value": "yes",
+      "status": "known",
+      "quote": "monitor ethanol during beer fermentation"
+    },
+    {
+      "name": "reference_method",
+      "value": "none",
+      "status": "known",
+      "quote": "We do not have samples with reference values yet"
+    },
+    {
+      "name": "reference_uncertainty",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "acceptance_criteria",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "concentration_range",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "intended_use",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "domain",
+      "value": "bioprocess",
+      "status": "assumed",
+      "quote": null
+    },
+    {
+      "name": "sample_form",
+      "value": "liquid",
+      "status": "assumed",
+      "quote": null
+    },
+    {
+      "name": "optical_density",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "matrix_aqueous",
+      "value": "yes",
+      "status": "assumed",
+      "quote": null
+    },
+    {
+      "name": "heterogeneous",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "fluorophore",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "chromophore",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "matrix_fluorescence",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "formulation_changed",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "streams",
+      "value": "1",
+      "status": "assumed",
+      "quote": null
+    },
+    {
+      "name": "physical_variation",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "temperature",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "fouling",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "distance",
+      "value": "other_building",
+      "status": "known",
+      "quote": "control room in another building"
+    },
+    {
+      "name": "link_confirmed",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "existing_fiber",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "gmp",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "client_method",
+      "value": "mir",
+      "status": "known",
+      "quote": "with MIR ATR"
+    },
+    {
+      "name": "reuse_calibration",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "add_method_to_keep_calibration",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "justification",
+      "value": "none_given",
+      "status": "assumed",
+      "quote": null
+    },
+    {
+      "name": "asks",
+      "value": "approve_concept",
+      "status": "known",
+      "quote": "please approve installing the analyzer in our control room"
+    },
+    {
+      "name": "cited_evidence",
+      "value": "business_material",
+      "status": "known",
+      "quote": "A supplier brochure says MIR works over a 50 m fiber"
+    },
+    {
+      "name": "own_validation",
+      "value": "no",
+      "status": "known",
+      "quote": "We do not have samples with reference values yet"
+    }
+  ],
+  "assessment": {
+    "rules_version": "gates-v2-draft",
+    "decision_status": "provisional",
+    "selected": [
+      "K05"
+    ],
+    "combinations": [],
+    "rows": [
+      {
+        "row": "K01",
+        "method": "mir",
+        "technique": "ATR probe",
+        "status": "needs_info",
+        "evidence": "none",
+        "risks": [
+          "S-AQUEOUS-IR:risk"
+        ],
+        "reasons": [
+          "S-AQUEOUS-IR:risk",
+          "I-FOULING-CONTACT:plan_question",
+          "L-LINK-LENGTH-MIR:needs_info",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K02",
+        "method": "nir",
+        "technique": "transmission / transflection probe",
+        "status": "candidate",
+        "evidence": "none",
+        "risks": [
+          "S-AQUEOUS-NIR:risk",
+          "I-OPAQUE-TRANSMISSION:risk"
+        ],
+        "reasons": [
+          "S-AQUEOUS-NIR:risk",
+          "I-OPAQUE-TRANSMISSION:risk",
+          "I-FOULING-CONTACT:plan_question",
+          "I-PHYSICAL-VARIATION:plan_question",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K03",
+        "method": "nir",
+        "technique": "diffuse reflection probe",
+        "status": "candidate",
+        "evidence": "none",
+        "risks": [
+          "S-AQUEOUS-NIR:risk"
+        ],
+        "reasons": [
+          "S-AQUEOUS-NIR:risk",
+          "I-FOULING-CONTACT:plan_question",
+          "I-PHYSICAL-VARIATION:plan_question",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K04",
+        "method": "nir",
+        "technique": "surface at a distance",
+        "status": "needs_info",
+        "evidence": "none",
+        "risks": [
+          "S-AQUEOUS-NIR:risk"
+        ],
+        "reasons": [
+          "S-AQUEOUS-NIR:risk",
+          "I-SAMPLE-TYPE:needs_info",
+          "I-PHYSICAL-VARIATION:plan_question",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K05",
+        "method": "raman",
+        "technique": "Raman probe",
+        "status": "candidate",
+        "evidence": "application",
+        "risks": [
+          "S-RAMAN-FLUOR-BG:risk"
+        ],
+        "reasons": [
+          "S-AQUEOUS-RAMAN:support_physics",
+          "S-RAMAN-FLUOR-BG:risk",
+          "I-FOULING-CONTACT:plan_question",
+          "L-COMPONENT-RATINGS:plan_question",
+          "APP-BIO-METABOLITES:support_application"
+        ]
+      },
+      {
+        "row": "K06",
+        "method": "uv_vis",
+        "technique": "ATR probe",
+        "status": "candidate",
+        "evidence": "none",
+        "risks": [
+          "S-UV-OVERLAP:risk"
+        ],
+        "reasons": [
+          "S-UV-OVERLAP:risk",
+          "I-FOULING-CONTACT:plan_question",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K07",
+        "method": "uv_vis",
+        "technique": "diffuse reflection probe",
+        "status": "needs_info",
+        "evidence": "none",
+        "risks": [
+          "S-UV-OVERLAP:risk"
+        ],
+        "reasons": [
+          "S-UV-OVERLAP:risk",
+          "I-SAMPLE-TYPE:needs_info",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K08",
+        "method": "uv_vis",
+        "technique": "transmission / transflection probe",
+        "status": "candidate",
+        "evidence": "none",
+        "risks": [
+          "S-UV-OVERLAP:risk",
+          "I-OPAQUE-TRANSMISSION:risk"
+        ],
+        "reasons": [
+          "S-UV-OVERLAP:risk",
+          "I-OPAQUE-TRANSMISSION:risk",
+          "I-FOULING-CONTACT:plan_question",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K09",
+        "method": "uv_vis",
+        "technique": "probe, lens (emission of the sample)",
+        "status": "needs_info",
+        "evidence": "none",
+        "risks": [
+          "S-UV-OVERLAP:risk"
+        ],
+        "reasons": [
+          "S-UV-OVERLAP:risk",
+          "I-SAMPLE-TYPE:needs_info",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K10",
+        "method": "fluorescence",
+        "technique": "fluorimetric probe",
+        "status": "needs_info",
+        "evidence": "none",
+        "risks": [],
+        "reasons": [
+          "P-NO-FLUOROPHORE:needs_info",
+          "I-FOULING-CONTACT:plan_question",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      }
+    ],
+    "premise_flags": [
+      {
+        "rule_id": "P-APPROVE-WITHOUT-DATA",
+        "verdict": "not_supported",
+        "text": "The concept cannot be approved: a component is incompatible or decisive facts are missing",
+        "source": [
+          "AFS ref §3 'An honest provisional plan is more useful than a final configuration built on missing facts'"
+        ]
+      }
+    ],
+    "questions": [
+      {
+        "attribute": "fouling",
+        "kind": "plan",
+        "strength": null,
+        "forced": false,
+        "text": "Can deposits form at the probe window, and how is the line cleaned (CIP, temperature, chemicals)?"
+      },
+      {
+        "attribute": "physical_variation",
+        "kind": "plan",
+        "strength": null,
+        "forced": false,
+        "text": "Which physical and formulation changes occur between runs (temperature, texture, particle size, air bubbles, recipe)?"
+      },
+      {
+        "attribute": "temperature",
+        "kind": "plan",
+        "strength": null,
+        "forced": false,
+        "text": "What temperature, pressure and flow occur at the measurement point?"
+      },
+      {
+        "attribute": "acceptance_criteria",
+        "kind": "plan",
+        "strength": null,
+        "forced": false,
+        "text": "What concentration range, accuracy and response time must the measurement meet?"
+      }
+    ],
+    "lab_checks": [
+      {
+        "attribute": "matrix_fluorescence",
+        "kind": "lab_check",
+        "strength": null,
+        "forced": true,
+        "text": "Check on representative samples whether fluorescence background swamps the Raman signal."
+      }
+    ],
+    "trace": [
+      {
+        "step": "Q2",
+        "rule_id": "P-NO-FLUOROPHORE",
+        "target": "K10",
+        "effect": "needs_info",
+        "source": [
+          "S01 p.5",
+          "AFS ref §5 (fluorescence row)"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-UV-OVERLAP",
+        "target": "K06",
+        "effect": "risk",
+        "source": [
+          "S01 p.5"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-UV-OVERLAP",
+        "target": "K07",
+        "effect": "risk",
+        "source": [
+          "S01 p.5"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-UV-OVERLAP",
+        "target": "K08",
+        "effect": "risk",
+        "source": [
+          "S01 p.5"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-UV-OVERLAP",
+        "target": "K09",
+        "effect": "risk",
+        "source": [
+          "S01 p.5"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-AQUEOUS-IR",
+        "target": "K01",
+        "effect": "risk",
+        "source": [
+          "S01 p.16"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-AQUEOUS-NIR",
+        "target": "K02",
+        "effect": "risk",
+        "source": [
+          "S01 p.16"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-AQUEOUS-NIR",
+        "target": "K03",
+        "effect": "risk",
+        "source": [
+          "S01 p.16"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-AQUEOUS-NIR",
+        "target": "K04",
+        "effect": "risk",
+        "source": [
+          "S01 p.16"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-AQUEOUS-RAMAN",
+        "target": "K05",
+        "effect": "support_physics",
+        "source": [
+          "S01 p.16"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-RAMAN-FLUOR-BG",
+        "target": "K05",
+        "effect": "risk",
+        "source": [
+          "S01 p.11",
+          "AFS ref D01 ('Check fluorescence background and signal quality')"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-SAMPLE-TYPE",
+        "target": "K04",
+        "effect": "needs_info",
+        "source": [
+          "S01 Table 1 (p.6)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-SAMPLE-TYPE",
+        "target": "K07",
+        "effect": "needs_info",
+        "source": [
+          "S01 Table 1 (p.6)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-SAMPLE-TYPE",
+        "target": "K09",
+        "effect": "needs_info",
+        "source": [
+          "S01 Table 1 (p.6)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-OPAQUE-TRANSMISSION",
+        "target": "K02",
+        "effect": "risk",
+        "source": [
+          "S01 p.16",
+          "S01 p.18"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-OPAQUE-TRANSMISSION",
+        "target": "K08",
+        "effect": "risk",
+        "source": [
+          "S01 p.16",
+          "S01 p.18"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-FOULING-CONTACT",
+        "target": "K01",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §5 (MIR: contact, fouling)",
+          "AFS ref D07, D02"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-FOULING-CONTACT",
+        "target": "K02",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §5 (MIR: contact, fouling)",
+          "AFS ref D07, D02"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-FOULING-CONTACT",
+        "target": "K03",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §5 (MIR: contact, fouling)",
+          "AFS ref D07, D02"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-FOULING-CONTACT",
+        "target": "K05",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §5 (MIR: contact, fouling)",
+          "AFS ref D07, D02"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-FOULING-CONTACT",
+        "target": "K06",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §5 (MIR: contact, fouling)",
+          "AFS ref D07, D02"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-FOULING-CONTACT",
+        "target": "K08",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §5 (MIR: contact, fouling)",
+          "AFS ref D07, D02"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-FOULING-CONTACT",
+        "target": "K10",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §5 (MIR: contact, fouling)",
+          "AFS ref D07, D02"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-PHYSICAL-VARIATION",
+        "target": "K02",
+        "effect": "plan_question",
+        "source": [
+          "S01 p.17",
+          "AFS ref D02 (risks)",
+          "AFS ref D01 (risks: physical variation of the powder)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-PHYSICAL-VARIATION",
+        "target": "K03",
+        "effect": "plan_question",
+        "source": [
+          "S01 p.17",
+          "AFS ref D02 (risks)",
+          "AFS ref D01 (risks: physical variation of the powder)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-PHYSICAL-VARIATION",
+        "target": "K04",
+        "effect": "plan_question",
+        "source": [
+          "S01 p.17",
+          "AFS ref D02 (risks)",
+          "AFS ref D01 (risks: physical variation of the powder)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-LINK-LENGTH-MIR",
+        "target": "K01",
+        "effect": "needs_info",
+        "source": [
+          "S02 p.7 (100–300 m silica cables)",
+          "S02 p.9 (PIR, HWG 2 m)",
+          "AFS ref §3 'Do not invent' (fiber lengths)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K01",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K02",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K03",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K04",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K05",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K06",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K07",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K08",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K09",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K10",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q4",
+        "rule_id": "APP-BIO-METABOLITES",
+        "target": "K05",
+        "effect": "support_application",
+        "source": [
+          "S01 p.16"
+        ]
+      },
+      {
+        "step": "Q1",
+        "rule_id": "T-NO-REFERENCE",
+        "target": null,
+        "effect": "cap_provisional",
+        "source": [
+          "AFS ref §3 (feasibility plan: independent reference measurements)"
+        ]
+      },
+      {
+        "step": "Q1",
+        "rule_id": "T-PLAN-MINIMUM",
+        "target": null,
+        "effect": "plan_question",
+        "source": [
+          "AFS ref D01 'Decision basis'",
+          "AFS Q&A 17.10 (lab screening: range, resolution, concentration level)"
+        ]
+      },
+      {
+        "step": "Q4",
+        "rule_id": "P-APPROVE-WITHOUT-DATA",
+        "target": null,
+        "effect": "premise_not_supported",
+        "source": [
+          "AFS ref §3 'An honest provisional plan is more useful than a final configuration built on missing facts'"
+        ]
+      },
+      {
+        "step": "Q4",
+        "rule_id": "P-ASSET-NOT-EVIDENCE",
+        "target": null,
+        "effect": "risk",
+        "source": [
+          "AFS ref §3 'Common mistakes' (missing facts filled in as if given)"
+        ]
+      },
+      {
+        "step": "Q4",
+        "rule_id": "P-BUSINESS-SOURCE",
+        "target": null,
+        "effect": "risk",
+        "source": [
+          "AFS ref §4 (S05, S06)"
+        ]
+      }
+    ],
+    "ignored_inputs": null
+  }
+}

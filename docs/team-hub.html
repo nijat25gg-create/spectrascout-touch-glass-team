@@ -1,0 +1,797 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>SpectraScout Team Hub</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: lab bench. Draggable pipeline canvas on the left, step inspector on the right, tabs for contracts, people, handoffs, fixes */
+:root{
+  --bg:#f6f8f8; --surface:#ffffff; --fg:#14201f; --muted:#5b6b69; --line:#d9e2e1; --grid:#e7eeed;
+  --accent:#0b7a6f; --accent-soft:#e1f1ee; --on-accent:#ffffff; --code-bg:#eef3f2;
+  --warn:#9a3412; --warn-soft:#fff1e8; --ok:#15803d; --ok-soft:#e3f4e8;
+  --n-ex:#64748b; --n-fe:#2f5fa8; --n-be:#5b4bb5; --n-llm:#0b7a6f; --n-eng:#a16207; --n-kb:#b4532a;
+  --display:"Unbounded",system-ui,sans-serif; --body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1716; --surface:#16211f; --fg:#e4ecea; --muted:#93a5a2; --line:#2a3a38; --grid:#1b2725;
+  --accent:#4fc7b7; --accent-soft:#163430; --on-accent:#0f1716; --code-bg:#1b2826;
+  --warn:#fb9a6a; --warn-soft:#3a2114; --ok:#5fd38a; --ok-soft:#153222;
+  --n-ex:#94a3b8; --n-fe:#86aef0; --n-be:#a79bf0; --n-llm:#4fc7b7; --n-eng:#e8b84a; --n-kb:#f0a07c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1716; --surface:#16211f; --fg:#e4ecea; --muted:#93a5a2; --line:#2a3a38; --grid:#1b2725;
+  --accent:#4fc7b7; --accent-soft:#163430; --on-accent:#0f1716; --code-bg:#1b2826;
+  --warn:#fb9a6a; --warn-soft:#3a2114; --ok:#5fd38a; --ok-soft:#153222;
+  --n-ex:#94a3b8; --n-fe:#86aef0; --n-be:#a79bf0; --n-llm:#4fc7b7; --n-eng:#e8b84a; --n-kb:#f0a07c; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.55;margin:0}
+.wrap{max-width:1280px;margin:0 auto;padding-inline:18px;padding-block:24px 60px;display:flex;flex-direction:column;gap:22px}
+h1,h2{font-family:var(--display);font-weight:700;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(23px,3.8vw,32px);line-height:1.15}
+h2{font-size:clamp(18px,2.4vw,22px)}
+h3{margin:0;font-size:16px}
+p{margin:0;max-width:75ch}
+.muted{color:var(--muted)}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.spectrum{height:6px;border-radius:3px;background:linear-gradient(90deg,#6b2fd6,#2f5fe0 14%,#16a6c9 28%,#21b35a 42%,#e2d31f 56%,#f08a12 70%,#d92c1c 84%,#6e1010)}
+code{font-family:var(--mono);font-size:.9em;background:var(--code-bg);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+.lab>*{min-width:0}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--line);padding-bottom:10px;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:6;padding-top:8px}
+.tabs button,.ctl button,.seg button{font:inherit;font-size:14px;padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.tabs button[aria-selected="true"],.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panel{display:flex;flex-direction:column;gap:16px}
+/* lab */
+.lab{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:900px){.lab{grid-template-columns:1fr}}
+.canvas-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.ctl{display:flex;flex-wrap:wrap;gap:6px;padding:10px;border-bottom:1px solid var(--line);align-items:center}
+.ctl .sp{flex:1}
+.ctl button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.ctl button:disabled{opacity:.45;cursor:not-allowed}
+.seg{display:inline-flex;gap:4px}
+.svgwrap{overflow-x:auto;touch-action:none}
+svg#lab{display:block;width:100%;min-width:640px;height:auto;background-image:radial-gradient(var(--grid) 1px,transparent 1px);background-size:20px 20px;user-select:none}
+.node rect{stroke-width:2;rx:12}
+.node{cursor:grab}
+.node.dragging{cursor:grabbing}
+.node .t{font-family:var(--body);font-weight:600;font-size:15px;fill:var(--fg)}
+.node .s{font-family:var(--mono);font-size:11.5px;fill:var(--muted)}
+.node.active rect{stroke-width:4}
+.node.selected rect{stroke-dasharray:6 4}
+.edge path{fill:none;stroke:var(--line);stroke-width:2}
+.edge.design path{stroke-dasharray:5 5}
+.edge text{font-family:var(--mono);font-size:11px;font-weight:600;fill:var(--muted)}
+.edge .lblbg{fill:var(--surface)}
+.edge.active path{stroke:var(--accent);stroke-width:3.5}
+.edge.active text{fill:var(--accent)}
+.edge.done path{stroke:var(--accent);opacity:.45}
+.hint{font-size:12.5px;color:var(--muted);padding:8px 12px;border-top:1px solid var(--line)}
+.inspector{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.stepno{font-family:var(--mono);font-size:12px;color:var(--accent)}
+.badge{display:inline-block;font-family:var(--mono);font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+.badge.none{background:var(--code-bg);color:var(--muted)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px}
+.kv b{font-family:var(--mono);font-size:12px;color:var(--muted);font-weight:600}
+pre.json{margin:0;background:var(--code-bg);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:11.5px;line-height:1.45;max-height:340px;overflow:auto;white-space:pre}
+.edit{display:flex;flex-direction:column;gap:6px;border-top:1px dashed var(--line);padding-top:10px}
+.edit label{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.edit input{font:inherit;font-size:14px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
+.loadgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.loadgrid>*{min-width:0}
+.lcard{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.lcard h3{font-family:var(--display);font-size:17px}
+.lrow{display:grid;grid-template-columns:96px 1fr;gap:8px;align-items:center;font-size:13px}
+.lrow span{color:var(--muted);font-family:var(--mono);font-size:11.5px}
+.meter{display:flex;gap:3px}
+.meter i{flex:1;height:8px;border-radius:2px;background:var(--line)}
+.meter i.on{background:var(--c)}
+.lvl{font-family:var(--mono);font-size:12px;font-weight:600}
+.lcard p{font-size:13.5px}
+.rulesrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.rulesrow>*{min-width:0}
+.rule{border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;border:1px solid}
+.rule.warn{background:var(--warn-soft);border-color:var(--warn)} .rule.warn strong{color:var(--warn)}
+.rule.ok{background:var(--ok-soft);border-color:var(--ok)} .rule.ok strong{color:var(--ok)}
+.moscow{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.moscow>*{min-width:0}
+.mcol{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--mc);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.mcol h3{font-size:15px}
+.mcol .sub{font-size:12.5px;color:var(--muted)}
+ul.plain{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.faq .q{font-weight:600}
+.llm4{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.llm4>*{min-width:0}
+pre.code{margin:0;background:var(--code-bg);border-radius:8px;padding:12px 14px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.5;white-space:pre}
+pre.code code{background:none;padding:0}
+.formula{font-family:var(--mono);font-size:13px;background:var(--accent-soft);border-radius:8px;padding:10px 12px;overflow-x:auto}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.kpi .v{font-family:var(--mono);font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:12px;color:var(--muted)}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.filters button{font:inherit;font-size:13px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.treegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.treegrid>*{min-width:0}
+.tcard{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.tcard .head{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.tcard h3{font-family:var(--display);font-size:17px}
+.tcard .tag{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.prog{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.prog span{display:block;height:100%;background:var(--ok)}
+.ttree{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.ttree li{position:relative;padding-left:18px;font-size:14px}
+.ttree li::before{content:"";position:absolute;left:4px;top:0;bottom:-6px;border-left:1px solid var(--line)}
+.ttree li:last-child::before{bottom:auto;height:12px}
+.ttree li::after{content:"";position:absolute;left:4px;top:12px;width:9px;border-top:1px solid var(--line)}
+.ttree label{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+.ttree input{margin-top:4px;accent-color:var(--ok)}
+.ttree .done .tname{text-decoration:line-through;color:var(--muted)}
+.ttree ul.subs{list-style:none;margin:4px 0 2px 26px;padding:0;display:flex;flex-direction:column;gap:3px}
+.ttree ul.subs li{padding-left:0;font-size:13px}
+.ttree ul.subs li::before,.ttree ul.subs li::after{display:none}
+.ttree ul.subs input{margin-top:2px}
+.subc{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.ttree .why{display:block;color:var(--muted);font-size:13px}
+.pill{font-family:var(--mono);font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;white-space:nowrap}
+.P0{color:var(--warn);background:var(--warn-soft)} .P1{color:var(--n-eng);background:var(--accent-soft)} .P2{color:var(--muted);background:var(--code-bg)}
+table.tasks td select{font:inherit;font-family:var(--mono);font-size:13px;padding:2px 4px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
+table.tasks th button{all:unset;cursor:pointer}
+table.tasks th button:focus-visible{outline:2px solid var(--accent)}
+table.tasks tr.isdone td{opacity:.55}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar{height:6px;border-radius:3px;background:var(--accent-soft);margin-top:4px;overflow:hidden;min-width:70px}
+.bar span{display:block;height:100%;background:var(--accent)}
+.iconbtn{font:inherit;font-size:13px;background:none;border:1px solid var(--line);border-radius:6px;color:var(--muted);padding:2px 8px;cursor:pointer}
+.iconbtn:hover,.iconbtn:focus-visible{color:var(--warn);border-color:var(--warn);outline:none}
+form.add{display:grid;grid-template-columns:2fr 1fr 1fr repeat(3,auto) auto;gap:8px;align-items:end}
+form.add label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);min-width:0}
+form.add input,form.add select{font:inherit;font-size:14px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--fg);min-width:0}
+@media (max-width:760px){form.add{grid-template-columns:1fr 1fr}form.add label:first-child{grid-column:1/-1}}
+.toolbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.btnp{font:inherit;font-size:13px;padding:6px 12px;border-radius:999px;border:1px solid var(--accent);background:var(--accent);color:var(--on-accent);cursor:pointer;align-self:flex-start}
+.btnp.ghost{background:var(--surface);color:var(--fg);border-color:var(--line)}
+.status{font-size:13px;color:var(--ok);min-height:1.2em}
+#copyFallback{width:100%;min-height:140px;font-family:var(--mono);font-size:12px}
+.sr{position:absolute;left:-9999px}
+table.days td.day{font-family:var(--mono);font-size:13px;white-space:nowrap;font-weight:600}
+.timeline{display:flex;flex-direction:column;border-left:2px solid var(--accent);margin-left:6px}
+.step{position:relative;padding:0 0 18px 20px;display:flex;flex-direction:column;gap:4px}
+.step::before{content:"";position:absolute;left:-7px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--surface);border:2px solid var(--accent)}
+.step .t{font-family:var(--mono);font-size:12px;color:var(--accent);font-variant-numeric:tabular-nums}
+.step blockquote{margin:4px 0 0;padding:8px 12px;border-left:3px solid var(--line);color:var(--muted);font-size:14px;font-style:italic}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.checks li label{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:14px;cursor:pointer}
+.checks input{margin-top:4px;accent-color:var(--ok)}
+dl.gloss{display:grid;grid-template-columns:minmax(120px,180px) 1fr;gap:8px 16px;margin:0}
+dl.gloss dt{font-family:var(--mono);font-size:13px;font-weight:600}
+dl.gloss dd{margin:0}
+@media (max-width:560px){dl.gloss{grid-template-columns:1fr}dl.gloss dd{margin-bottom:6px}}
+
+/* generic */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.grid>*{min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:820px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-family:var(--mono);font-size:12px;color:var(--muted);font-weight:600}
+tbody tr:last-child td{border-bottom:0}
+td.id{font-family:var(--mono);font-weight:600;white-space:nowrap}
+.who{font-weight:600}
+.person{border-top:4px solid var(--c,var(--accent))}
+.person h3{font-family:var(--display);font-size:19px}
+.person .role{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.person ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.person ul ul{margin-top:4px;gap:2px}
+.person li{font-size:14px}
+.person .sec{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.fix{border-left:4px solid var(--warn);padding:10px 14px;background:var(--surface);border-radius:8px;display:flex;flex-direction:column;gap:4px}
+.fix.ok{border-left-color:var(--ok)}
+.check{display:flex;gap:8px;align-items:baseline;font-size:14px}
+.check b{color:var(--ok);font-family:var(--mono)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header style="display:flex;flex-direction:column;gap:10px">
+    <span class="eyebrow">schubKI Hackathon · Art Fiber Systems · контракты v0.2</span>
+    <h1>SpectraScout Team Hub</h1>
+    <p class="muted">Одна страница команды Touch Glass: вердикт и план победы, живая схема пайплайна с прогоном, 8 контрактов, как работает LLM, кто что делает, дерево задач со скорингом, нагрузка, договорённости, план по дням, сценарий видео и правила. Галочки и правки сохраняются в этом браузере.</p>
+    <div class="spectrum" aria-hidden="true"></div>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Разделы">
+    <button role="tab" aria-selected="true" data-tab="win" id="tab-win">Как выиграть</button>
+    <button role="tab" aria-selected="false" data-tab="lab" id="tab-lab">Схема и прогон</button>
+    <button role="tab" aria-selected="false" data-tab="contracts" id="tab-contracts">8 контрактов</button>
+    <button role="tab" aria-selected="false" data-tab="llm" id="tab-llm">LLM</button>
+    <button role="tab" aria-selected="false" data-tab="people" id="tab-people">Кто что делает</button>
+    <button role="tab" aria-selected="false" data-tab="tasks" id="tab-tasks">Задачи</button>
+    <button role="tab" aria-selected="false" data-tab="load" id="tab-load">Нагрузка и помощь</button>
+    <button role="tab" aria-selected="false" data-tab="handoffs" id="tab-handoffs">Договорённости</button>
+    <button role="tab" aria-selected="false" data-tab="days" id="tab-days">По дням</button>
+    <button role="tab" aria-selected="false" data-tab="demo" id="tab-demo">Видео и сдача</button>
+    <button role="tab" aria-selected="false" data-tab="rules" id="tab-rules">Правила</button>
+    <button role="tab" aria-selected="false" data-tab="fixes" id="tab-fixes">Ошибки и проверки</button>
+  </div>
+
+  <!-- ===================== WIN ===================== -->
+  <section class="panel" data-panel="win" role="tabpanel" aria-labelledby="tab-win">
+    <h2>Вердикт: всё, что мы спланировали, делаем</h2>
+    <p>Материалы AFS не отменяют нашу работу, они меняют источник. Раньше Никита собирал знания по статьям с нуля, теперь берём таблицу сравнения методов и 8 сценариев AFS как основу и превращаем их в то, чего у других команд не будет: правила с прозрачными баллами, ссылки на страницы документов AFS, проверку на всех 8 сценариях и слой опыта пяти химиков, которого нет в материалах AFS.</p>
+
+    <div class="rulesrow">
+      <div class="rule warn"><strong>Код решения пишем с 16.10, 18:00</strong><p>До старта готовим знания, шаблоны, кейсы, контракты и окружение. Всё подготовленное заранее пишем в <code>DECLARATIONS.md</code>.</p></div>
+      <div class="rule ok"><strong>Никто никого не ждёт</strong><p>Для каждого контракта есть пример в <code>contracts/examples/</code>. Пока чужая часть не готова, работаем на примере.</p></div>
+      <div class="rule ok"><strong>Главный источник: материалы AFS</strong><p>Презентации, таблица сравнения методов, зонды и 8 сценариев клиентов получим на старте. Каждая рекомендация ссылается на них.</p></div>
+    </div>
+
+    <h3>Что, скорее всего, сделают другие команды, и что делаем мы</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Тема</th><th>Типичная команда</th><th>Мы</th><th>Кто</th></tr></thead>
+      <tbody id="vstable"></tbody>
+    </table></div>
+
+    <h3>Что строим к воскресенью</h3>
+    <div class="moscow" id="moscow"></div>
+
+    <h3>Что меняют материалы AFS</h3>
+    <div class="grid">
+      <div class="card"><h3>Остаётся как было</h3><ul class="plain"><li>Контракты C1–C8, бэкенд, движок, фронт</li><li>Правила и веса, словарь 12 признаков</li><li>Карточки методов, слой экспертов</li><li>Кейсы с ожидаемыми ответами и оценка</li></ul></div>
+      <div class="card"><h3>Меняется</h3><ul class="plain"><li>Карточки и правила наполняем из таблицы AFS, а не из статей с нуля</li><li>Главные тестовые кейсы это 8 сценариев AFS</li><li>У каждого утверждения ссылка на документ и страницу AFS</li><li>Статьи только как запасной слой, без живого поиска в основном ответе</li></ul></div>
+      <div class="card"><h3>До пятницы, чтобы в пятницу всё перенести за 2–3 часа</h3><ul class="plain"><li>Шаблон карточки метода и шаблон правила</li><li>Скрипт, который превращает таблицу в <code>rules.yaml</code></li><li>Вопросы на сессию AFS Q&amp;A</li><li>Слой экспертов от Никиты</li></ul></div>
+    </div>
+
+    <h3>Ответы на вопросы с созвонов</h3>
+    <div class="grid faq" id="faq"></div>
+  </section>
+
+  <!-- ===================== LAB ===================== -->
+  <section class="panel" data-panel="lab" role="tabpanel" aria-labelledby="tab-lab" hidden>
+    <div class="lab">
+      <div class="canvas-card">
+        <div class="ctl">
+          <div class="seg" role="group" aria-label="Сценарий">
+            <button type="button" data-sc="analyze" aria-pressed="true">/analyze</button>
+            <button type="button" data-sc="recompute" aria-pressed="false">/recompute</button>
+            <button type="button" data-sc="error" aria-pressed="false">Ошибка</button>
+          </div>
+          <span class="sp"></span>
+          <button type="button" id="bPrev" aria-label="Шаг назад">◀</button>
+          <button type="button" id="bPlay" class="primary">▶ Запустить</button>
+          <button type="button" id="bNext" aria-label="Шаг вперёд">▶︎ шаг</button>
+          <button type="button" id="bReset">Сбросить</button>
+        </div>
+        <div class="svgwrap"><svg id="lab" viewBox="0 0 1010 640" role="img" aria-label="Схема пайплайна SpectraScout">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/></marker>
+          </defs>
+          <g id="edges"></g><g id="nodes"></g><circle id="packet" r="8" fill="var(--accent)" opacity="0"/>
+        </svg></div>
+        <div class="hint">Перетаскивай блоки мышкой или пальцем. Нажми на блок, чтобы переименовать. Сплошные стрелки работают в продукте, пунктирные это знания от химика, которые готовятся заранее. Расположение сохраняется в этом браузере.</div>
+      </div>
+      <aside class="inspector" id="insp" aria-live="polite"></aside>
+    </div>
+  </section>
+
+  <!-- ===================== CONTRACTS ===================== -->
+  <section class="panel" data-panel="contracts" role="tabpanel" aria-labelledby="tab-contracts" hidden>
+    <h2>8 контрактов основного прохода и 2 служебных</h2>
+    <p>Контракт это правило рукопожатия между двумя частями: какие поля передаются и какие значения допустимы. Данные каждый раз разные, форма всегда одна. Источник правды: <code>contracts/models.py</code>, проверка: <code>python contracts/check_contracts.py</code>.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>№</th><th>Имя</th><th>От → Кому</th><th>Стрелка</th><th>Что внутри</th><th>Как передаётся</th></tr></thead>
+      <tbody id="ctable"></tbody>
+    </table></div>
+    <div class="grid">
+      <div class="card"><h3>Почему 8, а не 16 стрелок</h3><p class="muted">Контракт нужен только там, где данные переходят из одной части в другую. Проверка входа внутри бэкенда (стрелка 3) и действия эксперта в интерфейсе (1, 11, 12) контрактами не являются.</p></div>
+      <div class="card"><h3>Пересчёт</h3><p class="muted">Фронт присылает брифинг с правками (C1b), шаг А пропускается, дальше те же C4 → C8. Новые контракты не нужны, кроме входа C1b.</p></div>
+      <div class="card"><h3>Ваши старые файлы</h3><p class="muted">Старый <code>briefing.schema.json</code> был контрактом C8 (стрелка 10, ответ фронту), а <code>briefing.example.json</code> был примером данных для той же стрелки. 16 параметров это C3, стрелка 5.</p></div>
+    </div>
+  </section>
+
+  <!-- ===================== PEOPLE ===================== -->
+  <!-- ===================== LLM ===================== -->
+  <section class="panel" data-panel="llm" role="tabpanel" aria-labelledby="tab-llm" hidden>
+    <h2>Как работает LLM без обучения</h2>
+    <p>Свою модель не тренируем. Используем Claude через API по ключу. «Научить» модель значит дать ей хорошую инструкцию, схему ответа и знания. Каждый шаг LLM это один вызов из четырёх частей.</p>
+    <div class="llm4">
+      <div class="card"><span class="stepno">1 · system</span><h3>Инструкция</h3><p class="muted">Кто ты, что делать, чего не делать: «не придумывай значения, нет данных → unknown». Пишет Ниджат.</p></div>
+      <div class="card"><span class="stepno">2 · messages</span><h3>Данные</h3><p class="muted">Шаг А: текст клиента. Шаг Б: параметры, признаки и результат движка.</p></div>
+      <div class="card"><span class="stepno">3 · output_format</span><h3>Схема ответа</h3><p class="muted">Контракт C3 или C7. Claude обязан вернуть JSON именно такой формы.</p></div>
+      <div class="card"><span class="stepno">4 · контекст</span><h3>Знания</h3><p class="muted">Только для шага Б: карточки методов из материалов AFS и слой экспертов. Объяснения только по ним, со ссылкой.</p></div>
+    </div>
+    <h3>Что делает LLM, а что нет</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Задача</th><th>Кто делает</th><th>Почему</th></tr></thead>
+      <tbody>
+        <tr><td>Понять текст клиента, найти параметры и цитаты</td><td>LLM, шаг А</td><td>Это работа с языком, код так не умеет</td></tr>
+        <tr><td>Выбрать методы и посчитать баллы</td><td>Движок Ярика</td><td>Одинаковый результат при каждом запуске, эксперт видит, за что баллы</td></tr>
+        <tr><td>Исключить метод по жёсткому правилу</td><td>Движок Ярика</td><td>Правило химии нельзя отдавать на угадывание</td></tr>
+        <tr><td>Объяснить рекомендацию человеческим языком</td><td>LLM, шаг Б</td><td>Только по карточкам, со ссылкой на документ AFS</td></tr>
+        <tr><td>Вопросы клиенту и эксперимент</td><td>LLM, шаг Б</td><td>Только про то, что unknown или assumed</td></tr>
+        <tr><td>Пересчёт после ответа эксперта</td><td>Движок, потом LLM шаг Б</td><td>Шаг А не повторяем, признаки уже есть</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Так выглядит шаг А в Python</h3>
+    <p class="muted">Иллюстрация для понимания. Рабочий код пишем на хакатоне.</p>
+<pre class="code"><code>import anthropic
+from contracts.models import ExtractInput, Extraction
+
+client = anthropic.Anthropic()            # ключ из ANTHROPIC_API_KEY
+
+def extract(inp: ExtractInput) -> Extraction:          # C2 -> C3
+    resp = client.messages.parse(
+        model="claude-sonnet-5-5",
+        max_tokens=4000,
+        system=EXTRACT_PROMPT,                          # инструкция Ниджата
+        messages=[{"role": "user", "content": inp.text}],
+        output_format=Extraction,                       # контракт C3
+    )
+    return resp.parsed_output</code></pre>
+    <div class="grid">
+      <div class="card"><h3>Почему два шага, а не один</h3><p class="muted">У структурированного вывода Claude есть лимиты на сложность схемы. Маленькие схемы C3 и C7 укладываются, это проверено скриптом.</p></div>
+      <div class="card"><h3>Почему без живого поиска статей</h3><p class="muted">Поиск по вебу в Claude API всегда возвращает цитаты, а цитаты несовместимы со структурированным JSON-ответом. Поэтому поиск возможен только отдельной кнопкой после брифинга, и только если останется время.</p></div>
+      <div class="card"><h3>Модели</h3><p class="muted"><code>claude-sonnet-5-5</code> для ответов, <code>claude-haiku-5-5</code> для дешёвых тестов. Ключ только в <code>.env</code>, в репо никогда.</p></div>
+    </div>
+  </section>
+
+  <section class="panel" data-panel="people" role="tabpanel" aria-labelledby="tab-people" hidden>
+    <h2>Кто что делает, с кем проверяет и что обсуждает</h2>
+    <div class="grid" id="people"></div>
+  </section>
+
+  <!-- ===================== LOAD ===================== -->
+  <!-- ===================== TASKS ===================== -->
+  <section class="panel" data-panel="tasks" role="tabpanel" aria-labelledby="tab-tasks" hidden>
+    <h2>Задачи: дерево и скоринг</h2>
+    <p>Каждая задача оценена по трём шкалам от 1 до 5: влияние на оценку жюри, сколько задач ждут эту, сколько работы. Важность пересчитывается сама. Галочки, оценки и новые задачи сохраняются только в этом браузере, общий статус ведём в чате.</p>
+    <div class="formula">Важность = 2 × Влияние + 1.5 × Блокирует − 0.5 × Усилие · максимум 17 · P0 ≥ 12 · P1 8–11.9 · P2 &lt; 8</div>
+    <div class="kpis">
+      <div class="kpi"><span class="v" id="k-start">—</span><span class="l">до старта, пт 16.10, 18:00</span></div>
+      <div class="kpi"><span class="v" id="k-sub">—</span><span class="l">до сдачи, вс 18.10, 22:00</span></div>
+      <div class="kpi"><span class="v" id="k-done">—</span><span class="l">задач готово</span></div>
+      <div class="kpi"><span class="v" id="k-p0">—</span><span class="l">P0 открыто</span></div>
+    </div>
+    <div class="filters" role="group" aria-label="Фильтр по участнику" id="filters"></div>
+    <div class="treegrid" id="treeGrid"></div>
+    <h3>Таблица всех задач</h3>
+    <div class="tablewrap"><table id="tasks" class="tasks">
+      <thead><tr><th>Готово</th><th><button data-k="name">Задача</button></th><th><button data-k="owner">Кто</button></th><th><button data-k="i">Влияние</button></th><th><button data-k="b">Блокирует</button></th><th><button data-k="e">Усилие</button></th><th><button data-k="score">Важность</button></th><th><button data-k="when">Когда</button></th><th><span class="sr">Удалить</span></th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <form class="add" id="addForm" autocomplete="off">
+      <label>Новая задача<input id="f-name" required placeholder="Например: слайд архитектуры"></label>
+      <label>Кто<select id="f-owner"></select></label>
+      <label>Когда<input id="f-when" placeholder="сб 17.10"></label>
+      <label>Влияние<select id="f-i"></select></label>
+      <label>Блокирует<select id="f-b"></select></label>
+      <label>Усилие<select id="f-e"></select></label>
+      <button class="btnp" type="submit">Добавить</button>
+    </form>
+    <div class="toolbar">
+      <button class="btnp ghost" type="button" id="copyBtn">Скопировать задачи как текст</button>
+      <button class="btnp ghost" type="button" id="resetBtn">Вернуть исходные задачи</button>
+      <span class="status" id="status" role="status" aria-live="polite"></span>
+    </div>
+    <textarea id="copyFallback" hidden readonly></textarea>
+  </section>
+
+  <section class="panel" data-panel="load" role="tabpanel" aria-labelledby="tab-load" hidden>
+    <h2>Нагрузка и кто кому помогает</h2>
+    <p>Главный принцип разгрузки: <b>Никита проверяет, а не пишет с нуля.</b> Остальные готовят черновики, Никита правит только химию. Оценка нагрузки примерная, по задачам из плана.</p>
+    <div class="loadgrid" id="loadgrid"></div>
+    <h3>Кто кому помогает</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Помощник → кому</th><th>В чём</th><th>Почему он</th></tr></thead>
+      <tbody id="helptable"></tbody>
+    </table></div>
+    <h3>Запасные пары, если кто-то выпал</h3>
+    <div class="grid" id="backup"></div>
+  </section>
+
+  <!-- ===================== HANDOFFS ===================== -->
+  <section class="panel" data-panel="handoffs" role="tabpanel" aria-labelledby="tab-handoffs" hidden>
+    <h2>Договорённости команды (мини-контракты между людьми)</h2>
+    <p>Контракты C1–C8 описывают, как общаются части программы. Здесь договорённости людей: кто кому что отдаёт до хакатона и во время него, в каком виде и как проверяется, что это сделано.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>№</th><th>От → Кому</th><th>Что</th><th>Формат и место</th><th>Срок</th><th>Готово, когда</th></tr></thead>
+      <tbody id="htable"></tbody>
+    </table></div>
+  </section>
+
+  <!-- ===================== FIXES ===================== -->
+  <!-- ===================== DAYS ===================== -->
+  <section class="panel" data-panel="days" role="tabpanel" aria-labelledby="tab-days" hidden>
+    <h2>План по дням</h2>
+    <p>В воскресенье в 16:00 фича-фриз: после этого только видео, README и сдача. Сдаём до 22:00, а не в 23:59.</p>
+    <div class="tablewrap"><table class="days">
+      <thead><tr><th>День</th><th>Вся команда</th><th>Ниджат</th><th>Семён</th><th>Ярик</th><th>Гаджи</th><th>Никита</th></tr></thead>
+      <tbody id="daystable"></tbody>
+    </table></div>
+    <p class="muted">Созвон в чт 15.10 в 18:00 на час, на хакатоне каждые 3–4 часа по 10 минут. Сон минимум 6 часов в ночь на субботу и 5 в ночь на воскресенье, по очереди.</p>
+  </section>
+
+  <!-- ===================== DEMO ===================== -->
+  <section class="panel" data-panel="demo" role="tabpanel" aria-labelledby="tab-demo" hidden>
+    <h2>Демо-видео на 5 минут</h2>
+    <p>По правилам нужно демо на английском, не длиннее 5 минут. Строим его вокруг одного из 8 сценариев AFS.</p>
+    <div class="timeline" id="timeline"></div>
+    <p class="muted">Запасной дубль записываем в субботу вечером на том, что уже работает. Финальную запись делаем в воскресенье после 16:00, экран записывает Гаджи, голос Ниджат, химию Никита.</p>
+    <h2>Что сдаём</h2>
+    <p>Официальная форма, дедлайн вс 18.10, 23:59. Мы сдаём до 22:00.</p>
+    <ul class="checks" id="submitList"></ul>
+  </section>
+
+  <!-- ===================== RULES ===================== -->
+  <section class="panel" data-panel="rules" role="tabpanel" aria-labelledby="tab-rules" hidden>
+    <h2>Правила работы</h2>
+    <div class="grid">
+      <div class="card"><h3>Своя папка и своя ветка</h3><p class="muted">Ниджат: <code>llm/</code>, <code>contracts/</code>. Семён: <code>backend/</code>. Ярик: <code>engine/</code>, <code>rules/</code>, <code>eval/</code>. Гаджи: <code>frontend/</code>. Никита: <code>kb/</code>, <code>data/test-cases/</code>.</p></div>
+      <div class="card"><h3>В main через Pull Request</h3><p class="muted">Второй человек смотрит, капитан мержит. В main всегда то, что запускается.</p></div>
+      <div class="card"><h3>Ключ никогда в репо</h3><p class="muted">Только в <code>.env</code> у себя, он уже в <code>.gitignore</code>. Если ключ попал в GitHub, сразу писать Ниджату, ключ перевыпускаем.</p></div>
+      <div class="card"><h3>Контракты меняет только Ниджат</h3><p class="muted">Нужно новое поле: пишешь в чат, Ниджат меняет <code>models.py</code>, генерирует схемы, запускает проверку и пишет, что поменялось.</p></div>
+      <div class="card"><h3>Отчёт каждый вечер</h3><pre class="code" id="tplText">Сделал: …
+Делаю дальше: …
+Жду от кого / блокер: …</pre><button class="btnp ghost" type="button" id="copyTpl">Скопировать шаблон</button></div>
+    </div>
+    <h2>Словарь</h2>
+    <dl class="gloss" id="gloss"></dl>
+  </section>
+
+
+  <section class="panel" data-panel="fixes" role="tabpanel" aria-labelledby="tab-fixes" hidden>
+    <h2>Что было неправильно и что исправлено</h2>
+    <div class="grid" id="fixes"></div>
+    <h2>Какие проверки прошли контракты</h2>
+    <div class="card" id="checks"></div>
+  </section>
+</div>
+
+<script type="application/json" id="examples">{"C2_extract_input": {"case_id": "case-2026-10-17-001", "text": "Wir trocknen ein pharmazeutisches Pulver im Wirbelschichttrockner und wollen die Restfeuchte inline messen, Zielbereich etwa 1–5 %. Aktuell ziehen wir stündlich Proben für Karl-Fischer-Titration.", "language": "de"}, "C7_explanation": {"questions": [{"id": "q1", "text": "Welche Messgenauigkeit brauchen Sie für die Restfeuchte, zum Beispiel ±0,2 %?", "priority": "high", "why": "Bestimmt, ob NIR ausreicht und wie aufwendig die Kalibrierung wird.", "parameter_id": "required_accuracy", "feature": "accuracy_need"}, {"id": "q2", "text": "Wie weit wäre das Spektrometer vom Messpunkt entfernt?", "priority": "high", "why": "Entscheidet über Faserlänge und schließt MIR bei langen Wegen aus.", "parameter_id": "distance_to_instrument", "feature": "distance_class"}, {"id": "q3", "text": "Können Sie 10–20 Proben mit Karl-Fischer-Referenzwerten über den ganzen Feuchtebereich bereitstellen?", "priority": "high", "why": "Ohne Referenzproben ist keine Machbarkeitsstudie möglich.", "parameter_id": "samples_available", "feature": null}, {"id": "q4", "text": "Liegt der Trockner in einer ATEX-Zone?", "priority": "medium", "why": "Ändert die Anforderungen an Sonde und Lichtquelle.", "parameter_id": "regulatory", "feature": "hazardous_area"}, {"id": "q5", "text": "Bei welcher Temperatur läuft die Trocknung?", "priority": "low", "why": "Wichtig für Sondenmaterial und Temperaturkompensation.", "parameter_id": "temperature", "feature": "temperature_class"}], "rationale": [{"method": "nir", "claims": [{"claim": "Wasser zeigt im NIR charakteristische Banden, die sich zur Feuchtebestimmung eignen.", "kb_card": "card-nir"}, {"claim": "Diffuse Reflexion ist der übliche Modus für Pulver und Granulate.", "kb_card": "card-mode-diffuse-reflectance"}]}, {"method": "raman", "claims": [{"claim": "Raman kann zusätzlich Wirkstoff oder Polymorphie erfassen, falls das später relevant wird.", "kb_card": "card-raman"}]}], "experiment": {"goal": "Prüfen, ob NIR-Spektren die Restfeuchte im Bereich 1–5 % mit der geforderten Genauigkeit abbilden.", "sample_count": "15–20", "sample_design": "Gleichmäßig über 1–5 % verteilt, aus mindestens zwei Chargen", "interferents": ["Partikelgröße", "Temperatur", "Chargenvariation"], "reference_method": "Karl-Fischer-Titration", "methods_compared": ["nir", "raman"], "steps": ["Proben beim Kunden ziehen und sofort per Karl-Fischer messen", "Offline-Messung im AFS-Labor mit NIR-Reflexionssonde und Raman-Sonde", "Spektren vorverarbeiten und visuell vergleichen", "PCA und einfaches PLS-Modell gegen Karl-Fischer-Werte"], "success_criterion": "Vorhersagefehler kleiner als die vom Kunden geforderte Genauigkeit", "duration_estimate": "ca. 2–3 Wochen inklusive Probenversand"}, "risks": [{"text": "Belag auf dem Sondenfenster durch Pulverstaub verfälscht die Messung.", "severity": "high"}, {"text": "Partikelgrößenänderung während der Trocknung beeinflusst das NIR-Signal.", "severity": "medium"}, {"text": "Genauigkeitsanforderung ist noch unbekannt.", "severity": "medium"}]}, "C1_analyze_request": {"text": "Wir trocknen ein pharmazeutisches Pulver im Wirbelschichttrockner und wollen die Restfeuchte inline messen, Zielbereich etwa 1–5 %. Aktuell ziehen wir stündlich Proben für Karl-Fischer-Titration.", "language": "de"}, "C1b_recompute_request": {"briefing": {"schema_version": "0.2", "case_id": "case-2026-10-17-001", "language": "de", "summary": "Restfeuchte eines pharmazeutischen Pulvers inline im Wirbelschichttrockner messen, statt stündlich Proben zu ziehen.", "parameters": [{"id": "measurand", "value": "Restfeuchte (Wasser)", "status": "known", "evidence_quote": "die Restfeuchte inline messen", "source": "customer_text"}, {"id": "measurand_type", "value": "Feuchte", "status": "known", "evidence_quote": "Restfeuchte", "source": "customer_text"}, {"id": "matrix", "value": "pharmazeutisches Pulver", "status": "known", "evidence_quote": "ein pharmazeutisches Pulver", "source": "customer_text"}, {"id": "phase", "value": "Pulver im Wirbelbett", "status": "known", "evidence_quote": "Pulver im Wirbelschichttrockner", "source": "customer_text"}, {"id": "water_content", "value": "1–5 %", "status": "known", "evidence_quote": "Zielbereich etwa 1–5 %", "source": "customer_text"}, {"id": "concentration_range", "value": "1–5 % Wasser", "status": "known", "evidence_quote": "Zielbereich etwa 1–5 %", "source": "customer_text"}, {"id": "required_accuracy", "value": null, "status": "unknown", "evidence_quote": null, "source": "llm_assumption"}, {"id": "temperature", "value": "40–80 °C, typisch für Wirbelschichttrocknung", "status": "assumed", "evidence_quote": null, "source": "llm_assumption"}, {"id": "pressure", "value": "Normaldruck", "status": "assumed", "evidence_quote": null, "source": "llm_assumption"}, {"id": "aggressiveness_fouling", "value": "Staub, mögliche Ablagerung am Fenster", "status": "assumed", "evidence_quote": null, "source": "llm_assumption"}, {"id": "installation_point", "value": "Wirbelschichttrockner", "status": "known", "evidence_quote": "im Wirbelschichttrockner", "source": "customer_text"}, {"id": "distance_to_instrument", "value": null, "status": "unknown", "evidence_quote": null, "source": "llm_assumption"}, {"id": "measurement_frequency", "value": "deutlich häufiger als stündlich", "status": "assumed", "evidence_quote": "stündlich Proben", "source": "llm_assumption"}, {"id": "reference_method", "value": "Karl-Fischer-Titration", "status": "known", "evidence_quote": "für Karl-Fischer-Titration", "source": "customer_text"}, {"id": "samples_available", "value": null, "status": "unknown", "evidence_quote": null, "source": "llm_assumption"}, {"id": "regulatory", "value": "GMP wahrscheinlich, ATEX wegen Pulverstaub prüfen", "status": "assumed", "evidence_quote": null, "source": "llm_assumption"}], "features": {"phase": {"value": "solid_powder", "status": "known"}, "water_level": {"value": "low", "status": "known"}, "analyte_type": {"value": "moisture", "status": "known"}, "concentration_level": {"value": "low_percent", "status": "known"}, "accuracy_need": {"value": "unknown", "status": "unknown"}, "temperature_class": {"value": "elevated", "status": "assumed"}, "pressure_class": {"value": "ambient", "status": "assumed"}, "fouling_risk": {"value": "medium", "status": "assumed"}, "distance_class": {"value": "unknown", "status": "unknown"}, "fluorescence_risk": {"value": "unknown", "status": "unknown"}, "turbidity": {"value": "opaque", "status": "assumed"}, "hazardous_area": {"value": "unknown", "status": "unknown"}}, "questions": [{"id": "q1", "text": "Welche Messgenauigkeit brauchen Sie für die Restfeuchte, zum Beispiel ±0,2 %?", "priority": "high", "why": "Bestimmt, ob NIR ausreicht und wie aufwendig die Kalibrierung wird.", "parameter_id": "required_accuracy", "feature": "accuracy_need", "answer": null}, {"id": "q2", "text": "Wie weit wäre das Spektrometer vom Messpunkt entfernt?", "priority": "high", "why": "Entscheidet über Faserlänge und schließt MIR bei langen Wegen aus.", "parameter_id": "distance_to_instrument", "feature": "distance_class", "answer": null}, {"id": "q3", "text": "Können Sie 10–20 Proben mit Karl-Fischer-Referenzwerten über den ganzen Feuchtebereich bereitstellen?", "priority": "high", "why": "Ohne Referenzproben ist keine Machbarkeitsstudie möglich.", "parameter_id": "samples_available", "feature": null, "answer": null}, {"id": "q4", "text": "Liegt der Trockner in einer ATEX-Zone?", "priority": "medium", "why": "Ändert die Anforderungen an Sonde und Lichtquelle.", "parameter_id": "regulatory", "feature": "hazardous_area", "answer": null}, {"id": "q5", "text": "Bei welcher Temperatur läuft die Trocknung?", "priority": "low", "why": "Wichtig für Sondenmaterial und Temperaturkompensation.", "parameter_id": "temperature", "feature": "temperature_class", "answer": null}], "methods": {"ranked": [{"rank": 1, "method": "nir", "mode": "diffuse_reflectance", "spectral_range": "ca. 1100–2500 nm", "fiber": "Quarzfaser", "probe": "Reflexionssonde mit Saphirfenster", "score_total": 8.5, "confidence": "high", "scores": [{"criterion": "Empfindlichkeit für den Messwert", "score": 3, "rule_id": "R-WATER-NIR", "note": "Wasser hat starke Banden im NIR"}, {"criterion": "Probenphase", "score": 2.5, "rule_id": "R-POWDER-DR", "note": "Pulver gut per diffuser Reflexion messbar"}, {"criterion": "Faserlänge und Installation", "score": 2, "rule_id": "R-FIBER-SILICA", "note": "Quarzfaser erlaubt lange Wege"}, {"criterion": "Prozessbedingungen", "score": 1, "rule_id": null, "note": "Fensterbelag möglich, Spülung prüfen"}], "claims": [{"claim": "Wasser zeigt im NIR charakteristische Banden, die sich zur Feuchtebestimmung eignen.", "kb_card": "card-nir"}, {"claim": "Diffuse Reflexion ist der übliche Modus für Pulver und Granulate.", "kb_card": "card-mode-diffuse-reflectance"}]}, {"rank": 2, "method": "raman", "mode": "raman_backscatter", "spectral_range": "Anregung 785 nm", "fiber": "Quarzfaser", "probe": "Raman-Sonde, nicht kontaktierend", "score_total": 5, "confidence": "medium", "scores": [{"criterion": "Empfindlichkeit für den Messwert", "score": 1, "rule_id": "R-WATER-RAMAN", "note": "Wasser ist ein schwacher Raman-Streuer"}, {"criterion": "Probenphase", "score": 2, "rule_id": null, "note": "Pulver messbar"}, {"criterion": "Faserlänge und Installation", "score": 2, "rule_id": "R-FIBER-SILICA", "note": "lange Wege möglich"}, {"criterion": "Prozessbedingungen", "score": 0, "rule_id": "R-FLUOR-RISK", "note": "Fluoreszenz der Matrix möglich"}], "claims": [{"claim": "Raman kann zusätzlich Wirkstoff oder Polymorphie erfassen, falls das später relevant wird.", "kb_card": "card-raman"}]}], "rejected": [{"method": "mir", "reason": "Pulver im bewegten Bett, ATR-Kontakt unzuverlässig, MIR-Fasern nur kurz.", "rule_id": "R-MIR-FIBER-LENGTH", "blocker": false}, {"method": "uv_vis", "reason": "Wasser ist im UV-Vis praktisch nicht nachweisbar.", "rule_id": "R-UVVIS-NOT-CHROMOPHORE", "blocker": true}, {"method": "fluorescence", "reason": "Wasser fluoresziert nicht.", "rule_id": "R-FLUOR-NOT-FLUOROPHORE", "blocker": true}, {"method": "scattering", "reason": "Misst Partikeleigenschaften, nicht die Feuchte.", "rule_id": "R-SCATTER-NOT-COMPOSITION", "blocker": true}]}, "experiment": {"goal": "Prüfen, ob NIR-Spektren die Restfeuchte im Bereich 1–5 % mit der geforderten Genauigkeit abbilden.", "sample_count": "15–20", "sample_design": "Gleichmäßig über 1–5 % verteilt, aus mindestens zwei Chargen", "interferents": ["Partikelgröße", "Temperatur", "Chargenvariation"], "reference_method": "Karl-Fischer-Titration", "methods_compared": ["nir", "raman"], "steps": ["Proben beim Kunden ziehen und sofort per Karl-Fischer messen", "Offline-Messung im AFS-Labor mit NIR-Reflexionssonde und Raman-Sonde", "Spektren vorverarbeiten und visuell vergleichen", "PCA und einfaches PLS-Modell gegen Karl-Fischer-Werte"], "success_criterion": "Vorhersagefehler kleiner als die vom Kunden geforderte Genauigkeit", "duration_estimate": "ca. 2–3 Wochen inklusive Probenversand"}, "risks": [{"text": "Belag auf dem Sondenfenster durch Pulverstaub verfälscht die Messung.", "severity": "high"}, {"text": "Partikelgrößenänderung während der Trocknung beeinflusst das NIR-Signal.", "severity": "medium"}, {"text": "Genauigkeitsanforderung ist noch unbekannt.", "severity": "medium"}], "expert_flags": [{"target": "parameters.temperature", "reason": "Annahme, nicht vom Kunden bestätigt"}, {"target": "parameters.pressure", "reason": "Annahme, nicht vom Kunden bestätigt"}, {"target": "parameters.aggressiveness_fouling", "reason": "Annahme, nicht vom Kunden bestätigt"}, {"target": "parameters.measurement_frequency", "reason": "Annahme, nicht vom Kunden bestätigt"}, {"target": "parameters.regulatory", "reason": "Annahme, nicht vom Kunden bestätigt"}, {"target": "methods.ranked[1]", "reason": "Sicherheit: medium"}], "changes": [], "meta": {"model": "claude-sonnet-5-5", "generated_at": "2026-10-17T10:00:00Z", "rules_version": "rules-draft-0", "kb_version": "kb-draft-0", "recomputed": false}}, "edits": [{"feature": "distance_class", "value": "long", "note": "Spektrometer im Technikraum, ca. 30 m"}], "answers": [{"question_id": "q4", "answer": "Ja, ATEX Zone 22", "feature_value": "yes"}]}, "C3_extraction": {"summary": "Restfeuchte eines pharmazeutischen Pulvers inline im Wirbelschichttrockner messen, statt stündlich Proben zu ziehen.", "parameters": [{"id": "measurand", "value": "Restfeuchte (Wasser)", "status": "known", "evidence_quote": "die Restfeuchte inline messen", "source": "customer_text"}, {"id": "measurand_type", "value": "Feuchte", "status": "known", "evidence_quote": "Restfeuchte", "source": "customer_text"}, {"id": "matrix", "value": "pharmazeutisches Pulver", "status": "known", "evidence_quote": "ein pharmazeutisches Pulver", "source": "customer_text"}, {"id": "phase", "value": "Pulver im Wirbelbett", "status": "known", "evidence_quote": "Pulver im Wirbelschichttrockner", "source": "customer_text"}, {"id": "water_content", "value": "1–5 %", "status": "known", "evidence_quote": "Zielbereich etwa 1–5 %", "source": "customer_text"}, {"id": "concentration_range", "value": "1–5 % Wasser", "status": "known", "evidence_quote": "Zielbereich etwa 1–5 %", "source": "customer_text"}, {"id": "required_accuracy", "value": null, "status": "unknown", "evidence_quote": null, "source": "llm_assumption"}, {"id": "temperature", "value": "40–80 °C, typisch für Wirbelschichttrocknung", "status": "assumed", "evidence_quote": null, "source": "llm_assumption"}, {"id": "pressure", "value": "Normaldruck", "status": "assumed", "evidence_quote": null, "source": "llm_assumption"}, {"id": "aggressiveness_fouling", "value": "Staub, mögliche Ablagerung am Fenster", "status": "assumed", "evidence_quote": null, "source": "llm_assumption"}, {"id": "installation_point", "value": "Wirbelschichttrockner", "status": "known", "evidence_quote": "im Wirbelschichttrockner", "source": "customer_text"}, {"id": "distance_to_instrument", "value": null, "status": "unknown", "evidence_quote": null, "source": "llm_assumption"}, {"id": "measurement_frequency", "value": "deutlich häufiger als stündlich", "status": "assumed", "evidence_quote": "stündlich Proben", "source": "llm_assumption"}, {"id": "reference_method", "value": "Karl-Fischer-Titration", "status": "known", "evidence_quote": "für Karl-Fischer-Titration", "source": "customer_text"}, {"id": "samples_available", "value": null, "status": "unknown", "evidence_quote": null, "source": "llm_assumption"}, {"id": "regulatory", "value": "GMP wahrscheinlich, ATEX wegen Pulverstaub prüfen", "status": "assumed", "evidence_quote": null, "source": "llm_assumption"}], "features": {"phase": {"value": "solid_powder", "status": "known"}, "water_level": {"value": "low", "status": "known"}, "analyte_type": {"value": "moisture", "status": "known"}, "concentration_level": {"value": "low_percent", "status": "known"}, "accuracy_need": {"value": "unknown", "status": "unknown"}, "temperature_class": {"value": "elevated", "status": "assumed"}, "pressure_class": {"value": "ambient", "status": "assumed"}, "fouling_risk": {"value": "medium", "status": "assumed"}, "distance_class": {"value": "unknown", "status": "unknown"}, "fluorescence_risk": {"value": "unknown", "status": "unknown"}, "turbidity": {"value": "opaque", "status": "assumed"}, "hazardous_area": {"value": "unknown", "status": "unknown"}}}, "E_error_response": {"error": {"code": "validation_error", "message": "Der Text ist zu kurz. Bitte mindestens 20 Zeichen eingeben.", "details": "text: min_length=20"}}, "C5_scoring": {"rules_version": "rules-draft-0", "ranked": [{"rank": 1, "method": "nir", "mode": "diffuse_reflectance", "spectral_range": "ca. 1100–2500 nm", "fiber": "Quarzfaser", "probe": "Reflexionssonde mit Saphirfenster", "score_total": 8.5, "confidence": "high", "scores": [{"criterion": "Empfindlichkeit für den Messwert", "score": 3, "rule_id": "R-WATER-NIR", "note": "Wasser hat starke Banden im NIR"}, {"criterion": "Probenphase", "score": 2.5, "rule_id": "R-POWDER-DR", "note": "Pulver gut per diffuser Reflexion messbar"}, {"criterion": "Faserlänge und Installation", "score": 2, "rule_id": "R-FIBER-SILICA", "note": "Quarzfaser erlaubt lange Wege"}, {"criterion": "Prozessbedingungen", "score": 1, "rule_id": null, "note": "Fensterbelag möglich, Spülung prüfen"}]}, {"rank": 2, "method": "raman", "mode": "raman_backscatter", "spectral_range": "Anregung 785 nm", "fiber": "Quarzfaser", "probe": "Raman-Sonde, nicht kontaktierend", "score_total": 5, "confidence": "medium", "scores": [{"criterion": "Empfindlichkeit für den Messwert", "score": 1, "rule_id": "R-WATER-RAMAN", "note": "Wasser ist ein schwacher Raman-Streuer"}, {"criterion": "Probenphase", "score": 2, "rule_id": null, "note": "Pulver messbar"}, {"criterion": "Faserlänge und Installation", "score": 2, "rule_id": "R-FIBER-SILICA", "note": "lange Wege möglich"}, {"criterion": "Prozessbedingungen", "score": 0, "rule_id": "R-FLUOR-RISK", "note": "Fluoreszenz der Matrix möglich"}]}], "rejected": [{"method": "mir", "reason": "Pulver im bewegten Bett, ATR-Kontakt unzuverlässig, MIR-Fasern nur kurz.", "rule_id": "R-MIR-FIBER-LENGTH", "blocker": false}, {"method": "uv_vis", "reason": "Wasser ist im UV-Vis praktisch nicht nachweisbar.", "rule_id": "R-UVVIS-NOT-CHROMOPHORE", "blocker": true}, {"method": "fluorescence", "reason": "Wasser fluoresziert nicht.", "rule_id": "R-FLUOR-NOT-FLUOROPHORE", "blocker": true}, {"method": "scattering", "reason": "Misst Partikeleigenschaften, nicht die Feuchte.", "rule_id": "R-SCATTER-NOT-COMPOSITION", "blocker": true}]}, "C6_explain_input": {"case_id": "case-2026-10-17-001", "language": "de", "summary": "Restfeuchte eines pharmazeutischen Pulvers inline im Wirbelschichttrockner messen, statt stündlich Proben zu ziehen.", "parameters": [{"id": "measurand", "value": "Restfeuchte (Wasser)", "status": "known", "evidence_quote": "die Restfeuchte inline messen", "source": "customer_text"}, {"id": "measurand_type", "value": "Feuchte", "status": "known", "evidence_quote": "Restfeuchte", "source": "customer_text"}, {"id": "matrix", "value": "pharmazeutisches Pulver", "status": "known", "evidence_quote": "ein pharmazeutisches Pulver", "source": "customer_text"}, {"id": "phase", "value": "Pulver im Wirbelbett", "status": "known", "evidence_quote": "Pulver im Wirbelschichttrockner", "source": "customer_text"}, {"id": "water_content", "value": "1–5 %", "status": "known", "evidence_quote": "Zielbereich etwa 1–5 %", "source": "customer_text"}, {"id": "concentration_range", "value": "1–5 % Wasser", "status": "known", "evidence_quote": "Zielbereich etwa 1–5 %", "source": "customer_text"}, {"id": "required_accuracy", "value": null, "status": "unknown", "evidence_quote": null, "source": "llm_assumption"}, {"id": "temperature", "value": "40–80 °C, typisch für Wirbelschichttrocknung", "status": "assumed", "evidence_quote": null, "source": "llm_assumption"}, {"id": "pressure", "value": "Normaldruck", "status": "assumed", "evidence_quote": null, "source": "llm_assumption"}, {"id": "aggressiveness_fouling", "value": "Staub, mögliche Ablagerung am Fenster", "status": "assumed", "evidence_quote": null, "source": "llm_assumption"}, {"id": "installation_point", "value": "Wirbelschichttrockner", "status": "known", "evidence_quote": "im Wirbelschichttrockner", "source": "customer_text"}, {"id": "distance_to_instrument", "value": null, "status": "unknown", "evidence_quote": null, "source": "llm_assumption"}, {"id": "measurement_frequency", "value": "deutlich häufiger als stündlich", "status": "assumed", "evidence_quote": "stündlich Proben", "source": "llm_assumption"}, {"id": "reference_method", "value": "Karl-Fischer-Titration", "status": "known", "evidence_quote": "für Karl-Fischer-Titration", "source": "customer_text"}, {"id": "samples_available", "value": null, "status": "unknown", "evidence_quote": null, "source": "llm_assumption"}, {"id": "regulatory", "value": "GMP wahrscheinlich, ATEX wegen Pulverstaub prüfen", "status": "assumed", "evidence_quote": null, "source": "llm_assumption"}], "features": {"phase": {"value": "solid_powder", "status": "known"}, "water_level": {"value": "low", "status": "known"}, "analyte_type": {"value": "moisture", "status": "known"}, "concentration_level": {"value": "low_percent", "status": "known"}, "accuracy_need": {"value": "unknown", "status": "unknown"}, "temperature_class": {"value": "elevated", "status": "assumed"}, "pressure_class": {"value": "ambient", "status": "assumed"}, "fouling_risk": {"value": "medium", "status": "assumed"}, "distance_class": {"value": "unknown", "status": "unknown"}, "fluorescence_risk": {"value": "unknown", "status": "unknown"}, "turbidity": {"value": "opaque", "status": "assumed"}, "hazardous_area": {"value": "unknown", "status": "unknown"}}, "scoring": {"rules_version": "rules-draft-0", "ranked": [{"rank": 1, "method": "nir", "mode": "diffuse_reflectance", "spectral_range": "ca. 1100–2500 nm", "fiber": "Quarzfaser", "probe": "Reflexionssonde mit Saphirfenster", "score_total": 8.5, "confidence": "high", "scores": [{"criterion": "Empfindlichkeit für den Messwert", "score": 3, "rule_id": "R-WATER-NIR", "note": "Wasser hat starke Banden im NIR"}, {"criterion": "Probenphase", "score": 2.5, "rule_id": "R-POWDER-DR", "note": "Pulver gut per diffuser Reflexion messbar"}, {"criterion": "Faserlänge und Installation", "score": 2, "rule_id": "R-FIBER-SILICA", "note": "Quarzfaser erlaubt lange Wege"}, {"criterion": "Prozessbedingungen", "score": 1, "rule_id": null, "note": "Fensterbelag möglich, Spülung prüfen"}]}, {"rank": 2, "method": "raman", "mode": "raman_backscatter", "spectral_range": "Anregung 785 nm", "fiber": "Quarzfaser", "probe": "Raman-Sonde, nicht kontaktierend", "score_total": 5, "confidence": "medium", "scores": [{"criterion": "Empfindlichkeit für den Messwert", "score": 1, "rule_id": "R-WATER-RAMAN", "note": "Wasser ist ein schwacher Raman-Streuer"}, {"criterion": "Probenphase", "score": 2, "rule_id": null, "note": "Pulver messbar"}, {"criterion": "Faserlänge und Installation", "score": 2, "rule_id": "R-FIBER-SILICA", "note": "lange Wege möglich"}, {"criterion": "Prozessbedingungen", "score": 0, "rule_id": "R-FLUOR-RISK", "note": "Fluoreszenz der Matrix möglich"}]}], "rejected": [{"method": "mir", "reason": "Pulver im bewegten Bett, ATR-Kontakt unzuverlässig, MIR-Fasern nur kurz.", "rule_id": "R-MIR-FIBER-LENGTH", "blocker": false}, {"method": "uv_vis", "reason": "Wasser ist im UV-Vis praktisch nicht nachweisbar.", "rule_id": "R-UVVIS-NOT-CHROMOPHORE", "blocker": true}, {"method": "fluorescence", "reason": "Wasser fluoresziert nicht.", "rule_id": "R-FLUOR-NOT-FLUOROPHORE", "blocker": true}, {"method": "scattering", "reason": "Misst Partikeleigenschaften, nicht die Feuchte.", "rule_id": "R-SCATTER-NOT-COMPOSITION", "blocker": true}]}}, "C4_score_input": {"case_id": "case-2026-10-17-001", "features": {"phase": {"value": "solid_powder", "status": "known"}, "water_level": {"value": "low", "status": "known"}, "analyte_type": {"value": "moisture", "status": "known"}, "concentration_level": {"value": "low_percent", "status": "known"}, "accuracy_need": {"value": "unknown", "status": "unknown"}, "temperature_class": {"value": "elevated", "status": "assumed"}, "pressure_class": {"value": "ambient", "status": "assumed"}, "fouling_risk": {"value": "medium", "status": "assumed"}, "distance_class": {"value": "unknown", "status": "unknown"}, "fluorescence_risk": {"value": "unknown", "status": "unknown"}, "turbidity": {"value": "opaque", "status": "assumed"}, "hazardous_area": {"value": "unknown", "status": "unknown"}}}, "C8_briefing": {"schema_version": "0.2", "case_id": "case-2026-10-17-001", "language": "de", "summary": "Restfeuchte eines pharmazeutischen Pulvers inline im Wirbelschichttrockner messen, statt stündlich Proben zu ziehen.", "parameters": [{"id": "measurand", "value": "Restfeuchte (Wasser)", "status": "known", "evidence_quote": "die Restfeuchte inline messen", "source": "customer_text"}, {"id": "measurand_type", "value": "Feuchte", "status": "known", "evidence_quote": "Restfeuchte", "source": "customer_text"}, {"id": "matrix", "value": "pharmazeutisches Pulver", "status": "known", "evidence_quote": "ein pharmazeutisches Pulver", "source": "customer_text"}, {"id": "phase", "value": "Pulver im Wirbelbett", "status": "known", "evidence_quote": "Pulver im Wirbelschichttrockner", "source": "customer_text"}, {"id": "water_content", "value": "1–5 %", "status": "known", "evidence_quote": "Zielbereich etwa 1–5 %", "source": "customer_text"}, {"id": "concentration_range", "value": "1–5 % Wasser", "status": "known", "evidence_quote": "Zielbereich etwa 1–5 %", "source": "customer_text"}, {"id": "required_accuracy", "value": null, "status": "unknown", "evidence_quote": null, "source": "llm_assumption"}, {"id": "temperature", "value": "40–80 °C, typisch für Wirbelschichttrocknung", "status": "assumed", "evidence_quote": null, "source": "llm_assumption"}, {"id": "pressure", "value": "Normaldruck", "status": "assumed", "evidence_quote": null, "source": "llm_assumption"}, {"id": "aggressiveness_fouling", "value": "Staub, mögliche Ablagerung am Fenster", "status": "assumed", "evidence_quote": null, "source": "llm_assumption"}, {"id": "installation_point", "value": "Wirbelschichttrockner", "status": "known", "evidence_quote": "im Wirbelschichttrockner", "source": "customer_text"}, {"id": "distance_to_instrument", "value": null, "status": "unknown", "evidence_quote": null, "source": "llm_assumption"}, {"id": "measurement_frequency", "value": "deutlich häufiger als stündlich", "status": "assumed", "evidence_quote": "stündlich Proben", "source": "llm_assumption"}, {"id": "reference_method", "value": "Karl-Fischer-Titration", "status": "known", "evidence_quote": "für Karl-Fischer-Titration", "source": "customer_text"}, {"id": "samples_available", "value": null, "status": "unknown", "evidence_quote": null, "source": "llm_assumption"}, {"id": "regulatory", "value": "GMP wahrscheinlich, ATEX wegen Pulverstaub prüfen", "status": "assumed", "evidence_quote": null, "source": "llm_assumption"}], "features": {"phase": {"value": "solid_powder", "status": "known"}, "water_level": {"value": "low", "status": "known"}, "analyte_type": {"value": "moisture", "status": "known"}, "concentration_level": {"value": "low_percent", "status": "known"}, "accuracy_need": {"value": "unknown", "status": "unknown"}, "temperature_class": {"value": "elevated", "status": "assumed"}, "pressure_class": {"value": "ambient", "status": "assumed"}, "fouling_risk": {"value": "medium", "status": "assumed"}, "distance_class": {"value": "unknown", "status": "unknown"}, "fluorescence_risk": {"value": "unknown", "status": "unknown"}, "turbidity": {"value": "opaque", "status": "assumed"}, "hazardous_area": {"value": "unknown", "status": "unknown"}}, "questions": [{"id": "q1", "text": "Welche Messgenauigkeit brauchen Sie für die Restfeuchte, zum Beispiel ±0,2 %?", "priority": "high", "why": "Bestimmt, ob NIR ausreicht und wie aufwendig die Kalibrierung wird.", "parameter_id": "required_accuracy", "feature": "accuracy_need", "answer": null}, {"id": "q2", "text": "Wie weit wäre das Spektrometer vom Messpunkt entfernt?", "priority": "high", "why": "Entscheidet über Faserlänge und schließt MIR bei langen Wegen aus.", "parameter_id": "distance_to_instrument", "feature": "distance_class", "answer": null}, {"id": "q3", "text": "Können Sie 10–20 Proben mit Karl-Fischer-Referenzwerten über den ganzen Feuchtebereich bereitstellen?", "priority": "high", "why": "Ohne Referenzproben ist keine Machbarkeitsstudie möglich.", "parameter_id": "samples_available", "feature": null, "answer": null}, {"id": "q4", "text": "Liegt der Trockner in einer ATEX-Zone?", "priority": "medium", "why": "Ändert die Anforderungen an Sonde und Lichtquelle.", "parameter_id": "regulatory", "feature": "hazardous_area", "answer": null}, {"id": "q5", "text": "Bei welcher Temperatur läuft die Trocknung?", "priority": "low", "why": "Wichtig für Sondenmaterial und Temperaturkompensation.", "parameter_id": "temperature", "feature": "temperature_class", "answer": null}], "methods": {"ranked": [{"rank": 1, "method": "nir", "mode": "diffuse_reflectance", "spectral_range": "ca. 1100–2500 nm", "fiber": "Quarzfaser", "probe": "Reflexionssonde mit Saphirfenster", "score_total": 8.5, "confidence": "high", "scores": [{"criterion": "Empfindlichkeit für den Messwert", "score": 3, "rule_id": "R-WATER-NIR", "note": "Wasser hat starke Banden im NIR"}, {"criterion": "Probenphase", "score": 2.5, "rule_id": "R-POWDER-DR", "note": "Pulver gut per diffuser Reflexion messbar"}, {"criterion": "Faserlänge und Installation", "score": 2, "rule_id": "R-FIBER-SILICA", "note": "Quarzfaser erlaubt lange Wege"}, {"criterion": "Prozessbedingungen", "score": 1, "rule_id": null, "note": "Fensterbelag möglich, Spülung prüfen"}], "claims": [{"claim": "Wasser zeigt im NIR charakteristische Banden, die sich zur Feuchtebestimmung eignen.", "kb_card": "card-nir"}, {"claim": "Diffuse Reflexion ist der übliche Modus für Pulver und Granulate.", "kb_card": "card-mode-diffuse-reflectance"}]}, {"rank": 2, "method": "raman", "mode": "raman_backscatter", "spectral_range": "Anregung 785 nm", "fiber": "Quarzfaser", "probe": "Raman-Sonde, nicht kontaktierend", "score_total": 5, "confidence": "medium", "scores": [{"criterion": "Empfindlichkeit für den Messwert", "score": 1, "rule_id": "R-WATER-RAMAN", "note": "Wasser ist ein schwacher Raman-Streuer"}, {"criterion": "Probenphase", "score": 2, "rule_id": null, "note": "Pulver messbar"}, {"criterion": "Faserlänge und Installation", "score": 2, "rule_id": "R-FIBER-SILICA", "note": "lange Wege möglich"}, {"criterion": "Prozessbedingungen", "score": 0, "rule_id": "R-FLUOR-RISK", "note": "Fluoreszenz der Matrix möglich"}], "claims": [{"claim": "Raman kann zusätzlich Wirkstoff oder Polymorphie erfassen, falls das später relevant wird.", "kb_card": "card-raman"}]}], "rejected": [{"method": "mir", "reason": "Pulver im bewegten Bett, ATR-Kontakt unzuverlässig, MIR-Fasern nur kurz.", "rule_id": "R-MIR-FIBER-LENGTH", "blocker": false}, {"method": "uv_vis", "reason": "Wasser ist im UV-Vis praktisch nicht nachweisbar.", "rule_id": "R-UVVIS-NOT-CHROMOPHORE", "blocker": true}, {"method": "fluorescence", "reason": "Wasser fluoresziert nicht.", "rule_id": "R-FLUOR-NOT-FLUOROPHORE", "blocker": true}, {"method": "scattering", "reason": "Misst Partikeleigenschaften, nicht die Feuchte.", "rule_id": "R-SCATTER-NOT-COMPOSITION", "blocker": true}]}, "experiment": {"goal": "Prüfen, ob NIR-Spektren die Restfeuchte im Bereich 1–5 % mit der geforderten Genauigkeit abbilden.", "sample_count": "15–20", "sample_design": "Gleichmäßig über 1–5 % verteilt, aus mindestens zwei Chargen", "interferents": ["Partikelgröße", "Temperatur", "Chargenvariation"], "reference_method": "Karl-Fischer-Titration", "methods_compared": ["nir", "raman"], "steps": ["Proben beim Kunden ziehen und sofort per Karl-Fischer messen", "Offline-Messung im AFS-Labor mit NIR-Reflexionssonde und Raman-Sonde", "Spektren vorverarbeiten und visuell vergleichen", "PCA und einfaches PLS-Modell gegen Karl-Fischer-Werte"], "success_criterion": "Vorhersagefehler kleiner als die vom Kunden geforderte Genauigkeit", "duration_estimate": "ca. 2–3 Wochen inklusive Probenversand"}, "risks": [{"text": "Belag auf dem Sondenfenster durch Pulverstaub verfälscht die Messung.", "severity": "high"}, {"text": "Partikelgrößenänderung während der Trocknung beeinflusst das NIR-Signal.", "severity": "medium"}, {"text": "Genauigkeitsanforderung ist noch unbekannt.", "severity": "medium"}], "expert_flags": [{"target": "parameters.temperature", "reason": "Annahme, nicht vom Kunden bestätigt"}, {"target": "parameters.pressure", "reason": "Annahme, nicht vom Kunden bestätigt"}, {"target": "parameters.aggressiveness_fouling", "reason": "Annahme, nicht vom Kunden bestätigt"}, {"target": "parameters.measurement_frequency", "reason": "Annahme, nicht vom Kunden bestätigt"}, {"target": "parameters.regulatory", "reason": "Annahme, nicht vom Kunden bestätigt"}, {"target": "methods.ranked[1]", "reason": "Sicherheit: medium"}], "changes": [], "meta": {"model": "claude-sonnet-5-5", "generated_at": "2026-10-17T10:00:00Z", "rules_version": "rules-draft-0", "kb_version": "kb-draft-0", "recomputed": false}}}</script>
+<script>
+(function(){
+const EX=JSON.parse(document.getElementById("examples").textContent);
+const KEY="spectrascout-hub-v1";
+let saved={};try{saved=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(e){}};
+
+/* ---------- nodes ---------- */
+const DEF_NODES=[
+ {id:"ex",t:"Эксперт AFS",s:"пользователь",c:"--n-ex",x:10,y:260},
+ {id:"fe",t:"Фронт",s:"Гаджи · CS 4",c:"--n-fe",x:265,y:260},
+ {id:"be",t:"Бэкенд",s:"Семён · CS 2",c:"--n-be",x:530,y:260},
+ {id:"llm",t:"LLM-модуль (Claude)",s:"Ниджат · CS 1",c:"--n-llm",x:800,y:60},
+ {id:"eng",t:"Движок правил",s:"Ярик · CS 3",c:"--n-eng",x:800,y:450},
+ {id:"kb",t:"Знания химика",s:"Никита · химик",c:"--n-kb",x:540,y:560},
+];
+const W=190,H=62;
+const nodes=DEF_NODES.map(n=>Object.assign({},n,(saved.nodes||{})[n.id]||{}));
+const N=id=>nodes.find(n=>n.id===id);
+
+/* ---------- edges (static) ---------- */
+const EDGES=[
+ {id:"e-ask",a:"ex",b:"fe",lbl:"текст",k:-1,pair:"ex-fe"},
+ {id:"e-show",a:"fe",b:"ex",lbl:"экран",k:1,pair:"ex-fe"},
+ {id:"C1",a:"fe",b:"be",lbl:"C1",k:-3,pair:"fe-be"},
+ {id:"C1b",a:"fe",b:"be",lbl:"C1b",k:-1,pair:"fe-be"},
+ {id:"C8",a:"be",b:"fe",lbl:"C8",k:1,pair:"fe-be"},
+ {id:"E",a:"be",b:"fe",lbl:"E",k:3,pair:"fe-be"},
+ {id:"C2",a:"be",b:"llm",lbl:"C2",k:-3,pair:"be-llm"},
+ {id:"C3",a:"llm",b:"be",lbl:"C3",k:-1,pair:"be-llm"},
+ {id:"C6",a:"be",b:"llm",lbl:"C6",k:1,pair:"be-llm"},
+ {id:"C7",a:"llm",b:"be",lbl:"C7",k:3,pair:"be-llm"},
+ {id:"C4",a:"be",b:"eng",lbl:"C4",k:-1,pair:"be-eng"},
+ {id:"C5",a:"eng",b:"be",lbl:"C5",k:1,pair:"be-eng"},
+ {id:"H-kb",a:"kb",b:"llm",lbl:"карточки",k:0,pair:"kb-llm",design:true},
+ {id:"H-rules",a:"kb",b:"eng",lbl:"правила",k:0,pair:"kb-eng",design:true},
+];
+
+/* ---------- contracts meta ---------- */
+const C={
+ C1:{name:"AnalyzeRequest",from:"Гаджи (фронт)",to:"Семён (бэкенд)",how:"HTTP POST /analyze",what:"Текст клиента и язык. Больше ничего.",check:"Семён проверяет длину 20–3000 и язык de/en. Иначе ответ E."},
+ C2:{name:"ExtractInput",from:"Семён",to:"Ниджат (шаг А)",how:"вызов llm.extract()",what:"case_id, текст и язык без изменений.",check:"Ниджат: текст не пустой, язык поддержан."},
+ C3:{name:"Extraction",from:"Ниджат (Claude)",to:"Семён",how:"ответ llm.extract()",what:"Резюме, 16 параметров со статусом и цитатой, 12 признаков для движка.",check:"Семён валидирует Pydantic. При ошибке один повтор, потом E llm_error."},
+ C4:{name:"ScoreInput",from:"Семён",to:"Ярик (движок)",how:"вызов engine.score_methods()",what:"case_id и 12 признаков. Свободный текст движок не получает.",check:"Ярик: все 12 признаков на месте, значения из словаря."},
+ C5:{name:"Scoring",from:"Ярик",to:"Семён",how:"ответ engine.score_methods()",what:"1–3 метода с баллами по критериям и уверенностью, остальные отброшены с причиной.",check:"Каждый из 6 методов ровно в одном списке, сумма баллов совпадает."},
+ C6:{name:"ExplainInput",from:"Семён",to:"Ниджат (шаг Б)",how:"вызов llm.explain()",what:"Резюме, параметры, признаки и весь результат движка без изменений.",check:"Ниджат: ranked не пустой."},
+ C7:{name:"Explanation",from:"Ниджат (Claude)",to:"Семён",how:"ответ llm.explain()",what:"Вопросы клиенту, объяснение для каждого метода со ссылкой на карточку, эксперимент, риски.",check:"Объяснения ровно для методов из ranked, вопросы только про неизвестное."},
+ C8:{name:"Briefing",from:"Семён",to:"Гаджи (фронт)",how:"HTTP-ответ",what:"Готовый брифинг: склейка C3, C5, C7 плюс флаги, изменения и служебные данные.",check:"Гаджи рисует 8 блоков, ничего не пересчитывает сам."},
+ C1b:{name:"RecomputeRequest",from:"Гаджи",to:"Семён",how:"HTTP POST /recompute",what:"Последний брифинг, правки признаков и ответы на вопросы.",check:"Значения правок только из словаря признаков."},
+ E:{name:"ErrorResponse",from:"Семён",to:"Гаджи",how:"HTTP 4xx/5xx",what:"Код ошибки, сообщение для человека, детали для разработчика.",check:"Гаджи показывает понятное сообщение, а не пустой экран."},
+};
+const EXK={C1:"C1_analyze_request",C2:"C2_extract_input",C3:"C3_extraction",C4:"C4_score_input",C5:"C5_scoring",C6:"C6_explain_input",C7:"C7_explanation",C8:"C8_briefing",C1b:"C1b_recompute_request",E:"E_error_response"};
+const ARROW={C1:"2",C2:"4",C3:"5",C4:"6",C5:"7",C6:"8",C7:"9",C8:"10 и 16",C1b:"13",E:"при ошибке"};
+
+/* ---------- scenarios ---------- */
+const SC={
+ analyze:[
+  {e:"e-ask",title:"Эксперт вставляет текст клиента и жмёт «Анализ»",who:"Эксперт AFS",note:"Не контракт: это действие человека в интерфейсе."},
+  {e:"C1",title:"Фронт отправляет запрос на бэкенд"},
+  {self:"be",title:"Бэкенд проверяет вход",who:"Семён",note:"Не контракт: проверка внутри бэкенда. Если текст короче 20 символов или язык не de/en, сразу ответ E."},
+  {e:"C2",title:"Бэкенд вызывает шаг А у LLM-модуля"},
+  {e:"C3",title:"Claude возвращает параметры и признаки"},
+  {e:"C4",title:"Бэкенд передаёт признаки в движок правил"},
+  {e:"C5",title:"Движок возвращает баллы и отказы"},
+  {e:"C6",title:"Бэкенд вызывает шаг Б у LLM-модуля"},
+  {e:"C7",title:"Claude возвращает вопросы, объяснения, эксперимент, риски"},
+  {e:"C8",title:"Бэкенд склеивает брифинг и отдаёт фронту"},
+  {e:"e-show",title:"Фронт показывает 8 блоков эксперту",who:"Гаджи",note:"Не контракт: отрисовка экрана."},
+ ],
+ recompute:[
+  {e:"e-ask",title:"Эксперт отвечает на вопрос или правит признак",who:"Эксперт AFS",note:"Например: расстояние до прибора 30 м, зона ATEX есть."},
+  {e:"C1b",title:"Фронт отправляет брифинг с правками"},
+  {self:"be",title:"Бэкенд применяет правки к признакам",who:"Семён",note:"Признаки получают статус known и источник expert_edit. Шаг А пропускается: текст заново не разбираем."},
+  {e:"C4",title:"Пересчёт баллов с новыми признаками"},
+  {e:"C5",title:"Движок возвращает новые баллы"},
+  {e:"C6",title:"Шаг Б заново"},
+  {e:"C7",title:"Новые вопросы и объяснения"},
+  {e:"C8",title:"Новый брифинг, в поле changes видно, что поменялось"},
+  {e:"e-show",title:"Фронт подсвечивает изменения",who:"Гаджи",note:"Не контракт."},
+ ],
+ error:[
+  {e:"e-ask",title:"Эксперт вставляет слишком короткий текст",who:"Эксперт AFS",note:"Например одно слово."},
+  {e:"C1",title:"Фронт отправляет запрос",payload:{text:"zu kurz",language:"de"}},
+  {self:"be",title:"Бэкенд находит ошибку во входе",who:"Семён",note:"Дальше по цепочке ничего не вызывается, LLM и движок не тратятся."},
+  {e:"E",title:"Бэкенд возвращает понятную ошибку"},
+  {e:"e-show",title:"Фронт показывает сообщение",who:"Гаджи",note:"Не пустой экран, а текст из message."},
+ ]};
+let sc="analyze",step=-1,timer=null,selected=null;
+
+/* ---------- svg helpers ---------- */
+const svgNS="http://www.w3.org/2000/svg";
+const el=(t,a={})=>{const e=document.createElementNS(svgNS,t);for(const k in a)e.setAttribute(k,a[k]);return e};
+const eg=document.getElementById("edges"),ng=document.getElementById("nodes"),svg=document.getElementById("lab"),packet=document.getElementById("packet");
+const center=n=>({x:n.x+W/2,y:n.y+H/2});
+/* ray from point P (inside node n) in direction of T: where it leaves the box, plus a small gap */
+function exitFrom(n,P,T,gap){const dx=T.x-P.x,dy=T.y-P.y;let t=Infinity;
+  if(dx>0)t=Math.min(t,(n.x+W-P.x)/dx);if(dx<0)t=Math.min(t,(n.x-P.x)/dx);
+  if(dy>0)t=Math.min(t,(n.y+H-P.y)/dy);if(dy<0)t=Math.min(t,(n.y-P.y)/dy);
+  if(!isFinite(t))return P;const L=Math.hypot(dx,dy)||1;return{x:P.x+dx*t+dx/L*gap,y:P.y+dy*t+dy/L*gap}}
+function clampIn(n,p){return{x:Math.max(n.x+8,Math.min(n.x+W-8,p.x)),y:Math.max(n.y+8,Math.min(n.y+H-8,p.y))}}
+function geom(ed){
+  const A=N(ed.a),B=N(ed.b),ca=center(A),cb=center(B);
+  // lanes are offset along the normal of a fixed pair direction, so request and response never swap sides
+  const [p,q]=ed.pair.split("-").map(N);const pc=center(p),qc=center(q);
+  let nx=-(qc.y-pc.y),ny=qc.x-pc.x;const L=Math.hypot(nx,ny)||1;nx/=L;ny/=L;
+  const aA=clampIn(A,{x:ca.x+nx*ed.k*8,y:ca.y+ny*ed.k*8}),aB=clampIn(B,{x:cb.x+nx*ed.k*8,y:cb.y+ny*ed.k*8});
+  const ctrl={x:(aA.x+aB.x)/2+nx*ed.k*16,y:(aA.y+aB.y)/2+ny*ed.k*16};
+  const s=exitFrom(A,aA,ctrl,2),e=exitFrom(B,aB,ctrl,5);
+  const mid={x:.25*s.x+.5*ctrl.x+.25*e.x,y:.25*s.y+.5*ctrl.y+.25*e.y};
+  return{d:`M${s.x},${s.y} Q${ctrl.x},${ctrl.y} ${e.x},${e.y}`,mid};
+}
+function drawEdges(){
+  eg.innerHTML="";
+  EDGES.forEach(ed=>{
+    const g=el("g",{class:"edge"+(ed.design?" design":""),id:"edge-"+ed.id});
+    const {d,mid}=geom(ed);
+    g.appendChild(el("path",{d,"marker-end":"url(#arr)",id:"path-"+ed.id}));
+    const w=ed.lbl.length*7+10;
+    g.appendChild(el("rect",{class:"lblbg",x:mid.x-w/2,y:mid.y-9,width:w,height:18,rx:5}));
+    const t=el("text",{x:mid.x,y:mid.y+4,"text-anchor":"middle"});t.textContent=ed.lbl;g.appendChild(t);
+    eg.appendChild(g);
+  });
+  markEdges();
+}
+function drawNodes(){
+  ng.innerHTML="";
+  nodes.forEach(n=>{
+    const g=el("g",{class:"node",id:"node-"+n.id,tabindex:"0",role:"button","aria-label":n.t+", "+n.s,transform:`translate(${n.x},${n.y})`});
+    g.appendChild(el("rect",{width:W,height:H,rx:12,fill:"var(--surface)",stroke:`var(${n.c})`}));
+    g.appendChild(el("rect",{width:6,height:H-24,x:10,y:12,rx:3,fill:`var(${n.c})`}));
+    const t=el("text",{class:"t",x:26,y:27});t.textContent=n.t;g.appendChild(t);
+    const s=el("text",{class:"s",x:26,y:46});s.textContent=n.s;g.appendChild(s);
+    ng.appendChild(g);
+    attachDrag(g,n);
+  });
+  markNodes();
+}
+function svgPoint(evt){const p=svg.createSVGPoint();p.x=evt.clientX;p.y=evt.clientY;return p.matrixTransform(svg.getScreenCTM().inverse())}
+function attachDrag(g,n){
+  let start=null,moved=false;
+  g.addEventListener("pointerdown",ev=>{g.setPointerCapture(ev.pointerId);const p=svgPoint(ev);start={dx:p.x-n.x,dy:p.y-n.y};moved=false;g.classList.add("dragging")});
+  g.addEventListener("pointermove",ev=>{if(!start)return;const p=svgPoint(ev);const nx=Math.max(0,Math.min(1010-W,p.x-start.dx)),ny=Math.max(0,Math.min(640-H,p.y-start.dy));if(Math.abs(nx-n.x)+Math.abs(ny-n.y)>1)moved=true;n.x=nx;n.y=ny;g.setAttribute("transform",`translate(${n.x},${n.y})`);drawEdges()});
+  const end=()=>{if(!start)return;start=null;g.classList.remove("dragging");if(moved){persist()}else{select(n.id)}};
+  g.addEventListener("pointerup",end);g.addEventListener("pointercancel",end);
+  g.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();select(n.id)}});
+}
+function persist(){saved.nodes={};nodes.forEach(n=>saved.nodes[n.id]={x:n.x,y:n.y,t:n.t,s:n.s});save()}
+
+/* ---------- state rendering ---------- */
+function markEdges(){
+  const steps=SC[sc];
+  document.querySelectorAll(".edge").forEach(g=>g.classList.remove("active","done"));
+  steps.forEach((s,i)=>{if(!s.e)return;const g=document.getElementById("edge-"+s.e);if(!g)return;if(i<step)g.classList.add("done");if(i===step)g.classList.add("active")});
+}
+function markNodes(){
+  document.querySelectorAll(".node").forEach(g=>g.classList.remove("active","selected"));
+  const s=SC[sc][step];
+  if(s){const ed=EDGES.find(e=>e.id===s.e);const id=s.self||(ed&&ed.b);const g=document.getElementById("node-"+id);if(g)g.classList.add("active")}
+  if(selected){const g=document.getElementById("node-"+selected);if(g)g.classList.add("selected")}
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function inspector(){
+  const box=document.getElementById("insp");const steps=SC[sc];let h="";
+  if(step<0){
+    h=`<span class="stepno">Готово к прогону · ${steps.length} шагов</span><h3>Нажми «Запустить» или «шаг»</h3>
+    <p class="muted">Сценарий <b>${sc==="analyze"?"/analyze: первый разбор запроса":sc==="recompute"?"/recompute: эксперт ответил на вопрос":"ошибка во входе"}</b>. По схеме побежит точка, а здесь появится контракт этого шага и его JSON из <code>contracts/examples/</code>.</p>
+    <p class="muted">Подписи на стрелках это номера контрактов. Всего в основном проходе 8: C1–C8.</p>`;
+  }else{
+    const s=steps[step];const cid=s.e&&C[s.e]?s.e:null;
+    h=`<span class="stepno">Шаг ${step+1} из ${steps.length}</span><h3>${esc(s.title)}</h3>`;
+    if(cid){
+      const c=C[cid];const payload=s.payload||EX[EXK[cid]];
+      h+=`<div><span class="badge">${cid} · ${c.name}</span></div>
+      <div class="kv"><b>От</b><span>${c.from}</span><b>Кому</b><span>${c.to}</span><b>Как</b><span>${c.how}</span><b>Внутри</b><span>${c.what}</span><b>Проверка</b><span>${c.check}</span></div>
+      <pre class="json">${esc(JSON.stringify(payload,null,2))}</pre>`;
+    }else{
+      h+=`<div><span class="badge none">не контракт</span></div><div class="kv"><b>Кто</b><span>${esc(s.who||"")}</span></div><p class="muted">${esc(s.note||"")}</p>`;
+    }
+  }
+  if(selected){const n=N(selected);h+=`<div class="edit"><span class="stepno">Блок «${esc(n.t)}»</span>
+    <label>Название<input id="ed-t" value="${esc(n.t)}"></label><label>Подпись<input id="ed-s" value="${esc(n.s)}"></label>
+    <div class="ctl" style="padding:0;border:0"><button type="button" id="ed-ok">Сохранить</button><button type="button" id="ed-x">Закрыть</button></div></div>`}
+  box.innerHTML=h;
+  if(selected){
+    document.getElementById("ed-ok").onclick=()=>{const n=N(selected);n.t=document.getElementById("ed-t").value.trim()||n.t;n.s=document.getElementById("ed-s").value.trim();persist();drawNodes();inspector()};
+    document.getElementById("ed-x").onclick=()=>{selected=null;markNodes();inspector()};
+  }
+}
+function select(id){selected=id;markNodes();inspector()}
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function animate(){
+  const s=SC[sc][step];packet.setAttribute("opacity","0");
+  if(!s||!s.e||reduce)return;
+  const p=document.getElementById("path-"+s.e);if(!p)return;
+  const L=p.getTotalLength();const t0=performance.now();const dur=700;
+  packet.setAttribute("opacity","1");
+  (function f(now){const k=Math.min(1,(now-t0)/dur);const pt=p.getPointAtLength(L*k);packet.setAttribute("cx",pt.x);packet.setAttribute("cy",pt.y);if(k<1)requestAnimationFrame(f);else setTimeout(()=>packet.setAttribute("opacity","0"),250)})(t0);
+}
+function render(){markEdges();markNodes();inspector();animate();
+  document.getElementById("bPrev").disabled=step<0;document.getElementById("bNext").disabled=step>=SC[sc].length-1;
+  document.getElementById("bPlay").textContent=timer?"❚❚ Пауза":(step>=SC[sc].length-1?"↺ Ещё раз":"▶ Запустить")}
+function stop(){clearInterval(timer);timer=null}
+document.getElementById("bNext").onclick=()=>{stop();if(step<SC[sc].length-1){step++;render()}};
+document.getElementById("bPrev").onclick=()=>{stop();if(step>=0){step--;render()}};
+document.getElementById("bReset").onclick=()=>{stop();step=-1;selected=null;nodes.forEach((n,i)=>{const d=DEF_NODES[i];n.x=d.x;n.y=d.y;n.t=d.t;n.s=d.s});saved.nodes={};save();drawNodes();drawEdges();render()};
+document.getElementById("bPlay").onclick=()=>{
+  if(timer){stop();render();return}
+  if(step>=SC[sc].length-1)step=-1;
+  const tick=()=>{if(step<SC[sc].length-1){step++;render()}if(step>=SC[sc].length-1){stop();render()}};
+  tick();timer=setInterval(tick,1700);render();
+};
+document.querySelectorAll("[data-sc]").forEach(b=>b.onclick=()=>{stop();sc=b.dataset.sc;step=-1;document.querySelectorAll("[data-sc]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));render()});
+
+/* ---------- tabs ---------- */
+const tabs=[...document.querySelectorAll("[role=tab]")];
+function showTab(id){tabs.forEach(t=>t.setAttribute("aria-selected",String(t.dataset.tab===id)));document.querySelectorAll("[data-panel]").forEach(p=>p.hidden=p.dataset.panel!==id);saved.tab=id;save()}
+tabs.forEach(t=>t.onclick=()=>showTab(t.dataset.tab));
+
+/* ---------- contracts table ---------- */
+document.getElementById("ctable").innerHTML=Object.keys(C).map(k=>{const c=C[k];return`<tr><td class="id">${k}</td><td><code>${c.name}</code></td><td>${c.from} → ${c.to}</td><td>${ARROW[k]}</td><td>${c.what}</td><td>${c.how}</td></tr>`}).join("");
+
+/* ---------- people ---------- */
+const PEOPLE=[{"name": "Ниджат", "role": "CS 1 · капитан · LLM-модуль", "c": "--n-llm", "mission": "Превращает текст клиента в данные и объяснения через Claude, держит контракты и ритм команды.", "sections": [{"t": "Владеет", "items": ["Модуль <code>llm/</code>: функции <code>extract()</code> и <code>explain()</code>", "Промпты шагов А и Б", "Папка <code>contracts/</code>: единственный, кто меняет контракты", "Демо-видео, резюме на английском, сдача"]}, {"t": "Отдаёт и получает", "items": [["Отдаёт", ["C3 Extraction Семёну (шаг А)", "C7 Explanation Семёну (шаг Б)", "Контракты и их изменения всем (H10)"]], ["Получает", ["C2 и C6 от Семёна", "Список параметров (H1), словарь признаков (H2), карточки (H4) от Никиты", "Цифры качества от Ярика (H7), экран для видео от Гаджи (H8)"]]]}, {"t": "LLM-процессы: что, зачем, роль", "items": [["Шаг А «извлечение» · <code>extract()</code>", ["Вход: текст клиента и язык", "Claude находит 16 параметров, ставит статус и дословную цитату, переводит в 12 признаков", "Зачем: движок не умеет читать свободный текст, ему нужны признаки из словаря", "Правила промпта: не придумывать; нет данных → unknown; assumed только для типичных значений; цитата только дословно", "Модель claude-sonnet-5-5, ответ строго по схеме C3, при ошибке один повтор"]], ["Шаг Б «объяснение» · <code>explain()</code>", ["Вход: параметры, признаки и результат движка", "Claude пишет вопросы только про unknown и assumed, сортирует по влиянию", "Объясняет каждый метод из ranked только по карточкам Никиты, у каждого утверждения ссылка kb_card", "Предлагает эксперимент по шаблону и риски", "Не выбирает методы и не меняет баллы, это делает движок"]], ["Карточки знаний", ["<code>explain()</code> сам читает <code>kb/card-*.md</code> для методов из ranked", "В контракт карточки не входят, только ссылки на них"]]]}, {"t": "С кем проверяет", "items": [["Никита", ["16 параметров и 12 признаков: всё ли нужно химику", "Вопросы и объяснения на 5 кейсах: химически верно?"]], ["Семён", ["Сигнатуры <code>extract()</code> и <code>explain()</code> совпадают с C2/C3/C6/C7", "Время ответа и обработка ошибок Claude"]], ["Ярик", ["Признаки покрывают все правила движка, нет признака, который правилам нужен, а LLM не выдаёт"]], ["Гаджи", ["Тексты на экране понятны эксперту, сценарий демо"]]]}, {"t": "Обсуждает", "items": ["Любое изменение контрактов со всеми, кого оно касается", "Что вырезать, если не успеваем", "Сценарий видео и кто что говорит"]}]}, {"name": "Семён", "role": "CS 2 · бэкенд", "c": "--n-be", "mission": "Перемычка между всеми частями: принимает запрос, по очереди вызывает LLM-модуль и движок, собирает брифинг.", "sections": [{"t": "Владеет", "items": ["<code>backend/</code> на FastAPI: <code>/analyze</code>, <code>/recompute</code>, <code>/health</code>", "Оркестрация шагов, логи, деплой, README"]}, {"t": "Отдаёт и получает", "items": [["Отдаёт", ["C2 и C6 Ниджату, C4 Ярику", "C8 или E Гаджи", "Адрес API и логи всем (H9)"]], ["Получает", ["C1 и C1b от Гаджи", "C3, C7 от Ниджата, C5 от Ярика"]]]}, {"t": "Процессы бэкенда: что, зачем, роль", "items": [["1. Приём и проверка", ["C1 или C1b проверяются Pydantic", "Ошибка → E validation_error, дальше ничего не вызывается и лимит не тратится"]], ["2. Шаг А", ["Создать case_id, вызвать <code>llm.extract()</code> (C2 → C3)"]], ["3. Движок", ["Вызвать <code>engine.score_methods()</code> (C4 → C5) обычной функцией Python, без отдельного HTTP-сервера"]], ["4. Шаг Б", ["Вызвать <code>llm.explain()</code> (C6 → C7)"]], ["5. Сборка C8", ["Склеить C3, C5 и C7, добавить expert_flags, changes, meta"]], ["6. Пересчёт", ["Применить правки и ответы к признакам: статус known, источник expert_edit", "Пропустить шаг А, повторить шаги 3–5, заполнить changes"]], ["7. Ошибки и логи", ["Таймаут или невалидный ответ Claude → один повтор, потом E llm_error", "Исключение движка → E engine_error", "Каждый шаг в лог с case_id и временем"]]]}, {"t": "С кем проверяет", "items": [["Гаджи", ["Формат C1, C1b, C8, E, адрес API, CORS, как выглядят ошибки"]], ["Ниджат", ["Сигнатуры функций LLM, заглушки до их готовности"]], ["Ярик", ["Сигнатура <code>score_methods()</code>, скорость, исключения"]]]}, {"t": "Обсуждает", "items": ["Заглушки: пока чужая часть не готова, отдаёт пример из <code>contracts/examples/</code>", "Деплой и как жюри откроет ссылку"]}]}, {"name": "Ярик", "role": "CS 3 · движок правил и оценка", "c": "--n-eng", "mission": "Превращает знания Никиты в код, который выбирает методы одинаково при каждом запуске.", "sections": [{"t": "Владеет", "items": ["<code>engine/</code>: функция <code>score_methods()</code>", "<code>rules/rules.yaml</code>: правила, критерии, веса", "<code>eval/</code>: прогон кейсов и цифры"]}, {"t": "Отдаёт и получает", "items": [["Отдаёт", ["C5 Scoring Семёну", "Цифры качества Ниджату (H7)", "Черновик шкалы и весов Никите на правку"]], ["Получает", ["C4 от Семёна", "Словарь признаков (H2), правила (H3), кейсы (H5) от Никиты"]]]}, {"t": "Процессы движка: что, зачем, роль", "items": [["1. Блокеры", ["Для каждого из 6 методов проверить жёсткие правила", "Сработало → в rejected с blocker = true и причиной"]], ["2. Баллы", ["Каждое правило: «если признак = значение → метод получает ± баллы», с rule_id и пояснением", "Предлагаемая шкала: 0–3 балла на критерий"]], ["3. Рейтинг", ["Сумма, сортировка, топ 1–3 в ranked", "Остальные в rejected с blocker = false"]], ["4. Детали", ["Режим, диапазон, волокно и зонд берутся из таблицы «метод + фаза»"]], ["5. Уверенность", ["high, если ключевые признаки known", "medium или low, если на результат влияют assumed или unknown"]], ["6. Оценка", ["Прогон 30–50 кейсов Никиты: совпадение топ-1 и топ-2", "Стабильность: один кейс 5 раз, результат одинаковый"]]]}, {"t": "С кем проверяет", "items": [["Никита", ["Правила и веса: Ярик приносит черновик, Никита правит химию. Так нагрузка не лежит только на химике"]], ["Семён", ["Сигнатура функции, скорость, ошибки"]], ["Ниджат", ["Словарь признаков: каждому правилу нужен признак, который LLM выдаёт"]]]}, {"t": "Обсуждает", "items": ["Какие критерии оценивать", "Что считать блокером, а что просто минусом", "Шкалу баллов"]}]}, {"name": "Гаджи", "role": "CS 4 · фронт и PDF", "c": "--n-fe", "mission": "Делает экран, на котором эксперт AFS за минуту понимает рекомендацию и может её поправить.", "sections": [{"t": "Владеет", "items": ["<code>frontend/</code>: одна страница на HTML, CSS и JS", "PDF через печать браузера"]}, {"t": "Отдаёт и получает", "items": [["Отдаёт", ["C1 и C1b Семёну", "Экран для записи видео Ниджату (H8)"]], ["Получает", ["C8 или E от Семёна", "До готовности API: <code>contracts/examples/C8_briefing.example.json</code>"]]]}, {"t": "Процессы фронта: что, зачем, роль", "items": [["1. Ввод", ["Поле текста и выбор языка → C1, индикатор загрузки"]], ["2. Отрисовка C8, 8 блоков", ["Резюме", "Параметры со статусами и цитатами", "Вопросы клиенту", "Методы с баллами по критериям", "Отброшенные методы с причиной", "Эксперимент", "Риски", "Флаги «проверить»"]], ["3. Правки", ["Выпадающие списки только с допустимыми значениями признаков", "Ответы на вопросы с полем feature → C1b"]], ["4. После пересчёта", ["Подсветить то, что есть в changes"]], ["5. Ошибки", ["Показать message из E, а не пустой экран"]], ["6. PDF", ["Кнопка вызывает печать, стили @media print"]]]}, {"t": "С кем проверяет", "items": [["Семён", ["C1, C1b, C8, E: поля, адрес, CORS, ошибки"]], ["Ниджат", ["Тексты и сценарий демо"]], ["Никита", ["Понятен ли экран человеку из химии"]]]}, {"t": "Обсуждает", "items": ["Дизайн 8 блоков", "Что показываем в видео и в каком порядке"]}]}, {"name": "Никита", "role": "Химик (PhD) · знания и доверие", "c": "--n-kb", "mission": "Делает так, чтобы каждая рекомендация была химически верной. Кода не пишет, вся работа это содержание.", "sections": [{"t": "Владеет", "items": ["Список параметров и словарь признаков", "Правила выбора методов (химическая часть)", "Карточки знаний <code>kb/</code>", "Тестовые кейсы <code>data/test-cases/</code>", "Финальная проверка ответов"]}, {"t": "Что отдаёт: его договорённости", "items": [["H1 → Ниджату: 16 параметров", ["Что убрать, что добавить, что критично для выбора метода", "Формат: правки прямо в списке или комментарием"]], ["H2 → Ярику и Ниджату: словарь 12 признаков", ["Для каждого признака допустимые значения, например фаза: жидкость, порошок, суспензия", "Это общий язык между LLM и движком, без него правила не написать"]], ["H3 → Ярику: правила", ["Простыми словами: «если признак = значение, то метод получает плюс или минус баллы или исключается, потому что…»", "Ярик приносит черновик весов, Никита правит только химию"]], ["H4 → Ниджату: карточки знаний", ["Главный источник по решению организаторов: материалы AFS (презентации, таблица сравнения методов, 8 сценариев клиентов), их получим на старте. До пятницы готовим шаблоны, чтобы перенести их за пару часов", "6 методов и 5 режимов: принцип, сильные и слабые стороны, типичные применения, ограничения волокон", "Особое внимание NIR и MIR: руками Никита работал с UV-Vis, флуоресценцией и Раманом, по NIR и MIR сверяемся с литературой"]], ["H5 → Ярику и Ниджату: кейсы", ["30–50 кейсов с ожидаемым топ-1, топ-2, отброшенными и обязательными вопросами", "Его частые ошибки при выборе метода (наложение примесей, отбор проб) превращаем в правила и риски"]], ["H6 → всем: проверка на хакатоне", ["Каждый ответ на реальных кейсах AFS: «верно» или «неверно, потому что…»"]], ["H11 → Ниджату: слой «мнения экспертов»", ["Ответы 5 опрошенных химиков (органик, неорганик, масс-спектрометрия и хроматография, аналитик, биоорганик) как отдельные карточки kb/expert-*.md без имён", "Ключевые слова по методам и что клиенты часто забывают указать → в вопросы шага Б"]], "30 секунд в видео на английском"]}, {"t": "С кем проверяет", "items": [["Ярик", ["Правила, веса, блокеры, результаты прогона кейсов"]], ["Ниджат", ["Параметры, признаки, карточки, вопросы и объяснения"]], ["Гаджи", ["Понятен ли экран эксперту"]]]}, {"t": "Обсуждает", "items": ["Что считается блокером в химии", "Где ассистент может опасно ошибиться", "Какие кейсы показать в демо", "Рамки: рекомендуем только методы AFS (UV-Vis, NIR, MIR, Раман, флуоресценция, рассеяние). Масс-спектрометрия, ЯМР и хроматография только как референсный метод в эксперименте"]}]}];
+document.getElementById("people").innerHTML=PEOPLE.map(p=>`<article class="card person" style="--c:var(${p.c})"><h3>${p.name}</h3><span class="role">${p.role}</span><p>${p.mission}</p>${p.sections.map(s=>`<span class="sec">${s.t}</span><ul>${s.items.map(li).join("")}</ul>`).join("")}</article>`).join("");
+function li(it){return typeof it==="string"?`<li>${it}</li>`:`<li>${it[0]}<ul>${it[1].map(x=>`<li>${x}</li>`).join("")}</ul></li>`}
+
+/* ---------- handoffs ---------- */
+const HO=[["H1", "Никита → Ниджат", "Подтверждённый список 16 параметров", "правки в <code>contracts/models.py</code> (ParameterId) через Ниджата", "ср 14.10", "Никита написал «ок» или список правок"], ["H2", "Никита → Ярик, Ниджат", "Словарь 12 признаков и их значения", "таблица в чате, Ниджат переносит в models.py", "ср 14.10", "check_contracts.py зелёный с новым словарём"], ["H3", "Никита ↔ Ярик", "Правила и веса", "Ярик: черновик <code>rules/rules.yaml</code>, Никита: правки химии", "чт 15.10", "10+ правил, каждое с причиной"], ["H4", "Никита → Ниджат", "Карточки 6 методов и 5 режимов", "<code>kb/card-*.md</code>: шаблон и черновики до чт, финал по материалам AFS", "шаблон чт 15.10, финал пт 16.10 вечером", "карточки сверены с таблицей сравнения методов AFS"], ["H5", "Никита → Ярик, Ниджат", "Кейсы с ожидаемыми ответами", "<code>data/test-cases/*.csv</code>, плюс 8 сценариев AFS в первую очередь", "чт 15.10 минимум 15, сб 8 сценариев AFS", "колонки expected заполнены, 8 сценариев AFS проверены"], ["H6", "Никита → все", "Проверка ответов на реальных кейсах", "сообщение в чат по каждому кейсу", "сб 17.10", "каждый кейс отмечен «верно / неверно»"], ["H7", "Ярик → Ниджат", "Цифры качества для видео", "<code>eval/results.md</code>", "вс 18.10, 12:00", "есть «совпало X из Y»"], ["H8", "Гаджи → Ниджат", "Рабочий экран для записи", "ссылка на деплой", "вс 18.10, 16:00", "полный путь на одном кейсе без ошибок"], ["H9", "Семён → все", "Адрес API и логи", "сообщение в чат", "заглушка сб 10:00, настоящий сб 19:00", "Гаджи получил C8 со своего фронта"], ["H11", "Никита → Ниджат", "Мнения 5 экспертов как слой базы знаний", "<code>kb/expert-*.md</code>, без имён", "чт 15.10", "ключевые слова и частые пробелы перенесены в карточки и вопросы"], ["H10", "Ниджат → все", "Изменения контрактов", "новая версия в <code>contracts/</code> и сообщение «что поменялось»", "при каждом изменении", "check_contracts.py зелёный"]];
+document.getElementById("htable").innerHTML=HO.map(h=>`<tr><td class="id">${h[0]}</td><td class="who">${h[1]}</td><td>${h[2]}</td><td>${h[3]}</td><td>${h[4]}</td><td>${h[5]}</td></tr>`).join("");
+
+/* ---------- fixes & checks ---------- */
+const FIX=[["LLM напрямую передавала данные в движок", "на карте команды стрелка шла от извлечения параметров сразу в матрицу баллов", "все вызовы идут через бэкенд Семёна; LLM-модуль и движок друг о друге не знают"], ["Пересчёт без обратных стрелок", "в гайде шаги 14 и 15 были в одну сторону", "каждый вызов это пара: C4 → C5 и C6 → C7"], ["Движок не может читать свободный текст", "в контракте были только 16 параметров вроде «1–5 %», правилам не за что зацепиться", "добавлены 12 признаков с фиксированными значениями; Ярик работает только с ними"], ["Ответ эксперта не менял баллы", "ответ на вопрос был просто текстом, пересчёт не знал, какой признак поменять", "у вопроса есть поле feature, ответ приходит как значение из списка"], ["Непонятно, кто пишет поле methods", "в старом примере баллы и объяснения лежали вместе", "баллы и отказы даёт движок (C5), объяснения LLM (C7), Семён склеивает в C8"], ["Файлы без номеров", "briefing.schema и briefing.example путали с 16 параметрами", "10 файлов с номерами C1–C8, C1b, E и стрелкой на схеме"], ["Движок как отдельный HTTP-сервер", "обсуждали, чтобы сервер не создавался на каждый вызов", "движок это функция Python внутри бэкенда: проще и быстрее"]];
+document.getElementById("fixes").innerHTML=FIX.map(f=>`<div class="fix"><h3>${f[0]}</h3><p class="muted"><b>Было:</b> ${f[1]}</p><p><b>Стало:</b> ${f[2]}</p></div>`).join("");
+const CHK=["Все 10 примеров проходят и Pydantic-модели, и сгенерированные JSON Schema", "Файлы схем совпадают с <code>models.py</code>, устаревшую схему скрипт ловит", "Данные не искажаются по цепочке: C2 = C1, C4 = признаки из C3, C6 = C3 + C5, C8 собран из C3, C5 и C7", "C3 и C7 укладываются в лимиты Claude structured outputs: все объекты закрыты, 0 необязательных полей, 2 и 1 union, нет запрещённых ограничений", "16 параметров ровно по одному разу, каждый из 6 методов ровно в одном списке, ранги 1..n, сумма баллов совпадает", "Объяснения ровно для методов из ranked, вопросы только про неизвестное, эксперимент сравнивает только ranked", "Пересчёт: правки и ответы дают валидный вход для движка, недопустимые значения ловятся", "Негативные тесты: слишком короткий текст, чужой язык и лишнее поле отклоняются", "Мутационный тест: 9 специально внесённых ошибок, все 9 пойманы"];
+document.getElementById("checks").innerHTML=CHK.map(c=>`<div class="check"><b>✓</b><span>${c}</span></div>`).join("");
+
+/* ---------- load & help ---------- */
+const LOAD=[{"name": "Никита", "c": "--n-kb", "pre": "очень высокая", "hack": "высокая", "note": "Всё химическое содержание: параметры, словарь признаков, правила, карточки, кейсы, проверка ответов. Поэтому ему помогают Ярик, Ниджат и Гаджи."}, {"name": "Ниджат", "c": "--n-llm", "pre": "средняя", "hack": "средняя", "note": "Контракты уже готовы. Дальше промпты А и Б, координация, видео и сдача. Поиск статей делит с Никитой, сетап готовит Claude."}, {"name": "Семён", "c": "--n-be", "pre": "средняя", "hack": "высокая", "note": "Скелет бэкенда уже есть. На хакатоне он перемычка между всеми частями, поэтому в паре с Гаджи."}, {"name": "Ярик", "c": "--n-eng", "pre": "средняя", "hack": "средняя", "note": "Движок и оценка плюс черновик весов и правил для Никиты."}, {"name": "Гаджи", "c": "--n-fe", "pre": "низкая", "hack": "средняя", "note": "Экран можно делать уже сейчас по примеру C8. Свободное время уходит на помощь Семёну и оформление кейсов Никиты."}],LV={"низкая":1,"средняя":2,"высокая":3,"очень высокая":4};
+const meter=(l,c)=>`<div class="meter" aria-label="${l}">${[1,2,3,4].map(i=>`<i class="${i<=LV[l]?"on":""}"></i>`).join("")}</div>`;
+document.getElementById("loadgrid").innerHTML=LOAD.map(x=>`<div class="lcard" style="--c:var(${x.c})"><h3>${x.name}</h3>
+ <div class="lrow"><span>до хакатона</span><div>${meter(x.pre)}<span class="lvl">${x.pre}</span></div></div>
+ <div class="lrow"><span>на хакатоне</span><div>${meter(x.hack)}<span class="lvl">${x.hack}</span></div></div>
+ <p class="muted">${x.note}</p></div>`).join("");
+const HELP=[["Ярик → Никита", "Черновик весов и правил в <code>rules/rules.yaml</code>, Никита правит только химию", "Ярик всё равно переводит правила в код, ему проще сразу писать в нужном формате"], ["Ниджат → Никита", "Черновики карточек методов по статьям и материалам AFS, Никита проверяет", "Карточки нужны шагу Б, Ниджат знает, что в них должно быть"], ["Гаджи → Никита", "Оформляет кейсы в CSV: Никита диктует или пишет как удобно", "У Гаджи меньше всего нагрузки, а это механическая работа, которая съест у Никиты часы"], ["Гаджи → Семён", "Интеграция фронта и бэкенда, CORS, проверка API", "Они и так работают в паре над веб-частью"], ["Семён ↔ Ярик", "Подстраховка по Python, если движок не успевает к субботе", "Оба пишут на Python"], ["Гаджи → Ниджат", "Запись экрана для демо-видео в воскресенье", "Гаджи лучше всех знает свой экран"], ["Ниджат → все", "План, структура, контракты, решение споров", "Капитан"]];
+document.getElementById("helptable").innerHTML=HELP.map(h=>`<tr><td class="who">${h[0]}</td><td>${h[1]}</td><td>${h[2]}</td></tr>`).join("");
+const BACK=[["Семён ↔ Гаджи", "Веб-часть: если один выпал, второй держит и фронт, и API"], ["Ярик ↔ Семён", "Python: движок и бэкенд подстраховывают друг друга"], ["Ниджат ↔ Никита", "Содержание: по статьям, записям созвонов и ответам экспертов"]];
+document.getElementById("backup").innerHTML=BACK.map(b=>`<div class="card"><h3>${b[0]}</h3><p class="muted">${b[1]}</p></div>`).join("");
+
+{
+/* ================= HUB: win, tasks, days, demo, rules ================= */
+const HUBD={"versus": [["Как выбирается метод", "LLM сама пишет «подойдёт Raman» в чате, каждый раз по-разному", "Движок правил из таблицы AFS: баллы по каждому признаку, одинаковый результат при каждом запуске", "Ярик, Никита"], ["Почему так", "Общий текст без источников", "Каждое утверждение со ссылкой на документ и страницу AFS, эксперт проверяет за минуту", "Ниджат"], ["Отклонённые методы", "Не показывают", "Каждый отклонённый метод с причиной: «флуоресценция образца мешает Raman»", "Ярик, Никита"], ["Недостающая информация", "Список общих вопросов", "Каждый вопрос привязан к признаку, ответ из выпадающего списка сразу пересчитывает рейтинг", "Ниджат, Гаджи"], ["Пересчёт", "Заново спросить чат", "Живой пересчёт без LLM-шага А, видно что изменилось: «NIR поднялся с 2 на 1 место»", "Семён, Гаджи"], ["Уверенность", "Нет", "Уровень уверенности и «какая информация её повысит»", "Ярик, Ниджат"], ["Проверка качества", "«Попробовали пару примеров»", "30–40 своих кейсов из интернета, интервью и ловушек для настройки, 8 сценариев AFS только для финальных цифр", "Ярик, Гаджи, Никита"], ["Знания экспертов", "Только то, что дал организатор", "Плюс слой опыта 5 опрошенных химиков: типичные ловушки и что клиенты забывают сказать", "Никита"], ["Границы", "Советует что угодно, в том числе MS и NMR", "Только методы AFS, MS/NMR/хроматография как референс для калибровки, флаг ATEX", "Никита, Ярик"], ["Для AFS после хакатона", "Код, который никто не поддержит", "rules.yaml можно править без программиста, PDF-брифинг для клиента на DE/EN", "Ярик, Гаджи"]], "moscow": [{"t": "Must", "s": "без этого не сдаём", "c": "--warn", "items": ["Ввод текста клиента → брифинг из 8 блоков", "Извлечение 16 параметров с цитатами (шаг А)", "Движок баллов + отклонённые методы с причиной", "Вопросы клиенту, привязанные к признакам", "Первый эксперимент выполнимости", "Ссылки на материалы AFS", "Прогон 8 сценариев AFS с цифрами", "Свои кейсы: интернет, эксперты, ловушки (dev-набор)", "Видео до 5 минут, README, декларации"]}, {"t": "Should", "s": "очень сильно поднимает оценку", "c": "--n-eng", "items": ["Пересчёт после ответа эксперта с подсветкой изменений", "Уверенность и «что её повысит»", "Слой экспертов от Никиты", "PDF-брифинг DE/EN", "Деплой по ссылке для жюри", "Комбинация методов «основной + дополняющий», как MSF-системы AFS"]}, {"t": "Could", "s": "если останется время", "c": "--n-fe", "items": ["Кнопка «найти статьи» отдельно от брифинга", "Кнопка эксперта «согласен / не согласен» с логом", "Редактор правил в интерфейсе", "Сравнение двух кейсов рядом"]}, {"t": "Won't", "s": "сознательно не делаем", "c": "--muted", "items": ["Обучение своей модели", "Живой веб-поиск в основном ответе", "Методы вне портфеля AFS как рекомендация", "Логин, база пользователей, мультиязычность кроме DE/EN"]}], "faq": [["Сколько контрактов?", "8 основных (C1–C8) плюс C1b для пересчёта и E для ошибок. Все в contracts/models.py, проверяются скриптом check_contracts.py."], ["Что было в старых briefing.schema и briefing.example?", "Это была первая версия одного итогового ответа. Теперь это контракт C8, а его пример лежит в contracts/examples/C8_briefing.example.json."], ["Где извлекаются параметры?", "В шаге А LLM (Ниджат). Бэкенд только передаёт данные, движок работает с уже готовыми признаками."], ["Мы обучаем модель?", "Нет. Claude по API, «обучение» это инструкция, схема ответа и карточки знаний. Подробно во вкладке LLM."], ["Кто проверяет химию?", "Никита, но он проверяет готовое, а не пишет с нуля. Ярик помогает с весами, Ниджат с текстами."], ["LLM считает методы?", "Нет. На созвоне 11.10 звучало «LLM сопоставит с базой и рассчитает методы». Мы решили иначе: баллы считает движок по правилам, LLM только понимает текст и объясняет. Так результат одинаковый и проверяемый."], ["Бэкенд на Python или Node?", "Python и FastAPI, Семён уже так и делает: контракты в Pydantic, движок и LLM на Python, бэкенд это тонкая склейка. Пишем с Claude Code, Ниджат ревьюит."], ["Кто размечает данные?", "Гаджи находит кейсы в интернете и заносит в CSV, Ярик ставит черновую разметку (метод обычно указан в источнике), Никита только подтверждает или правит. Подробно в data/test-cases/README.md."], ["Зачем свои кейсы, если AFS даст 8?", "На 8 сценариях нельзя и настраивать, и мерить: цифры будут нечестные. Настраиваем на своих 30–40, меряем на 8 AFS."], ["Значит, база знаний больше не нужна?", "Нужна. AFS даст таблицу и сценарии, мы превращаем их в правила, карточки и тесты. Плюс слой экспертов, которого у AFS нет."]], "days": [["Вт 13.10", "Вердикт, задачи разосланы, все читают хаб", "Задачи и сообщения, проверка контрактов", "Скелет бэкенда по C1–C8", "Черновик rules.yaml и шкалы", "Экран по примеру C8", "Словарь признаков, ревизия 16 параметров"], ["Ср 14.10", "Каждый готовит свою заготовку", "Промпт шага А на примерах", "Заглушки /analyze и /recompute", "score_methods на примере C4", "8 блоков брифинга на моках", "Слой экспертов, черновики карточек"], ["Чт 15.10", "18:00 созвон на час: контракты, заготовки, блокеры", "Промпт шага Б, вопросы на AFS Q&A", "Конвертер таблица → rules.yaml вместе с Яриком", "Скелет eval", "Выпадающие правки, CSV для Никиты", "Ожидаемые ответы на типовые кейсы"], ["Пт 16.10", "18:00 старт, AFS Q&A, перенос таблицы", "Вопросы AFS, ссылки на документы", "Сборка в одну цепочку", "Таблица AFS → rules.yaml", "Подключение к реальному API", "Проверка правил по таблице AFS"], ["Сб 17.10", "Сквозной прогон к обеду, вечером запасной дубль видео", "Качество шагов А и Б", "Пересчёт и изменения, деплой", "Прогон 8 сценариев, уверенность", "Подсветка изменений, PDF", "Ответы на 8 сценариев, разбор ошибок"], ["Вс 18.10", "16:00 фича-фриз, 22:00 сдача", "Голос видео, отправка формы", "README, заморозка репо", "Цифры для видео", "Запись экрана, монтаж", "30 секунд в видео"]], "video": [["0:00–0:20", "Крючок", "Эксперт AFS получает письмо клиента и тратит полдня на первую оценку. Мы показываем, как это сделать за минуту и прозрачно.", ""], ["0:20–0:50", "Боль", "Письмо клиента неполное: нет диапазона концентраций, не ясна температура. Обычный чат-бот просто угадает.", ""], ["0:50–3:20", "Демо на сценарии AFS", "Вставляем письмо → параметры с цитатами → рейтинг методов с баллами → отклонённые с причинами → вопросы → отвечаем на один вопрос → рейтинг пересчитывается, видно что изменилось → эксперимент → PDF.", "Каждый балл можно проверить, каждое утверждение ведёт на страницу документа AFS."], ["3:20–3:50", "Химик", "Никита: почему правила, а не угадывание, и что добавил опыт пяти экспертов.", ""], ["3:50–4:20", "Цифры", "Результат на 8 сценариях AFS: сколько раз верный метод был первым и в топ-2.", ""], ["4:20–4:45", "Архитектура", "Одна схема: LLM понимает текст и объясняет, движок правил решает. AFS правит rules.yaml без программиста.", ""], ["4:45–5:00", "Финал", "Что дальше для AFS и ссылка на репо.", ""]], "gloss": [["Контракт", "Договор о форме JSON между двумя частями. Если форма совпадает, части стыкуются без созвона."], ["Признак (feature)", "Одно из 12 упрощённых значений, по которым движок считает баллы: фаза, вода, мутность…"], ["Параметр", "Одно из 16 полей, которые LLM вытаскивает из текста клиента, с цитатой и статусом known/assumed/unknown."], ["Шаг А / шаг Б", "Два вызова LLM: А извлекает параметры, Б объясняет результат движка."], ["Движок", "Функция score_methods в Python, считает баллы по правилам из rules.yaml."], ["Пересчёт", "Эксперт отвечает на вопрос, движок и шаг Б запускаются снова, шаг А нет."], ["Eval", "Прогон всех кейсов с ожидаемыми ответами и подсчёт точности."], ["Фича-фриз", "Вс 16:00: новых функций больше не добавляем, только видео и сдача."]], "submit": ["Краткое описание на английском", "Ссылка на репозиторий, доступ для жюри", "README: запуск, архитектура, цифры eval", "Демо-видео на английском до 5 минут", "DECLARATIONS.md: что сделано до старта и что переиспользовано", "Ключ API нигде в репо", "Репо заморожено и доступно 90 дней", "Форма отправлена до 22:00"], "tasks": [{"name": "Контракты v0.2", "owner": "Ниджат", "i": 5, "b": 5, "e": 3, "when": "готово", "why": "Все части стыкуются", "done": true, "subs": ["Модели, схемы, примеры", "Скрипт проверки"]}, {"name": "LLM шаг А: параметры из текста клиента", "owner": "Ниджат", "i": 5, "b": 4, "e": 3, "when": "ср 14.10", "why": "Без параметров движку нечего считать", "done": false, "subs": ["Промпт и код extract()", "Прогон на нескольких кейсах"]}, {"name": "Заглушка LLM_MOCK для всех", "owner": "Ниджат", "i": 4, "b": 4, "e": 1, "when": "ср 14.10", "why": "Работаете без ключа", "done": false, "subs": ["Ответы из примеров", "Как включить, напишу в чат"]}, {"name": "Помочь Никите с ресерчем и базой", "owner": "Ниджат", "i": 5, "b": 3, "e": 2, "when": "ср–чт", "why": "Никита правит, а не пишет с нуля", "done": false, "subs": ["Сетап в Claude и шаблон выписки", "Разложить его отчёт по kb/expert-*.md"]}, {"name": "LLM шаг Б: объяснение, вопросы, эксперимент", "owner": "Ниджат", "i": 5, "b": 2, "e": 3, "when": "чт 15.10", "why": "То, что читает жюри", "done": false, "subs": ["Промпт и код explain()", "Только по карточкам"]}, {"name": "Вопросы на AFS Q&A", "owner": "Ниджат", "i": 4, "b": 2, "e": 1, "when": "чт 15.10", "why": "Один ответ AFS экономит часы", "done": false, "subs": ["Собрать от всех", "Выбрать главные с Никитой"]}, {"name": "Ссылки на страницы AFS в карточках", "owner": "Ниджат", "i": 5, "b": 1, "e": 2, "when": "пт–сб", "why": "Всё проверяемо", "done": false, "subs": ["Источник у каждой карточки"]}, {"name": "Ревью PR и короткие созвоны", "owner": "Ниджат", "i": 4, "b": 4, "e": 2, "when": "каждый день", "why": "В main всегда рабочее", "done": false, "subs": ["Смотреть PR", "Созвон 15 минут"]}, {"name": "Видео и сдача", "owner": "Ниджат", "i": 5, "b": 1, "e": 2, "when": "вс 18.10", "why": "Жюри смотрит видео первым", "done": false, "subs": ["Голос, описание, отправка до 22:00"]}, {"name": "Ресерч: статьи и похожие решения", "owner": "Никита", "i": 5, "b": 3, "e": 2, "when": "ср–чт", "why": "Основа карточек и кейсов", "done": false, "subs": ["Похожие ассистенты и схемы выбора метода", "10–15 статей и application notes по inline-спектроскопии", "Каждую выписать по шаблону", "Лучшие превратить в dev-кейсы"]}, {"name": "Словарь 12 признаков", "owner": "Никита", "i": 5, "b": 5, "e": 2, "when": "вт 13.10", "why": "На нём держатся правила и вопросы", "done": false, "subs": ["Пройти признаки и значения", "Отметить лишнее и чего не хватает"]}, {"name": "Ревизия 16 параметров", "owner": "Никита", "i": 4, "b": 4, "e": 1, "when": "вт 13.10", "why": "Чтобы шаг А искал нужное", "done": false, "subs": ["Проверить, что LLM ищет нужное", "Добавить то, что называли эксперты"]}, {"name": "Слой экспертов kb/expert-*.md", "owner": "Никита", "i": 4, "b": 1, "e": 2, "when": "ср 14.10", "why": "Знания, которых нет у AFS и у других команд", "done": false, "subs": ["Поправить черновик от Ниджата", "Добавить, что упущено"]}, {"name": "Проверка правил по таблице AFS", "owner": "Никита", "i": 5, "b": 3, "e": 3, "when": "пт 16.10", "why": "Ошибка в химии = ошибка в рейтинге", "done": false, "subs": ["Сверить правила, перенесённые Яриком", "Отметить жёсткие исключения"]}, {"name": "Ожидаемые ответы на 8 сценариев", "owner": "Никита", "i": 5, "b": 3, "e": 3, "when": "сб 17.10", "why": "Без них нет цифр точности", "done": false, "subs": ["Метод 1 и метод 2", "Что исключить и почему", "Какие вопросы клиенту обязательны"]}, {"name": "30 секунд в видео", "owner": "Никита", "i": 3, "b": 1, "e": 1, "when": "вс 18.10", "why": "Доверие жюри к химии", "done": false, "subs": ["Почему правила, а не угадывание", "Что дали 5 экспертов"]}, {"name": "20–25 кейсов из интернета в CSV", "owner": "Гаджи", "i": 4, "b": 3, "e": 2, "when": "чт 15.10", "why": "Dev-набор для настройки правил", "done": false, "subs": ["Искать application notes и статьи, можно с Claude", "Текст в стиле письма клиента", "Ссылка в source_ref, split=dev", "Вариант full и gaps"]}, {"name": "Черновая разметка всех кейсов", "owner": "Ярик", "i": 5, "b": 3, "e": 2, "when": "чт 15.10", "why": "Без разметки нет eval", "done": false, "subs": ["Метод 1 и метод 2", "Что исключить с причиной", "Обязательные вопросы"]}, {"name": "5 ловушек (MS/NMR, ATEX, флуоресценция, мало данных)", "owner": "Ярик", "i": 4, "b": 1, "e": 1, "when": "чт 15.10", "why": "Показать жюри, что система знает границы", "done": false, "subs": ["По одному кейсу на ловушку", "Ожидаемое поведение системы"]}, {"name": "Проверка разметки пачками по 10", "owner": "Никита", "i": 5, "b": 3, "e": 2, "when": "чт–пт", "why": "Финальное слово по химии", "done": false, "subs": ["Да или нет на кейс", "Одна строка, если не согласен"]}, {"name": "Скелет бэкенда по C1–C8 + заглушки", "owner": "Семён", "i": 4, "b": 5, "e": 2, "when": "ср 14.10", "why": "Фронт и eval могут работать сразу", "done": false, "subs": ["FastAPI, импорт contracts.models", "/analyze, /recompute, /health на примерах", "Запуск одной командой"]}, {"name": "/analyze сквозной", "owner": "Семён", "i": 5, "b": 4, "e": 3, "when": "пт 16.10", "why": "Главный путь продукта", "done": false, "subs": ["extract → score_methods → explain → брифинг", "Проверка каждого шага по модели", "Время ответа в лог"]}, {"name": "/recompute с изменениями", "owner": "Семён", "i": 4, "b": 2, "e": 3, "when": "сб 17.10", "why": "Живой пересчёт в демо", "done": false, "subs": ["Ответ эксперта → признаки", "Пересчёт без шага А", "Список изменений рейтинга"]}, {"name": "Ошибки и логи (контракт E)", "owner": "Семён", "i": 3, "b": 1, "e": 2, "when": "сб 17.10", "why": "Демо не падает на глазах жюри", "done": false, "subs": ["Любая ошибка в формате E", "Логи по case_id"]}, {"name": "Деплой и README", "owner": "Семён", "i": 4, "b": 1, "e": 2, "when": "вс 18.10", "why": "Жюри может запустить само", "done": false, "subs": ["Ссылка для жюри", "Docker с Яриком", "Раздел запуска в README"]}, {"name": "Черновик rules.yaml и шкала", "owner": "Ярик", "i": 5, "b": 4, "e": 2, "when": "вт 13.10", "why": "Основа прозрачного выбора", "done": false, "subs": ["Формат правила: признак → значение → баллы", "Жёсткие исключения с причиной", "Шкала баллов"]}, {"name": "Конвертер таблица AFS → rules.yaml", "owner": "Ярик", "i": 4, "b": 3, "e": 2, "when": "чт 15.10", "why": "Перенос в пятницу за 2–3 часа", "done": false, "subs": ["Скрипт на примере таблицы", "С Семёном", "В пт прогнать на настоящей таблице"]}, {"name": "score_methods по C4 → C5", "owner": "Ярик", "i": 5, "b": 4, "e": 3, "when": "ср 14.10", "why": "Сердце продукта", "done": false, "subs": ["Баллы по каждому признаку", "Отклонённые с причиной", "Тест на примере из contracts/examples"]}, {"name": "Уверенность и блокеры", "owner": "Ярик", "i": 4, "b": 1, "e": 2, "when": "сб 17.10", "why": "Эксперт видит, насколько верить", "done": false, "subs": ["Уровень уверенности", "Какой ответ клиента её повысит"]}, {"name": "Eval на 8 сценариях AFS", "owner": "Ярик", "i": 5, "b": 1, "e": 3, "when": "сб 17.10", "why": "Цифры в видео", "done": false, "subs": ["Скрипт прогона", "Топ-1 и топ-2 на dev и на test", "Цифры в README и видео"]}, {"name": "Экран из 8 блоков по примеру C8", "owner": "Гаджи", "i": 5, "b": 2, "e": 3, "when": "ср 14.10", "why": "Первое, что видит жюри", "done": false, "subs": ["Параметры с цитатами", "Рейтинг с баллами и отклонённые", "Вопросы, эксперимент, риски", "Сначала на примере, без бэкенда"]}, {"name": "Выпадающие ответы на вопросы", "owner": "Гаджи", "i": 4, "b": 2, "e": 2, "when": "чт 15.10", "why": "Запускает пересчёт", "done": false, "subs": ["Список значений у каждого вопроса", "Выбор запускает /recompute"]}, {"name": "Подсветка изменений", "owner": "Гаджи", "i": 4, "b": 1, "e": 2, "when": "сб 17.10", "why": "Самый сильный момент демо", "done": false, "subs": ["Какой метод поднялся или упал", "Что изменилось в баллах"]}, {"name": "PDF-брифинг DE/EN", "owner": "Гаджи", "i": 3, "b": 1, "e": 2, "when": "сб 17.10", "why": "Готово для клиента AFS", "done": false, "subs": ["Шаблон PDF", "Переключатель языка"]}, {"name": "CSV-ввод кейсов для Никиты", "owner": "Гаджи", "i": 3, "b": 2, "e": 1, "when": "чт 15.10", "why": "Никита заполняет без кода", "done": false, "subs": ["Загрузка CSV в интерфейсе или скрипт", "Никита заполняет без кода"]}, {"name": "Запись экрана и монтаж", "owner": "Гаджи", "i": 4, "b": 1, "e": 2, "when": "вс 18.10", "why": "Чистое видео", "done": false, "subs": ["Запасной дубль в сб вечером", "Финальная запись в вс после 16:00"]}], "ver": 3};
+const esc2=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+document.getElementById("vstable").innerHTML=HUBD.versus.map(r=>`<tr><td class="who">${r[0]}</td><td class="muted">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join("");
+document.getElementById("moscow").innerHTML=HUBD.moscow.map(m=>`<div class="mcol" style="--mc:var(${m.c})"><h3>${m.t}</h3><span class="sub">${m.s}</span><ul class="plain">${m.items.map(i=>`<li>${i}</li>`).join("")}</ul></div>`).join("");
+document.getElementById("faq").innerHTML=HUBD.faq.map(f=>`<div class="card"><p class="q">${f[0]}</p><p class="muted">${f[1]}</p></div>`).join("");
+document.getElementById("daystable").innerHTML=HUBD.days.map(d=>`<tr><td class="day">${d[0]}</td>${d.slice(1).map(x=>`<td>${x}</td>`).join("")}</tr>`).join("");
+document.getElementById("timeline").innerHTML=HUBD.video.map(v=>`<div class="step"><span class="t">${v[0]}</span><h3>${v[1]}</h3><p class="muted">${v[2]}</p>${v[3]?`<blockquote>${v[3]}</blockquote>`:""}</div>`).join("");
+document.getElementById("gloss").innerHTML=HUBD.gloss.map(g=>`<dt>${g[0]}</dt><dd>${g[1]}</dd>`).join("");
+
+/* ---- persistent checks (submit list) ---- */
+saved.checks=saved.checks||{};
+document.getElementById("submitList").innerHTML=HUBD.submit.map((s,i)=>`<li><label><input type="checkbox" id="sub-${i}" data-check="sub-${i}" ${saved.checks["sub-"+i]?"checked":""}><span>${s}</span></label></li>`).join("");
+document.getElementById("submitList").addEventListener("change",e=>{const c=e.target.dataset.check;if(c){saved.checks[c]=e.target.checked;save()}});
+
+/* ---- tasks ---- */
+const OWN=["Ниджат","Семён","Ярик","Гаджи","Никита"];
+const OCOL={"Ниджат":"--n-llm","Семён":"--n-be","Ярик":"--n-eng","Гаджи":"--n-fe","Никита":"--n-kb"};
+const OROLE={"Ниджат":"CS 1 · капитан, LLM, контракты","Семён":"CS 2 · бэкенд","Ярик":"CS 3 · движок, оценка","Гаджи":"CS 4 · фронт, PDF","Никита":"химик · знания"};
+const fresh=()=>HUBD.tasks.map(t=>Object.assign({},t,{subs:(t.subs||[]).slice(),sd:(t.subs||[]).map(()=>false)}));
+let TS=(saved.tasks&&saved.tasks.length&&saved.tasksVer===HUBD.ver)?saved.tasks:fresh();
+TS.forEach(t=>{t.subs=t.subs||[];t.sd=t.sd||t.subs.map(()=>false)});
+const sc=t=>2*t.i+1.5*t.b-0.5*t.e, pr=s=>s>=12?"P0":s>=8?"P1":"P2";
+let tKey="score",tDir=-1,tFilter="Все";
+const flash=m=>{const st=document.getElementById("status");st.textContent=m;clearTimeout(flash.t);flash.t=setTimeout(()=>st.textContent="",2500)};
+const saveTasks=()=>{saved.tasks=TS;saved.tasksVer=HUBD.ver;save()};
+const subc=t=>t.subs.length?` <span class="subc">${t.sd.filter(Boolean).length}/${t.subs.length}</span>`:"";
+const opt=v=>[1,2,3,4,5].map(n=>`<option value="${n}"${n===v?" selected":""}>${n}</option>`).join("");
+function renderTasks(){
+  const rows=TS.map((t,idx)=>Object.assign({},t,{idx,score:sc(t)})).filter(t=>tFilter==="Все"||t.owner===tFilter)
+    .sort((a,b)=>{const x=a[tKey],y=b[tKey];return(typeof x==="number"?x-y:String(x).localeCompare(String(y),"ru"))*tDir});
+  document.querySelector("#tasks tbody").innerHTML=rows.map(t=>{const p=pr(t.score);return`<tr class="${t.done?"isdone":""}">
+   <td><input type="checkbox" data-done="${t.idx}" ${t.done?"checked":""} aria-label="Готово: ${esc2(t.name)}"></td>
+   <td>${esc2(t.name)}${subc(t)}</td><td>${t.owner}</td>
+   <td><select data-f="i" data-idx="${t.idx}" aria-label="Влияние">${opt(t.i)}</select></td>
+   <td><select data-f="b" data-idx="${t.idx}" aria-label="Блокирует">${opt(t.b)}</select></td>
+   <td><select data-f="e" data-idx="${t.idx}" aria-label="Усилие">${opt(t.e)}</select></td>
+   <td class="num"><div style="display:flex;gap:8px;align-items:center"><span class="pill ${p}">${p}</span>${t.score.toFixed(1)}</div><div class="bar"><span style="width:${Math.max(0,t.score/17*100).toFixed(0)}%"></span></div></td>
+   <td>${esc2(t.when||"")}</td><td><button class="iconbtn" type="button" data-del="${t.idx}" aria-label="Удалить ${esc2(t.name)}">✕</button></td></tr>`}).join("");
+  document.getElementById("treeGrid").innerHTML=OWN.filter(o=>tFilter==="Все"||o===tFilter).map(o=>{
+    const list=TS.map((t,idx)=>Object.assign({},t,{idx,score:sc(t)})).filter(t=>t.owner===o).sort((a,b)=>b.score-a.score);
+    const d=list.filter(t=>t.done).length,pc=list.length?Math.round(d/list.length*100):0;
+    return`<div class="tcard" style="--c:var(${OCOL[o]})"><div class="head"><h3>${o}</h3><span class="tag">${OROLE[o]} · ${d}/${list.length}</span></div>
+     <div class="prog" aria-hidden="true"><span style="width:${pc}%"></span></div>
+     <ul class="ttree">${list.map(t=>`<li class="${t.done?"done":""}"><label><input type="checkbox" data-done="${t.idx}" ${t.done?"checked":""}><span><span class="pill ${pr(t.score)}">${pr(t.score)}</span> <span class="tname">${esc2(t.name)}</span>${t.why?`<span class="why">${esc2(t.why)}</span>`:""}</span></label>${t.subs.length?`<ul class="subs">${t.subs.map((s,j)=>`<li class="${t.sd[j]?"done":""}"><label><input type="checkbox" data-sub="${t.idx}-${j}" ${t.sd[j]?"checked":""}><span class="tname">${esc2(s)}</span></label></li>`).join("")}</ul>`:""}</li>`).join("")}</ul></div>`}).join("");
+  document.getElementById("k-done").textContent=`${TS.filter(t=>t.done).length} / ${TS.length}`;
+  document.getElementById("k-p0").textContent=TS.filter(t=>!t.done&&pr(sc(t))==="P0").length;
+}
+const tp=document.querySelector('[data-panel="tasks"]');
+tp.addEventListener("change",e=>{const el=e.target;
+  if(el.dataset.sub){const[a,j]=el.dataset.sub.split("-").map(Number);const tk=TS[a];tk.sd[j]=el.checked;tk.done=tk.sd.length>0&&tk.sd.every(Boolean);saveTasks();renderTasks()}
+  else if(el.dataset.done!==undefined){const tk=TS[+el.dataset.done];tk.done=el.checked;tk.sd=tk.sd.map(()=>el.checked);saveTasks();renderTasks()}
+  else if(el.dataset.f){TS[+el.dataset.idx][el.dataset.f]=+el.value;saveTasks();renderTasks()}});
+tp.addEventListener("click",e=>{const b=e.target.closest("[data-del]");if(!b)return;const i=+b.dataset.del;
+  if(b.dataset.armed){const n=TS[i].name;TS.splice(i,1);saveTasks();renderTasks();flash("Удалено: "+n)}
+  else{b.dataset.armed="1";b.textContent="Удалить?";setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent="✕"}},3000)}});
+document.querySelectorAll("#tasks th button").forEach(b=>b.addEventListener("click",()=>{const k=b.dataset.k;if(k===tKey)tDir=-tDir;else{tKey=k;tDir=(k==="name"||k==="owner"||k==="when")?1:-1}renderTasks()}));
+const fw=document.getElementById("filters");
+["Все",...OWN].forEach(o=>{const b=document.createElement("button");b.type="button";b.textContent=o;b.setAttribute("aria-pressed",String(o===tFilter));b.onclick=()=>{tFilter=o;fw.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x.textContent===o)));renderTasks()};fw.appendChild(b)});
+document.getElementById("f-owner").innerHTML=OWN.map(o=>`<option>${o}</option>`).join("");
+["i","b","e"].forEach(k=>document.getElementById("f-"+k).innerHTML=opt(3));
+document.getElementById("addForm").addEventListener("submit",e=>{e.preventDefault();const n=document.getElementById("f-name").value.trim();if(!n)return;
+  TS.push({name:n,owner:document.getElementById("f-owner").value,when:document.getElementById("f-when").value.trim(),i:+document.getElementById("f-i").value,b:+document.getElementById("f-b").value,e:+document.getElementById("f-e").value,why:"",done:false,subs:[],sd:[]});
+  saveTasks();renderTasks();e.target.reset();["i","b","e"].forEach(k=>document.getElementById("f-"+k).value="3");flash("Добавлено: "+n)});
+document.getElementById("resetBtn").addEventListener("click",function(){
+  if(!this.dataset.armed){this.dataset.armed="1";this.textContent="Точно? Нажми ещё раз";setTimeout(()=>{delete this.dataset.armed;this.textContent="Вернуть исходные задачи"},3500);return}
+  delete this.dataset.armed;this.textContent="Вернуть исходные задачи";TS=fresh();saveTasks();renderTasks();flash("Исходные задачи восстановлены")});
+function copyText(text,fb){
+  const show=()=>{fb.hidden=false;fb.value=text;fb.focus();fb.select();flash("Выдели текст и скопируй вручную")};
+  try{navigator.clipboard.writeText(text).then(()=>{fb.hidden=true;flash("Скопировано")},show)}catch(err){show()}}
+document.getElementById("copyBtn").addEventListener("click",()=>{
+  const text=TS.map(t=>Object.assign({},t,{s:sc(t)})).sort((a,b)=>b.s-a.s).map(t=>`${t.done?"[x]":"[ ]"} ${pr(t.s)} ${t.s.toFixed(1)} · ${t.name} · ${t.owner} · ${t.when||"—"}`+t.subs.map((s,j)=>`\n    ${t.sd[j]?"[x]":"[ ]"} ${s}`).join("")).join("\n");
+  copyText(text,document.getElementById("copyFallback"))});
+document.getElementById("copyTpl").addEventListener("click",()=>{
+  const text=document.getElementById("tplText").textContent;
+  try{navigator.clipboard.writeText(text).then(()=>flash("Шаблон скопирован"),()=>{})}catch(e){}});
+function countdown(){const now=Date.now();
+  const f=ms=>{if(ms<=0)return"уже";const d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5),m=Math.floor(ms%36e5/6e4);return d>0?`${d} д ${h} ч`:`${h} ч ${m} мин`};
+  document.getElementById("k-start").textContent=f(Date.UTC(2026,9,16,16,0)-now);
+  document.getElementById("k-sub").textContent=f(Date.UTC(2026,9,18,20,0)-now)}
+renderTasks();countdown();setInterval(countdown,60000);
+
+}
+drawNodes();drawEdges();render();
+showTab(saved.tab&&document.querySelector(`[data-panel="${saved.tab}"]`)?saved.tab:"win");
+})();
+</script>
+
+</body>
+</html>

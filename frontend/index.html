@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SpectraScout</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar no-print">
+    <div class="wrap topbar-row">
+      <div class="brand">SpectraScout <span class="brand-sub" data-t="tagline">Briefing für das Erstgespräch</span></div>
+      <div class="topbar-right">
+        <span id="case-meta" class="case-meta"></span>
+        <div class="lang-switch" role="group" aria-label="Sprache / Language">
+          <button type="button" data-ui-lang="de">DE</button>
+          <button type="button" data-ui-lang="en">EN</button>
+        </div>
+      </div>
+    </div>
+  </header>
+  <div id="print-head" class="print-only"></div>
+
+  <div class="wrap">
+    <form id="case-form" class="panel input-panel no-print">
+      <div id="demo-cases" class="demo-cases"></div>
+      <textarea id="text" rows="5" data-t-placeholder="placeholder" aria-label="Kundentext"></textarea>
+      <div class="row">
+        <label for="language" class="field-label" data-t="text_language">Sprache des Kundentexts</label>
+        <select id="language">
+          <option value="de">Deutsch</option>
+          <option value="en">English</option>
+        </select>
+        <button id="analyze" type="submit" data-t="analyze">Analysieren</button>
+        <p id="status" role="status"></p>
+      </div>
+    </form>
+
+    <main id="result" hidden>
+      <!-- Order (team, 18.10, checked against skill afs-answer-and-feasibility): decision -> recommended
+           methods with "why it fits" -> key unknowns -> questions -> lab checks -> other options (folded)
+           -> concept, risks, plan -> decision path (folded) -> parameters and attributes (folded tab).
+           No method selectable: the questions move above the methods (class q-first). -->
+      <p id="fake-note" class="fake-note no-print" hidden></p>
+      <section id="changes-box" class="block changes-box" hidden></section>
+      <section id="decision" class="decision" hidden></section>
+      <p class="summary-line"><span id="summary" class="summary"></span> <span id="recomputed-badge" class="chip known" data-t="recomputed" hidden></span></p>
+      <div id="completeness" class="completeness" hidden></div>
+      <!-- Method B (assessment_b): shown instead of the method A blocks when the backend sends it -->
+      <section id="b-view" class="b-view" hidden>
+        <div id="b-tabs" class="b-tabs" role="tablist" hidden></div>
+        <p id="b-bundle" class="b-bundle" hidden></p>
+        <div id="b-head" class="b-head"></div>
+        <ul id="b-premises" class="premises b-premises" hidden></ul>
+        <section class="block"><h2 data-t="ranked"></h2><div id="b-methods" class="b-methods"></div></section>
+        <section id="b-questions-block" class="block"><h2 data-t="questions"></h2><ol id="b-questions" class="questions"></ol><p class="questions-hint" data-t="questions_hint"></p></section>
+        <details id="b-excluded" class="block fold" hidden><summary><span id="b-excluded-title"></span></summary><ul id="b-excluded-list" class="plain"></ul></details>
+        <details id="b-path" class="block fold"><summary><span data-t="path"></span> <span class="fold-note" data-t="b_path_note"></span></summary><div id="b-path-body"></div></details>
+      </section>
+      <section id="rec-block" class="block"><h2 data-t="ranked"></h2><div id="ranked"></div></section>
+      <section id="req-line" class="block req-line" hidden></section>
+      <section id="questions-block" class="block">
+        <h2 data-t="questions"></h2>
+        <ol id="questions" class="questions"></ol>
+      </section>
+      <div id="actions-bar" class="actions no-print">
+        <button id="recompute" type="button" data-t="recompute" hidden></button>
+        <button id="copy" type="button" data-t="copy"></button>
+        <button id="pdf" type="button" data-t="pdf"></button>
+        <span id="action-status" role="status"></span>
+      </div>
+      <section id="labchecks-block" class="block" hidden>
+        <h2 data-t="labchecks"></h2>
+        <p class="block-note" data-t="labchecks_note"></p>
+        <ul id="labchecks" class="plain labchecks"></ul>
+      </section>
+      <details id="others-block" class="block fold" hidden>
+        <summary><span id="others-title"></span></summary>
+        <div id="others"></div>
+        <ul id="rejected" class="plain"></ul>
+        <div id="ranking-block" hidden>
+          <h3 data-t="ranking_old"></h3>
+          <p class="block-note" data-t="ranking_old_note"></p>
+          <ol id="ranking" class="ranking-old"></ol>
+        </div>
+      </details>
+      <section id="matrix-block" class="block" hidden>
+        <h2 data-t="matrix"></h2>
+        <div class="table-wrap"><table id="matrix" class="matrix"></table></div>
+        <p id="matrix-legend" class="matrix-legend"></p>
+      </section>
+      <section id="concept-block" class="block" hidden><div id="concept" class="concept"></div></section>
+      <section id="risks-block" class="block"><h2 data-t="risks"></h2><ul id="risks" class="plain"></ul></section>
+      <section id="plan-block" class="block"><h2 data-t="experiment"></h2><div id="experiment"></div></section>
+      <section id="sources-block" class="block" hidden><h2 data-t="sources"></h2><div id="sources"></div></section>
+      <section id="flags-block" class="block"><h2 data-t="flags"></h2><ul id="flags" class="plain"></ul></section>
+      <details id="path-block" class="block fold" hidden>
+        <summary><span data-t="path"></span> <span class="fold-note" data-t="path_note"></span></summary>
+        <ol id="path" class="path"></ol>
+      </details>
+      <details id="params-tab" class="block fold">
+        <summary><span data-t="params_tab"></span> <span id="params-tab-note" class="fold-note"></span></summary>
+        <div id="requirements" class="requirements" hidden></div>
+        <div id="parameters-block">
+          <h3><span data-t="parameters"></span> <span id="param-stats"></span></h3>
+          <div class="table-wrap"><table id="parameters"></table></div>
+          <div id="features-block">
+            <h3 data-t="features"></h3>
+            <div id="features" class="features"></div>
+          </div>
+        </div>
+        <div id="b-facts-block" hidden>
+          <h3 data-t="b_facts"></h3>
+          <p class="block-note" data-t="b_facts_note"></p>
+          <div class="table-wrap"><table id="b-facts"></table></div>
+        </div>
+        <div id="attributes-block" hidden>
+          <h3 data-t="attributes"></h3>
+          <div class="table-wrap"><table id="attributes"></table></div>
+          <div id="attributes-unknown"></div>
+        </div>
+      </details>
+    </main>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

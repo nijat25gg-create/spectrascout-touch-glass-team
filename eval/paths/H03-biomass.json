@@ -1,0 +1,155 @@
+{
+  "decision_status": "provisional",
+  "selected": [
+    "K06 UV_VIS ATR probe",
+    "K08 UV_VIS transmission / transflection probe"
+  ],
+  "excluded": [
+    "K10 FLUORESCENCE fluorimetric probe"
+  ],
+  "premises": [
+    {
+      "rule_id": "P-SENSITIVITY-NOT-SELECTIVITY",
+      "verdict": "contradicted",
+      "text": "High sensitivity is not selectivity; fluorimetry is rated high sensitivity, low selectivity",
+      "source": [
+        "S01 Table 1 (p.6)",
+        "S01 p.5"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "title": "Q1 Task",
+      "shown": [
+        {
+          "rule_id": "T-SPLIT-TARGETS",
+          "row": null,
+          "row_label": null,
+          "effect": "split_case",
+          "because": "Different targets can need different methods; each is assessed on its own",
+          "source": [
+            "AFS ref D05 'target variables still need definition'",
+            "S01 p.16"
+          ]
+        }
+      ],
+      "hidden": 2
+    },
+    {
+      "title": "Q2 Signal",
+      "shown": [
+        {
+          "rule_id": "P-NO-FLUOROPHORE",
+          "row": "K10",
+          "row_label": "FLUORESCENCE fluorimetric probe",
+          "effect": "exclude",
+          "because": "Fluorescence needs a defined fluorescent species or a justified indicator; most chemicals do not fluoresce",
+          "source": [
+            "S01 p.5",
+            "AFS ref §5 (fluorescence row)"
+          ]
+        }
+      ],
+      "hidden": 5
+    },
+    {
+      "title": "Q3 Interface and fiber",
+      "shown": [],
+      "hidden": 25
+    },
+    {
+      "title": "Q4 Premises and evidence",
+      "shown": [
+        {
+          "rule_id": "APP-BIO-BIOMASS",
+          "row": "K08",
+          "row_label": "UV_VIS transmission / transflection probe",
+          "effect": "support_application",
+          "because": "UV/Vis is a low-cost tool for biomass trends because turbidity correlates with cell density",
+          "source": [
+            "S01 p.16"
+          ]
+        },
+        {
+          "rule_id": "APP-BIO-BIOMASS",
+          "row": "K06",
+          "row_label": "UV_VIS ATR probe",
+          "effect": "support_application",
+          "because": "UV/Vis is a low-cost tool for biomass trends because turbidity correlates with cell density",
+          "source": [
+            "S01 p.16"
+          ]
+        },
+        {
+          "rule_id": "P-SENSITIVITY-NOT-SELECTIVITY",
+          "row": null,
+          "row_label": null,
+          "effect": "premise_contradicted",
+          "because": "High sensitivity is not selectivity; fluorimetry is rated high sensitivity, low selectivity",
+          "source": [
+            "S01 Table 1 (p.6)",
+            "S01 p.5"
+          ]
+        }
+      ],
+      "hidden": 1
+    }
+  ],
+  "questions": [
+    {
+      "attribute": "optical_density",
+      "kind": "method",
+      "strength": 0.75,
+      "forced": true,
+      "text": "Is the liquid clear, turbid or opaque at the measurement point, and does it change?"
+    },
+    {
+      "attribute": "heterogeneous",
+      "kind": "method",
+      "strength": 0.5,
+      "forced": false,
+      "text": "Is the sample heterogeneous, so that different measurements must see the same spot?"
+    },
+    {
+      "attribute": "fouling",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Can deposits form at the probe window, and how is the line cleaned (CIP, temperature, chemicals)?"
+    },
+    {
+      "attribute": "physical_variation",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Which physical and formulation changes occur between runs (temperature, texture, particle size, air bubbles, recipe)?"
+    },
+    {
+      "attribute": "temperature",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "What temperature, pressure and flow occur at the measurement point?"
+    },
+    {
+      "attribute": "reference_method",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Which independent reference method and sampling time can be used?"
+    },
+    {
+      "attribute": "acceptance_criteria",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "What concentration range, accuracy and response time must the measurement meet?"
+    }
+  ],
+  "lab_checks": [],
+  "evidence": {
+    "K06": "application",
+    "K08": "application"
+  }
+}

@@ -1,0 +1,1275 @@
+{
+  "schema_version": "0.2",
+  "case_id": "synthetic-S04",
+  "language": "de",
+  "summary": "Der Kunde möchte in der Joghurtproduktion Fett und Protein in zwei Rezepturen (Natur und Frucht) überwachen und wünscht zunächst eine Pilotstudie und einen Vergleich geeigneter Methoden.",
+  "parameters": [
+    {
+      "id": "measurand",
+      "value": "Fett und Protein",
+      "status": "known",
+      "evidence_quote": "Fett und Protein",
+      "source": "customer_text"
+    },
+    {
+      "id": "measurand_type",
+      "value": "Organische Komponenten (Fett, Protein)",
+      "status": "assumed",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "matrix",
+      "value": "Joghurt (Natur- und Fruchtvariante)",
+      "status": "known",
+      "evidence_quote": "Joghurtproduktion",
+      "source": "customer_text"
+    },
+    {
+      "id": "phase",
+      "value": "Weichfest, Emulsion/Gel (Joghurt)",
+      "status": "assumed",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "water_content",
+      "value": "Hoch (wässrige Matrix)",
+      "status": "assumed",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "concentration_range",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "required_accuracy",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "temperature",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "pressure",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "aggressiveness_fouling",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "installation_point",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "distance_to_instrument",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "measurement_frequency",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "reference_method",
+      "value": "Labormessung (Methode nicht genannt)",
+      "status": "known",
+      "evidence_quote": "Bisher messen wir im Labor",
+      "source": "customer_text"
+    },
+    {
+      "id": "samples_available",
+      "value": "Ja, Proben aus der Laboranalytik",
+      "status": "assumed",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "regulatory",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    }
+  ],
+  "features": {
+    "phase": {
+      "value": "emulsion",
+      "status": "assumed"
+    },
+    "water_level": {
+      "value": "high",
+      "status": "assumed"
+    },
+    "analyte_type": {
+      "value": "organic_compound",
+      "status": "assumed"
+    },
+    "concentration_level": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "accuracy_need": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "temperature_class": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "pressure_class": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "fouling_risk": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "distance_class": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "fluorescence_risk": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "turbidity": {
+      "value": "opaque",
+      "status": "assumed"
+    },
+    "hazardous_area": {
+      "value": "unknown",
+      "status": "unknown"
+    }
+  },
+  "questions": [
+    {
+      "id": "q1",
+      "text": "Wird die Frucht vor oder nach der Messstelle zugegeben, und wird in der Natur-Linie, der Frucht-Linie oder in beiden gemessen?",
+      "priority": "high",
+      "why": "Fruchtstücke und Farbstoffe ändern das optische Verhalten. Das entscheidet, ob die beiden Rezepturen eigene Sonden, Schnittstellen und Kalibrierungen brauchen, und beeinflusst das Fluoreszenzrisiko bei Raman.",
+      "parameter_id": "installation_point",
+      "feature": "phase",
+      "attribute": null,
+      "answer": null
+    },
+    {
+      "id": "q2",
+      "text": "Wo soll die Sonde eingebaut werden (Rohrleitung, Tank, Abfüllleitung), gibt es dort ein Fenster oder einen Stutzen, und gibt es eine Probenahmestelle direkt daneben?",
+      "priority": "high",
+      "why": "Die Messstelle entscheidet zwischen einer Sonde mit Produktkontakt und einer Optik durch ein Fenster, und ob Referenzproben dem entsprechen, was die Sonde sieht.",
+      "parameter_id": "installation_point",
+      "feature": null,
+      "attribute": null,
+      "answer": null
+    },
+    {
+      "id": "q3",
+      "text": "Mit welchen Labormethoden messen Sie Fett und Protein heute, mit welcher Messunsicherheit, und können Sie Proben beider Rezepturen über den gesamten Variationsbereich liefern?",
+      "priority": "high",
+      "why": "Referenzmethode und Unsicherheit legen fest, welche Genauigkeit eine Methode überhaupt zeigen kann, und Proben über den Rezepturbereich entscheiden, ob die Pilotstudie starten kann.",
+      "parameter_id": "samples_available",
+      "feature": null,
+      "attribute": null,
+      "answer": null
+    },
+    {
+      "id": "q4",
+      "text": "Welche Konzentrationsbereiche für Fett und Protein, welche Genauigkeit und welche Ansprechzeit muss die Messung erfüllen?",
+      "priority": "medium",
+      "why": "Geforderte Genauigkeit und Bereich entscheiden, ob eine schwächere Methode genügt und wie streng das Erfolgskriterium des Vergleichs sein muss.",
+      "parameter_id": "required_accuracy",
+      "feature": "accuracy_need",
+      "attribute": "acceptance_criteria",
+      "answer": null
+    },
+    {
+      "id": "q5",
+      "text": "Können sich am Sondenfenster Beläge (Proteinfilm, Fett) bilden, und wie wird die Leitung gereinigt (CIP, Temperatur, Chemikalien)?",
+      "priority": "medium",
+      "why": "Belag und Reinigungschemikalien können Sondentyp und Fensterwerkstoff ändern und eine berührungslose Optik gegenüber einer Kontaktsonde oder einem ATR-Kristall begünstigen.",
+      "parameter_id": "aggressiveness_fouling",
+      "feature": "fouling_risk",
+      "attribute": "fouling",
+      "answer": null
+    },
+    {
+      "id": "q6",
+      "text": "Welche Temperatur, welcher Druck und welcher Durchfluss herrschen an der Messstelle?",
+      "priority": "low",
+      "why": "Temperatur und Durchfluss begrenzen Sonden- und Faserwahl und verändern die Spektren, die die Kalibrierung abdecken muss.",
+      "parameter_id": "temperature",
+      "feature": "temperature_class",
+      "attribute": "temperature",
+      "answer": null
+    }
+  ],
+  "methods": {
+    "ranked": [
+      {
+        "rank": 1,
+        "method": "raman",
+        "mode": "raman_backscatter",
+        "spectral_range": "excitation 785 nm (also 532 / 1064 nm)",
+        "fiber": "silica, long distances possible",
+        "probe": "immersion probe with sapphire window or non-contact optics",
+        "score_total": 5.5,
+        "scores": [
+          {
+            "criterion": "Analyte",
+            "score": 2.0,
+            "rule_id": "R-ORGANIC",
+            "note": "Organic compounds have specific vibrational bands"
+          },
+          {
+            "criterion": "Matrix water",
+            "score": 2.0,
+            "rule_id": "R-WATER-HIGH",
+            "note": "Water absorbs strongly in MIR and NIR, but is a weak Raman scatterer"
+          },
+          {
+            "criterion": "Sample phase",
+            "score": 1.5,
+            "rule_id": "R-SLURRY",
+            "note": "Multiphase media scatter light, contact methods may foul"
+          }
+        ],
+        "confidence": "low",
+        "claims": [
+          {
+            "claim": "Raman liefert Schwingungsinformation (Molekülgerüst, symmetrische Gruppen) für organische Komponenten, Fett und Protein sind also prinzipiell plausible Ziele. Das ist nur Physik: Eine AFS-Anwendung von Raman an Joghurt oder Milchprodukten ist nicht gezeigt.",
+            "kb_card": "card-raman",
+            "source": "S01 p.11–12"
+          },
+          {
+            "claim": "Wasser ist ein schwacher Raman-Streuer, der hohe Wassergehalt von Joghurt überdeckt die Fett- und Protein-Banden also nicht so wie im IR. Das erklärt die Rangposition.",
+            "kb_card": "card-raman",
+            "source": null
+          },
+          {
+            "claim": "Eine berührungslose Optik durch ein Fenster oder eine Immersionssonde mit Saphirfenster kann in ein opakes, gelartiges Produkt messen. Welche Schnittstelle passt, hängt von der noch unbekannten Messstelle ab.",
+            "kb_card": "card-raman",
+            "source": null
+          },
+          {
+            "claim": "Fluoreszenz der Matrix kann das Raman-Signal überdecken. Beim Fruchtjoghurt machen Farbstoffe und Fruchtzubereitung das wahrscheinlicher, stark gefärbte Proben sind schwierig. Naturjoghurt kann sich anders verhalten. Noch nicht geprüft.",
+            "kb_card": "card-raman",
+            "source": null
+          },
+          {
+            "claim": "Das Raman-Signal ist von Natur aus schwach. Ob es für Fett und Protein reicht, ist offen, weil der Konzentrationsbereich unbekannt ist. Das Ranking selbst hat nur niedrige Konfidenz.",
+            "kb_card": "card-raman",
+            "source": null
+          }
+        ]
+      }
+    ],
+    "rejected": [
+      {
+        "method": "uv_vis",
+        "reason": "Low total score (-3.0). Main issue: Turbidity scatters light and distorts absorbance",
+        "rule_id": "R-TURBID",
+        "blocker": false
+      },
+      {
+        "method": "nir",
+        "reason": "Low total score (1.5). Main issue: Water absorbs strongly in MIR and NIR, but is a weak Raman scatterer",
+        "rule_id": "R-WATER-HIGH",
+        "blocker": false
+      },
+      {
+        "method": "mir",
+        "reason": "Low total score (1.0). Main issue: Water absorbs strongly in MIR and NIR, but is a weak Raman scatterer",
+        "rule_id": "R-WATER-HIGH",
+        "blocker": false
+      },
+      {
+        "method": "fluorescence",
+        "reason": "Low total score (-1.0). Main issue: Turbidity scatters light and distorts absorbance",
+        "rule_id": "R-TURBID",
+        "blocker": false
+      },
+      {
+        "method": "scattering",
+        "reason": "Scattering sees particles, not chemical composition",
+        "rule_id": "R-SCATTER-NOT-COMPOSITION",
+        "blocker": true
+      }
+    ]
+  },
+  "experiment": {
+    "goal": "Pilotstudie im Labor: Fett und Protein in Natur- und Fruchtjoghurt mit faseroptischen Methoden (NIR, MIR ATR, Raman) gegen die Labormethoden des Kunden vergleichen, um die geeignete Methode und Sondenart je Rezeptur zu bestimmen, bevor eine In-line-Kampagne geplant wird.",
+    "sample_count": "ca. 120 Proben: je Rezeptur 2 Kalibrierchargen mit ca. 20 Proben und 1 unabhängige Validierungscharge mit ca. 20 Proben.",
+    "sample_design": "Fett und Protein variieren in der Produktion wenig und können miteinander korrelieren. Deshalb gezielt hergestellte Proben: Fett (z. B. mit Rahm) und Protein (z. B. mit Magermilchpulver oder Molkenprotein) in einem gekreuzten Plan unabhängig voneinander verändern, über den erwarteten Bereich hinaus. Natur und Frucht getrennt, beim Fruchtjoghurt zusätzlich Fruchtanteil und Fruchtsorte variieren. Produkttemperatur über den Bereich der Messstelle variieren und gerührte gegenüber ungerührter Textur einbeziehen. Ergänzend reale Produktionsproben aus mehreren Chargen.",
+    "interferents": [
+      "Korrelation zwischen Fett und Protein",
+      "Fruchtzubereitung (Fruchtstücke, Farbstoffe, Zucker)",
+      "Produkttemperatur",
+      "Textur, Partikelgröße der Emulsion und Gelstruktur",
+      "Luftblasen",
+      "Fluoreszenzuntergrund der Matrix (Raman)",
+      "Belag am Sondenfenster oder Kristall"
+    ],
+    "reference_method": "Labormethode des Kunden (bisher nicht benannt, Name, Messunsicherheit und Probenahmezeit sind zu klären). Falls noch nichts festgelegt ist, zur Wahl: Kjeldahl oder Dumas für Protein, Gerber oder Röse-Gottlieb für Fett.",
+    "methods_compared": [
+      "nir",
+      "mir",
+      "raman"
+    ],
+    "steps": [
+      "Schritt 1: Zielgrößen und Bereiche mit dem Kunden festlegen (Fett und Protein getrennt, Natur und Frucht getrennt) und die Referenzmethode samt Unsicherheit klären. Es sind keine Step-0-Labor-Checks vorgegeben.",
+      "Schritt 2: Repräsentative Proben beider Rezepturen sammeln und mit der Referenzmethode messen. Fluoreszenz-Screening der Proben mit Raman bei 785 nm und, wenn verfügbar, 1064 nm.",
+      "Schritt 3: Statische Laborstudie an den gezielt variierten Proben. NIR (Diffusreflexion, ergänzend Transflexion), MIR ATR und Raman mit Faserproben messen, jeweils mit Referenzwerten.",
+      "Schritt 4: Mindestens zwei Kalibrierchargen je Rezeptur messen und je Methode, Zielgröße und Rezeptur ein Modell bauen. Prüfen, ob ein gemeinsames Modell für Natur und Frucht reicht.",
+      "Schritt 5: Unabhängige Validierungschargen auswerten. Bias, Fehler und Einfluss von Temperatur und Textur je Methode berichten.",
+      "Schritt 6: Je Zielgröße und Rezeptur die geeignete Methode und Schnittstelle wählen. Danach eine In-line-Kampagne an der Messstelle planen (Sondenfenster, Reinigung, Probenahmestelle)."
+    ],
+    "success_criterion": "Auf der unabhängigen Validierungscharge je Rezeptur: Bias zum Labor höchstens 0,05 % absolut und RMSEP höchstens das Doppelte der Referenzunsicherheit, getrennt für Fett und Protein. Die Zahlen sind ein Vorschlag und werden mit der geforderten Genauigkeit des Kunden abgeglichen.",
+    "duration_estimate": "ca. 6–8 Wochen für die Laborstudie. Eine In-line-Pilotkampagne in der Produktion folgt danach und dauert unter Lebensmittel-Produktionsbedingungen und Freigaben deutlich länger."
+  },
+  "risks": [
+    {
+      "text": "Ranking vs assessment: Das Ranking führt nur Raman auf Platz 1 (Konfidenz low), die Zweitprüfung nennt als beste Zeilen NIR-Diffusreflexion (AFS-Anwendung in Molkerei, S01 p.17–18) und MIR ATR (physics_only). Raman hat in der Zweitprüfung nur physics_only und Status needs_info. NIR wurde im Ranking mit einem Wasser-Abzug aussortiert. Das ist wahrscheinlich ein Fehler, weil Fett und Protein im Prozentbereich liegen und Wasser sie nicht verdeckt. Die Zweitprüfung ist besser gestützt (AFS-Anwendung vor Physik vor Entwurfsregel). Für den Methodenvergleich müssen NIR und MIR mit in die Studie.",
+      "severity": "high"
+    },
+    {
+      "text": "Physikalische Variation (Temperatur, Textur, Partikelgröße, Luftblasen, Rezeptur) kann das NIR-Spektrum stärker verändern als Fett und Protein. Ohne gezielt variierte Kalibrierproben ist das Modell nicht belastbar.",
+      "severity": "medium"
+    },
+    {
+      "text": "Zwei Rezepturen (Natur und Frucht) verhalten sich optisch verschieden, Fruchtstücke und Farbstoffe stören. Es kann zwei getrennte Kalibrierungen und Schnittstellen brauchen. Fett und Protein sind getrennte Zielgrößen und werden getrennt bewertet.",
+      "severity": "medium"
+    },
+    {
+      "text": "Raman: Fluoreszenzuntergrund (vor allem beim Fruchtjoghurt) kann das schwache Signal überdecken. Fruchtfarbstoffe sind zusätzlich ein Problem für den Laser.",
+      "severity": "medium"
+    },
+    {
+      "text": "NIR braucht chemometrische Kalibrierung mit Referenzdaten und überträgt sich schlechter zwischen Geräten als MIR. MIR ATR hat nur physics_only-Support und der Kristall kann durch Protein- und Fettbelag foulen.",
+      "severity": "medium"
+    },
+    {
+      "text": "Viele Fakten fehlen (Messbereich, Genauigkeit, Messstelle, Temperatur, Entfernung, Referenzmethode ist nicht benannt). Der Status bleibt provisional und es sollte keine feste Konfiguration zugesagt werden.",
+      "severity": "medium"
+    }
+  ],
+  "expert_flags": [],
+  "changes": [],
+  "meta": {
+    "model": "simulated (sonnet subagent, same prompts)",
+    "generated_at": "2026-10-18T08:00:00Z",
+    "rules_version": "rules-draft-0",
+    "kb_version": "kb-draft-0",
+    "recomputed": false
+  },
+  "attributes": [
+    {
+      "name": "target_defined",
+      "value": "yes",
+      "status": "known",
+      "quote": "Fett und Protein"
+    },
+    {
+      "name": "target_kind",
+      "value": "fat",
+      "status": "known",
+      "quote": "Fett und Protein"
+    },
+    {
+      "name": "target_class",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "targets_count",
+      "value": "2plus",
+      "status": "known",
+      "quote": "Fett und Protein"
+    },
+    {
+      "name": "quantitative",
+      "value": "yes",
+      "status": "known",
+      "quote": "Fett und Protein"
+    },
+    {
+      "name": "reference_method",
+      "value": "available",
+      "status": "known",
+      "quote": "Bisher messen wir im Labor"
+    },
+    {
+      "name": "reference_uncertainty",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "acceptance_criteria",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "concentration_range",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "intended_use",
+      "value": "pilot",
+      "status": "known",
+      "quote": "Pilotstudie"
+    },
+    {
+      "name": "domain",
+      "value": "dairy",
+      "status": "known",
+      "quote": "Joghurtproduktion"
+    },
+    {
+      "name": "sample_form",
+      "value": "soft_solid",
+      "status": "assumed",
+      "quote": null
+    },
+    {
+      "name": "optical_density",
+      "value": "opaque",
+      "status": "assumed",
+      "quote": null
+    },
+    {
+      "name": "matrix_aqueous",
+      "value": "yes",
+      "status": "assumed",
+      "quote": null
+    },
+    {
+      "name": "heterogeneous",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "fluorophore",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "chromophore",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "matrix_fluorescence",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "formulation_changed",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "streams",
+      "value": "2plus",
+      "status": "known",
+      "quote": "zwei Rezepturen"
+    },
+    {
+      "name": "physical_variation",
+      "value": "yes",
+      "status": "known",
+      "quote": "einer Natur- und einer Fruchtvariante"
+    },
+    {
+      "name": "temperature",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "fouling",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "distance",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "link_confirmed",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "existing_fiber",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "gmp",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "client_method",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "reuse_calibration",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "add_method_to_keep_calibration",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "justification",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "asks",
+      "value": "assessment",
+      "status": "known",
+      "quote": "eine Pilotstudie und einen Vergleich geeigneter Methoden"
+    },
+    {
+      "name": "cited_evidence",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "own_validation",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    }
+  ],
+  "assessment": {
+    "rules_version": "gates-v2-draft",
+    "decision_status": "provisional",
+    "selected": [
+      "K03",
+      "K01"
+    ],
+    "combinations": [
+      [
+        "nir",
+        "mir"
+      ]
+    ],
+    "rows": [
+      {
+        "row": "K01",
+        "method": "mir",
+        "technique": "ATR probe",
+        "status": "candidate",
+        "evidence": "physics_only",
+        "risks": [],
+        "reasons": [
+          "S-VIBRATIONAL-MAJOR:support_physics",
+          "I-FOULING-CONTACT:plan_question",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K02",
+        "method": "nir",
+        "technique": "transmission / transflection probe",
+        "status": "needs_info",
+        "evidence": "application",
+        "risks": [
+          "I-PHYSICAL-VARIATION:risk"
+        ],
+        "reasons": [
+          "S-VIBRATIONAL-MAJOR:support_physics",
+          "I-SAMPLE-TYPE:needs_info",
+          "I-OPAQUE-TRANSMISSION:needs_info",
+          "I-FOULING-CONTACT:plan_question",
+          "I-PHYSICAL-VARIATION:risk",
+          "L-COMPONENT-RATINGS:plan_question",
+          "APP-DAIRY:support_application"
+        ]
+      },
+      {
+        "row": "K03",
+        "method": "nir",
+        "technique": "diffuse reflection probe",
+        "status": "candidate",
+        "evidence": "application",
+        "risks": [
+          "I-PHYSICAL-VARIATION:risk"
+        ],
+        "reasons": [
+          "S-VIBRATIONAL-MAJOR:support_physics",
+          "I-OPAQUE-REFLECTION:fit",
+          "I-FOULING-CONTACT:plan_question",
+          "I-PHYSICAL-VARIATION:risk",
+          "L-COMPONENT-RATINGS:plan_question",
+          "APP-DAIRY:support_application"
+        ]
+      },
+      {
+        "row": "K04",
+        "method": "nir",
+        "technique": "surface at a distance",
+        "status": "needs_info",
+        "evidence": "physics_only",
+        "risks": [
+          "I-PHYSICAL-VARIATION:risk"
+        ],
+        "reasons": [
+          "S-VIBRATIONAL-MAJOR:support_physics",
+          "I-SAMPLE-TYPE:needs_info",
+          "I-PHYSICAL-VARIATION:risk",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K05",
+        "method": "raman",
+        "technique": "Raman probe",
+        "status": "needs_info",
+        "evidence": "physics_only",
+        "risks": [
+          "S-RAMAN-FLUOR-BG:risk"
+        ],
+        "reasons": [
+          "S-RAMAN-COMPOSITION:support_physics",
+          "S-RAMAN-FLUOR-BG:risk",
+          "I-SAMPLE-TYPE:needs_info",
+          "I-FOULING-CONTACT:plan_question",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K06",
+        "method": "uv_vis",
+        "technique": "ATR probe",
+        "status": "needs_info",
+        "evidence": "none",
+        "risks": [
+          "S-UV-OVERLAP:risk"
+        ],
+        "reasons": [
+          "S-UV-OVERLAP:risk",
+          "I-SAMPLE-TYPE:needs_info",
+          "I-UV-HIGH-OD:fit",
+          "I-FOULING-CONTACT:plan_question",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K07",
+        "method": "uv_vis",
+        "technique": "diffuse reflection probe",
+        "status": "needs_info",
+        "evidence": "none",
+        "risks": [
+          "S-UV-OVERLAP:risk"
+        ],
+        "reasons": [
+          "S-UV-OVERLAP:risk",
+          "I-SAMPLE-TYPE:needs_info",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K08",
+        "method": "uv_vis",
+        "technique": "transmission / transflection probe",
+        "status": "needs_info",
+        "evidence": "none",
+        "risks": [
+          "S-UV-OVERLAP:risk"
+        ],
+        "reasons": [
+          "S-UV-OVERLAP:risk",
+          "I-SAMPLE-TYPE:needs_info",
+          "I-OPAQUE-TRANSMISSION:needs_info",
+          "I-FOULING-CONTACT:plan_question",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K09",
+        "method": "uv_vis",
+        "technique": "probe, lens (emission of the sample)",
+        "status": "needs_info",
+        "evidence": "none",
+        "risks": [
+          "S-UV-OVERLAP:risk"
+        ],
+        "reasons": [
+          "S-UV-OVERLAP:risk",
+          "I-SAMPLE-TYPE:needs_info",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      },
+      {
+        "row": "K10",
+        "method": "fluorescence",
+        "technique": "fluorimetric probe",
+        "status": "needs_info",
+        "evidence": "none",
+        "risks": [],
+        "reasons": [
+          "P-NO-FLUOROPHORE:needs_info",
+          "I-FOULING-CONTACT:plan_question",
+          "L-COMPONENT-RATINGS:plan_question"
+        ]
+      }
+    ],
+    "premise_flags": [],
+    "questions": [
+      {
+        "attribute": "fouling",
+        "kind": "plan",
+        "strength": null,
+        "forced": false,
+        "text": "Can deposits form at the probe window, and how is the line cleaned (CIP, temperature, chemicals)?"
+      },
+      {
+        "attribute": "temperature",
+        "kind": "plan",
+        "strength": null,
+        "forced": false,
+        "text": "What temperature, pressure and flow occur at the measurement point?"
+      },
+      {
+        "attribute": "reference_uncertainty",
+        "kind": "plan",
+        "strength": null,
+        "forced": false,
+        "text": "Which assay, uncertainty and sampling time provide the reference values?"
+      },
+      {
+        "attribute": "acceptance_criteria",
+        "kind": "plan",
+        "strength": null,
+        "forced": false,
+        "text": "What concentration range, accuracy and response time must the measurement meet?"
+      }
+    ],
+    "lab_checks": [],
+    "trace": [
+      {
+        "step": "Q2",
+        "rule_id": "P-NO-FLUOROPHORE",
+        "target": "K10",
+        "effect": "needs_info",
+        "source": [
+          "S01 p.5",
+          "AFS ref §5 (fluorescence row)"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-UV-OVERLAP",
+        "target": "K06",
+        "effect": "risk",
+        "source": [
+          "S01 p.5"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-UV-OVERLAP",
+        "target": "K07",
+        "effect": "risk",
+        "source": [
+          "S01 p.5"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-UV-OVERLAP",
+        "target": "K08",
+        "effect": "risk",
+        "source": [
+          "S01 p.5"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-UV-OVERLAP",
+        "target": "K09",
+        "effect": "risk",
+        "source": [
+          "S01 p.5"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-VIBRATIONAL-MAJOR",
+        "target": "K01",
+        "effect": "support_physics",
+        "source": [
+          "S01 p.4–5",
+          "S01 p.9–10"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-VIBRATIONAL-MAJOR",
+        "target": "K02",
+        "effect": "support_physics",
+        "source": [
+          "S01 p.4–5",
+          "S01 p.9–10"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-VIBRATIONAL-MAJOR",
+        "target": "K03",
+        "effect": "support_physics",
+        "source": [
+          "S01 p.4–5",
+          "S01 p.9–10"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-VIBRATIONAL-MAJOR",
+        "target": "K04",
+        "effect": "support_physics",
+        "source": [
+          "S01 p.4–5",
+          "S01 p.9–10"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-RAMAN-COMPOSITION",
+        "target": "K05",
+        "effect": "support_physics",
+        "source": [
+          "S01 p.11–12",
+          "S01 p.14–15",
+          "S01 p.16"
+        ]
+      },
+      {
+        "step": "Q2",
+        "rule_id": "S-RAMAN-FLUOR-BG",
+        "target": "K05",
+        "effect": "risk",
+        "source": [
+          "S01 p.11",
+          "AFS ref D01 ('Check fluorescence background and signal quality')"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-SAMPLE-TYPE",
+        "target": "K02",
+        "effect": "needs_info",
+        "source": [
+          "S01 Table 1 (p.6)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-SAMPLE-TYPE",
+        "target": "K04",
+        "effect": "needs_info",
+        "source": [
+          "S01 Table 1 (p.6)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-SAMPLE-TYPE",
+        "target": "K05",
+        "effect": "needs_info",
+        "source": [
+          "S01 Table 1 (p.6)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-SAMPLE-TYPE",
+        "target": "K06",
+        "effect": "needs_info",
+        "source": [
+          "S01 Table 1 (p.6)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-SAMPLE-TYPE",
+        "target": "K07",
+        "effect": "needs_info",
+        "source": [
+          "S01 Table 1 (p.6)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-SAMPLE-TYPE",
+        "target": "K08",
+        "effect": "needs_info",
+        "source": [
+          "S01 Table 1 (p.6)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-SAMPLE-TYPE",
+        "target": "K09",
+        "effect": "needs_info",
+        "source": [
+          "S01 Table 1 (p.6)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-OPAQUE-TRANSMISSION",
+        "target": "K02",
+        "effect": "needs_info",
+        "source": [
+          "S01 p.16",
+          "S01 p.18"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-OPAQUE-TRANSMISSION",
+        "target": "K08",
+        "effect": "needs_info",
+        "source": [
+          "S01 p.16",
+          "S01 p.18"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-OPAQUE-REFLECTION",
+        "target": "K03",
+        "effect": "fit",
+        "source": [
+          "S01 p.17"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-UV-HIGH-OD",
+        "target": "K06",
+        "effect": "fit",
+        "source": [
+          "S01 p.16"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-FOULING-CONTACT",
+        "target": "K01",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §5 (MIR: contact, fouling)",
+          "AFS ref D07, D02"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-FOULING-CONTACT",
+        "target": "K02",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §5 (MIR: contact, fouling)",
+          "AFS ref D07, D02"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-FOULING-CONTACT",
+        "target": "K03",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §5 (MIR: contact, fouling)",
+          "AFS ref D07, D02"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-FOULING-CONTACT",
+        "target": "K05",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §5 (MIR: contact, fouling)",
+          "AFS ref D07, D02"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-FOULING-CONTACT",
+        "target": "K06",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §5 (MIR: contact, fouling)",
+          "AFS ref D07, D02"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-FOULING-CONTACT",
+        "target": "K08",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §5 (MIR: contact, fouling)",
+          "AFS ref D07, D02"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-FOULING-CONTACT",
+        "target": "K10",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §5 (MIR: contact, fouling)",
+          "AFS ref D07, D02"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-PHYSICAL-VARIATION",
+        "target": "K02",
+        "effect": "risk",
+        "source": [
+          "S01 p.17",
+          "AFS ref D02 (risks)",
+          "AFS ref D01 (risks: physical variation of the powder)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-PHYSICAL-VARIATION",
+        "target": "K03",
+        "effect": "risk",
+        "source": [
+          "S01 p.17",
+          "AFS ref D02 (risks)",
+          "AFS ref D01 (risks: physical variation of the powder)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "I-PHYSICAL-VARIATION",
+        "target": "K04",
+        "effect": "risk",
+        "source": [
+          "S01 p.17",
+          "AFS ref D02 (risks)",
+          "AFS ref D01 (risks: physical variation of the powder)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K01",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K02",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K03",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K04",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K05",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K06",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K07",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K08",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K09",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q3",
+        "rule_id": "L-COMPONENT-RATINGS",
+        "target": "K10",
+        "effect": "plan_question",
+        "source": [
+          "AFS ref §3 'Do not invent' (component ratings)",
+          "AFS Q&A 17.10 (temperature is critical)"
+        ]
+      },
+      {
+        "step": "Q4",
+        "rule_id": "APP-DAIRY",
+        "target": "K02",
+        "effect": "support_application",
+        "source": [
+          "S01 p.17–18"
+        ]
+      },
+      {
+        "step": "Q4",
+        "rule_id": "APP-DAIRY",
+        "target": "K03",
+        "effect": "support_application",
+        "source": [
+          "S01 p.17–18"
+        ]
+      },
+      {
+        "step": "Q1",
+        "rule_id": "T-SPLIT-TARGETS",
+        "target": null,
+        "effect": "split_case",
+        "source": [
+          "AFS ref D05 'target variables still need definition'",
+          "S01 p.16"
+        ]
+      },
+      {
+        "step": "Q1",
+        "rule_id": "T-SPLIT-STREAMS",
+        "target": null,
+        "effect": "split_case",
+        "source": [
+          "S01 p.17–18"
+        ]
+      },
+      {
+        "step": "Q1",
+        "rule_id": "T-REFERENCE-QUALITY",
+        "target": null,
+        "effect": "plan_question",
+        "source": [
+          "AFS ref D01 (clarification: 'Which assay, uncertainty and sampling time provide the reference concentrations?')",
+          "AFS ref D02"
+        ]
+      },
+      {
+        "step": "Q1",
+        "rule_id": "T-PLAN-MINIMUM",
+        "target": null,
+        "effect": "plan_question",
+        "source": [
+          "AFS ref D01 'Decision basis'",
+          "AFS Q&A 17.10 (lab screening: range, resolution, concentration level)"
+        ]
+      }
+    ],
+    "ignored_inputs": null
+  }
+}

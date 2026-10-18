@@ -1,0 +1,112 @@
+{
+  "decision_status": "outside_scope",
+  "selected": [],
+  "excluded": [],
+  "premises": [
+    {
+      "rule_id": "P-EVIDENCE-SCOPE",
+      "verdict": "contradicted",
+      "text": "A proof-of-concept laboratory study is not proof of readiness for live surgery or production (S03: 14 in vitro samples from 7 patients)",
+      "source": [
+        "S03 p.1",
+        "S03 p.3",
+        "S03 p.14",
+        "AFS ref §3 'Common mistakes'"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "title": "Q1 Task",
+      "shown": [],
+      "hidden": 3
+    },
+    {
+      "title": "Q2 Signal",
+      "shown": [],
+      "hidden": 2
+    },
+    {
+      "title": "Q3 Interface and fiber",
+      "shown": [],
+      "hidden": 29
+    },
+    {
+      "title": "Q4 Premises and evidence",
+      "shown": [
+        {
+          "rule_id": "P-EVIDENCE-SCOPE",
+          "row": null,
+          "row_label": null,
+          "effect": "premise_contradicted",
+          "because": "A proof-of-concept laboratory study is not proof of readiness for live surgery or production (S03: 14 in vitro samples from 7 patients)",
+          "source": [
+            "S03 p.1",
+            "S03 p.3",
+            "S03 p.14",
+            "AFS ref §3 'Common mistakes'"
+          ]
+        },
+        {
+          "rule_id": "P-CLINICAL-SCOPE",
+          "row": null,
+          "row_label": null,
+          "effect": "case_outside_scope",
+          "because": "Clinical decision use needs in vivo validation on the actual setup; the supplied material is a proof of concept on ex vivo samples",
+          "source": [
+            "S03 p.3",
+            "S03 p.14",
+            "AFS ref §3 (decision status: outside the supported scope)"
+          ]
+        }
+      ],
+      "hidden": 1
+    }
+  ],
+  "questions": [
+    {
+      "attribute": "target_defined",
+      "kind": "method",
+      "strength": null,
+      "forced": true,
+      "text": "Which variables exactly should be reported, each with its own reference measurement?"
+    },
+    {
+      "attribute": "fouling",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Can deposits form at the probe window, and how is the line cleaned (CIP, temperature, chemicals)?"
+    },
+    {
+      "attribute": "physical_variation",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Which physical and formulation changes occur between runs (temperature, texture, particle size, air bubbles, recipe)?"
+    },
+    {
+      "attribute": "temperature",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "What temperature, pressure and flow occur at the measurement point?"
+    },
+    {
+      "attribute": "reference_method",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Which independent reference method and sampling time can be used?"
+    },
+    {
+      "attribute": "acceptance_criteria",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "What concentration range, accuracy and response time must the measurement meet?"
+    }
+  ],
+  "lab_checks": [],
+  "evidence": {}
+}

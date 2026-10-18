@@ -1,0 +1,194 @@
+# SpectraScout rules, DRAFT 0 (Nidzhat, 15.10). Chemistry to be checked by Nikita.
+# Friday: values are replaced/extended from the AFS method comparison table.
+#
+# How it works
+# - Each rule looks at ONE feature (see contracts/models.py) and a list of values.
+# - effects: method -> number (added to the score) or "block" (method is excluded, with the reason).
+# - Rules on a feature whose status is "unknown" are skipped; the engine lowers confidence instead.
+# - A method is recommended if it is not blocked and its total >= min_score. At most 3 are ranked.
+
+version: rules-draft-0
+min_score: 3
+
+methods:
+  uv_vis:
+    spectral_range: "200–800 nm"
+    fiber: "silica (solarization-resistant for deep UV)"
+    probe: "transmission / immersion probe, ATR-UV for strong absorbers"
+    modes: {default: transmission, solid_powder: diffuse_reflectance, solid_surface: diffuse_reflectance}
+  nir:
+    spectral_range: "ca. 1100–2500 nm"
+    fiber: "silica, long distances possible"
+    probe: "diffuse reflectance probe (solids), transflection probe (liquids)"
+    modes: {default: transflection, solid_powder: diffuse_reflectance, solid_surface: diffuse_reflectance, gas: transmission}
+  mir:
+    spectral_range: "2.5–16 µm (4000–600 cm-1)"
+    fiber: "polycrystalline IR / chalcogenide, short (a few m)"
+    probe: "ATR immersion probe (diamond, ZrO2, Si)"
+    modes: {default: atr, gas: transmission}
+  raman:
+    spectral_range: "excitation 785 nm (also 532 / 1064 nm)"
+    fiber: "silica, long distances possible"
+    probe: "immersion probe with sapphire window or non-contact optics"
+    modes: {default: raman_backscatter}
+  fluorescence:
+    spectral_range: "excitation UV/Vis, emission Vis"
+    fiber: "silica"
+    probe: "bifurcated reflection / immersion probe"
+    modes: {default: fluorescence_emission}
+  scattering:
+    spectral_range: "UV-Vis-NIR"
+    fiber: "silica"
+    probe: "backscatter / turbidity probe"
+    modes: {default: transmission, solid_powder: diffuse_reflectance, solid_surface: diffuse_reflectance}
+
+rules:
+  # ---------------- what is measured
+  - id: R-MOISTURE
+    feature: analyte_type
+    values: [moisture]
+    criterion: Analyte
+    note: "Water has strong NIR bands; MIR and Raman see water too, but weaker or with limits"
+    effects: {nir: 3, mir: 1, raman: 1}
+  - id: R-UVVIS-NOT-CHROMOPHORE
+    feature: analyte_type
+    values: [moisture, polymorph]
+    criterion: Analyte
+    note: "Analyte does not absorb in UV-Vis"
+    effects: {uv_vis: block}
+  - id: R-FLUOR-NOT-FLUOROPHORE
+    feature: analyte_type
+    values: [moisture, polymorph]
+    criterion: Analyte
+    note: "Analyte does not fluoresce"
+    effects: {fluorescence: block}
+  - id: R-SCATTER-NOT-COMPOSITION
+    feature: analyte_type
+    values: [moisture, organic_compound, colored_compound, polymorph, trace_contaminant]
+    criterion: Analyte
+    note: "Scattering sees particles, not chemical composition"
+    effects: {scattering: block}
+  - id: R-PARTICLES
+    feature: analyte_type
+    values: [particles_cells]
+    criterion: Analyte
+    note: "Particles and cells change scattering directly"
+    effects: {scattering: 3, fluorescence: 1, nir: 0.5}
+  - id: R-ORGANIC
+    feature: analyte_type
+    values: [organic_compound]
+    criterion: Analyte
+    note: "Organic compounds have specific vibrational bands"
+    effects: {mir: 2.5, raman: 2, nir: 1.5}
+  - id: R-COLORED
+    feature: analyte_type
+    values: [colored_compound]
+    criterion: Analyte
+    note: "Colored / conjugated compounds absorb strongly in UV-Vis"
+    effects: {uv_vis: 3, raman: -1}
+  - id: R-POLYMORPH
+    feature: analyte_type
+    values: [polymorph]
+    criterion: Analyte
+    note: "Raman resolves crystal forms well"
+    effects: {raman: 3, nir: 1}
+
+  # ---------------- sample phase
+  - id: R-POWDER-DR
+    feature: phase
+    values: [solid_powder, solid_surface]
+    criterion: Sample phase
+    note: "Solids measurable by diffuse reflection or non-contact Raman, ATR contact unreliable"
+    effects: {nir: 2.5, raman: 2, mir: -2, uv_vis: -1}
+  - id: R-LIQUID
+    feature: phase
+    values: [liquid]
+    criterion: Sample phase
+    note: "Liquids suit ATR and immersion probes"
+    effects: {mir: 2, raman: 1.5, nir: 1, uv_vis: 1}
+  - id: R-SLURRY
+    feature: phase
+    values: [slurry, emulsion]
+    criterion: Sample phase
+    note: "Multiphase media scatter light, contact methods may foul"
+    effects: {raman: 1.5, nir: 1, mir: 0.5, uv_vis: -1, scattering: 1}
+  - id: R-GAS
+    feature: phase
+    values: [gas]
+    criterion: Sample phase
+    note: "Gases need long path absorption, Raman signal is weak"
+    effects: {mir: 2, nir: 1, raman: -1, fluorescence: -2}
+
+  # ---------------- matrix and optics
+  - id: R-WATER-HIGH
+    feature: water_level
+    values: [high]
+    criterion: Matrix water
+    note: "Water absorbs strongly in MIR and NIR, but is a weak Raman scatterer"
+    effects: {raman: 2, mir: -2, nir: -1}
+  - id: R-TURBID
+    feature: turbidity
+    values: [turbid, opaque]
+    criterion: Optics
+    note: "Turbidity scatters light and distorts absorbance"
+    effects: {uv_vis: -2, fluorescence: -1}
+  - id: R-FLUOR-RISK
+    feature: fluorescence_risk
+    values: [high]
+    criterion: Process conditions
+    note: "Sample fluorescence can swamp the Raman signal"
+    effects: {raman: -3}
+
+  # ---------------- concentration
+  - id: R-TRACE
+    feature: concentration_level
+    values: [trace_ppm]
+    criterion: Concentration
+    note: "Trace levels need very sensitive methods"
+    effects: {fluorescence: 2, uv_vis: 1, nir: -2, raman: -2, mir: -1}
+  - id: R-HIGH-PERCENT
+    feature: concentration_level
+    values: [high_percent]
+    criterion: Concentration
+    note: "Major components are easy for vibrational methods"
+    effects: {nir: 1, mir: 1, raman: 1}
+
+  # ---------------- installation
+  - id: R-MIR-FIBER-LENGTH
+    feature: distance_class
+    values: [long]
+    criterion: Fiber length and installation
+    note: "MIR fibers are only a few meters long, analyzer must be close to the process"
+    effects: {mir: block}
+  - id: R-MIR-FIBER-MEDIUM
+    feature: distance_class
+    values: [medium]
+    criterion: Fiber length and installation
+    note: "MIR fibers are short, installation is tight"
+    effects: {mir: -2}
+  - id: R-FIBER-SILICA
+    feature: distance_class
+    values: [medium, long]
+    criterion: Fiber length and installation
+    note: "Silica fibers allow long distances"
+    effects: {nir: 1, raman: 1, uv_vis: 0.5}
+
+  # ---------------- process conditions
+  - id: R-FOULING
+    feature: fouling_risk
+    values: [high]
+    criterion: Process conditions
+    note: "Deposits on the probe window, contact methods suffer most"
+    effects: {mir: -1, uv_vis: -1, raman: 0.5}
+  - id: R-TEMP-HIGH
+    feature: temperature_class
+    values: [high]
+    criterion: Process conditions
+    note: "High temperature limits IR fibers and ATR probes"
+    effects: {mir: -1}
+  - id: R-ATEX
+    feature: hazardous_area
+    values: ["yes"]
+    criterion: Process conditions
+    note: "Hazardous area: laser and electronics need ATEX-rated design"
+    effects: {raman: -1}

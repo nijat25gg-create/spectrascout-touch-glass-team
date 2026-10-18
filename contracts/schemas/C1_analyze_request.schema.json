@@ -1,0 +1,27 @@
+{
+  "additionalProperties": false,
+  "description": "C1 · Gadzhi (frontend) -> Semyon (backend) · POST /assessments",
+  "properties": {
+    "text": {
+      "maxLength": 3000,
+      "minLength": 20,
+      "title": "Text",
+      "type": "string"
+    },
+    "language": {
+      "enum": [
+        "de",
+        "en"
+      ],
+      "title": "Language",
+      "type": "string"
+    }
+  },
+  "required": [
+    "text",
+    "language"
+  ],
+  "title": "AnalyzeRequest",
+  "type": "object",
+  "$id": "spectrascout/0.2/C1"
+}

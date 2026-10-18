@@ -1,0 +1,46 @@
+# Synthetic cases S01-S04: written by Claude on 18.10 WITHOUT the AFS materials, to check that step A
+# and the engine generalise beyond D01-D08 / H01-H06 (new domains, German text, other premises).
+# Not AFS cases: no AFS answer exists. `attrs` = what step A should extract (everything else unknown),
+# written BEFORE any run. `expect` = engine expectations that follow from rules/gates.yaml mechanics only.
+# Use: python eval/extract_eval.py --synthetic --from-dir DIR
+
+cases:
+  S01:
+    language: de
+    text: >-
+      Wir stellen PET-Granulat her und wollen die Restfeuchte direkt nach dem Trockner inline verfolgen.
+      Das Granulat ist dort etwa 160 °C heiß. Der Analysator müsste im Schaltraum außerhalb der
+      Produktionshalle stehen. Karl-Fischer-Laborwerte haben wir für jede Charge.
+    attrs: {target_kind: water, target_defined: "yes", quantitative: "yes", reference_method: available,
+            temperature: high, distance: outside_area, targets_count: "1"}
+    # sample_form: granules are not in the vocabulary; powder or solid are both defensible -> not graded
+    expect: {status: provisional}
+
+  S02:
+    language: en
+    text: >-
+      We want to monitor ethanol during beer fermentation with MIR ATR. A supplier brochure says MIR works
+      over a 50 m fiber, so please approve installing the analyzer in our control room in another building.
+      We do not have samples with reference values yet.
+    attrs: {domain: bioprocess, sample_form: liquid, matrix_aqueous: "yes", target_kind: metabolite_other,
+            target_defined: "yes", client_method: mir, cited_evidence: business_material, asks: approve_concept,
+            distance: other_building, reference_method: none}
+    expect: {status: provisional}
+
+  S03:
+    language: en
+    text: >-
+      Customers sometimes complain about the colour of our glucose syrup. We cannot say yet which
+      component causes it. Which sensor should we install on the line right away?
+    attrs: {sample_form: liquid, target_defined: "no", asks: exact_config_now}
+    expect: {status: insufficient_information}
+
+  S04:
+    language: de
+    text: >-
+      In unserer Joghurtproduktion wollen wir Fett und Protein in zwei Rezepturen überwachen, einer
+      Natur- und einer Fruchtvariante. Bisher messen wir im Labor. Wir möchten zunächst eine Pilotstudie
+      und einen Vergleich geeigneter Methoden.
+    attrs: {domain: dairy, targets_count: "2plus", streams: "2plus", reference_method: available,
+            intended_use: pilot, asks: assessment, quantitative: "yes", target_defined: "yes", target_kind: fat}
+    expect: {status: provisional}

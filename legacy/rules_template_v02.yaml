@@ -1,0 +1,14 @@
+# One rule = one condition on a use-case parameter and its effect on method scores.
+# Copy this block for each rule. Parameter values must match the feature values in contracts/models.py (e.g. phase: solid_powder). Methods: uv_vis, nir, mir, raman, fluorescence, scattering.
+
+- id: R001
+  description: ""          # plain English, shown to the expert
+  condition:
+    feature: ""            # one of the 12 features, e.g. water_level
+    operator: ""           # equals | greater_than | less_than | contains
+    value: ""
+  effects:
+    - method: ""
+      score_change: 0      # e.g. -3, or "block" to exclude the method
+      reason: ""           # shown next to the method in the briefing
+  source: ""               # literature, experience, application note

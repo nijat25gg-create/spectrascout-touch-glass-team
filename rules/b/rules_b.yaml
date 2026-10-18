@@ -1,0 +1,225 @@
+# Method B rule registry (spec spectroscopy-rules 1.2-draft: files 02-06). Machine form of the tables.
+# Status: source_supported_draft; every effect is design_v0_unvalidated (spec 02 §4). Draft until Nikita
+# and the team confirm. IDs, groups and effects are the spec's; rules not yet translated are listed in
+# `pending` at the end so nothing is silently dropped.
+#
+# Condition language (three-valued: true / false / unknown, spec 02 §2):
+#   {f: <fact key>, in: [...]}      fact value in set (unknown fact -> unknown)
+#   {method: [NIR, ...]}            candidate method (always known)
+#   {i: <interface field>, in: [...]} catalog field of the candidate interface (known)
+#   {c: <configuration field>, in: [...]} field of the candidate configuration concept (known); for
+#                                   level: combination the configuration is the combination (unset field -> unknown)
+#   {op: <predicate>}               named predicate from engine/b/predicates (versioned registry)
+#   {all: [...]}, {any: [...]}, {not: {...}}
+# Rule: when (applicability) -> criterion. when false = NOT_APPLICABLE; when unknown = UNKNOWN with
+# possible effects {0, match[, mismatch]}; criterion true = MATCH, false = MISMATCH, unknown = UNKNOWN.
+# A rule without `criterion` matches whenever it applies (documented application rows).
+# catalog_unknown: the factor needs a CapabilityProfile the materials do not give (spec 04 §5). It stays
+# UNKNOWN with code NO_SCOPED_PERFORMANCE_PROFILE and is never asked to the client (spec 06 §6).
+version: b-1.2-draft.1
+bucket: bucket_10_v1_proposed
+bucket_thresholds: [-5, -3, -1, 0, 1, 2, 3, 4, 6]   # spec 02 §4, status proposed
+group_cap: 3
+groups:
+  Q1: [target, selectivity, matrix, calibration]
+  Q1b: [sensitivity, error, latency, range]
+  Q2: [compatibility, optical_access, representativity, sample_handling]
+  Q3: [thermal_pressure, chemical, deployment, transport]
+
+rules:
+# ------------------------------------------------------------------ Q1 signal (spec 03) -- level method
+- {id: R_Q1_01, stage: Q1, group: target, exclusive: primary_target, specificity: 1,
+   when: {f: MeasurementTask.target_definition, in: [defined, partial]},
+   criterion: {op: documented_target_relation}, match: 2, mismatch: -2,
+   source: "S01 p4-5; REF §3,5", note: "Broad target-signal link; no catalog entry = UNKNOWN, never exclusion."}
+- {id: R_Q1_03, stage: Q1, group: target, specificity: 1,
+   when: {all: [{method: [UV_VIS, Fluorescence]}, {f: MeasurementTask.target, in: [biomass, cell_density, viable_biomass, metabolic_state]}]},
+   criterion: {f: MeasurementTask.reference_method, in: [available]}, match: 1, mismatch: -2,
+   source: "S01 p16; REF §5", note: "Proxy mode: the link signal -> required quantity must be checked against a reference."}
+- {id: R_Q1_04, stage: Q1, group: selectivity,
+   when: {f: MeasurementTask.target_definition, in: [defined, partial]},
+   criterion: {op: selectivity_documented}, match: 2, mismatch: -2,
+   source: "S01 p5,10-11", note: "Separation of the target signal from the interferences of this matrix. MATCH only where an evidence row names the page (selectivity_source); no spectra in the materials = UNKNOWN, never a MISMATCH and never 'no interferences'."}
+- {id: R_Q1_05, stage: Q1, group: matrix, exclusive: matrix_background, specificity: 1,
+   when: {f: MeasurementTask.target_definition, in: [defined, partial]},
+   criterion: {op: band_overlap_known}, match: 1, mismatch: -2,
+   source: "S01 p5,11; REF §5", note: "Generic row: a known matrix background must not cover the target signal. Unknown overlap = UNKNOWN. Replaced by the specific rows R_Q1_R02 (Raman fluorescence) and R_Q1_M03 (MIR water). Soft only; a hard exclusion needs a proven overlap (R_Q1_02)."}
+- {id: R_Q1_06, stage: Q1, group: calibration,
+   when: {all: [{op: is_existing_model_method}, {f: ProcessContext.assets.calibration_scope, in: [covers, outside]}]},
+   criterion: {f: ProcessContext.assets.calibration_scope, in: [covers]}, match: 1, mismatch: -3,
+   source: "REF D01 risks, §5; S01 p10", note: "Invalid old calibration does not exclude the physical method; a new calibration plan is mandatory."}
+- {id: R_Q1_07, stage: Q1, group: calibration,
+   when: {f: MeasurementTask.measurement_goal, in: [quantify, classify]},
+   criterion: {f: MeasurementTask.reference_method.independent, in: ["yes"]}, match: 1, mismatch: -1,
+   source: "REF D01/D02 experiment; S01 p5,10", note: "Independent validation material must be established, not assumed."}
+- {id: R_Q1_N01, stage: Q1, group: target, exclusive: primary_target, specificity: 3,
+   when: {all: [{method: [NIR]}, {f: Sample.physical_form, in: [powder]}, {f: MeasurementTask.target, in: [api]}]},
+   match: 2, source: "S01 p14-15; REF D01", note: "Documented direction; not every API is equally visible."}
+- {id: R_Q1_N02, stage: Q1, group: matrix, specificity: 2,
+   when: {all: [{method: [NIR]}, {f: Sample.phase, in: [solid, liquid, multiphase]}]},
+   criterion: {f: Sample.variability.physical, in: [controlled]}, match: 1, mismatch: -2,
+   source: "S01 p10,15,17; REF D01,D02", note: "Particle, density, temperature, texture variation must be in the matrix calibration."}
+- {id: R_Q1_N03, stage: Q1, group: target, exclusive: primary_target, specificity: 3,
+   when: {all: [{method: [NIR]}, {f: Sample.matrix, in: [dairy]}, {f: MeasurementTask.target, in: [fat, protein]}]},
+   match: 2, source: "S01 p17-18; REF D02,D03", note: "One Case and one reference per target."}
+- {id: R_Q1_N04, stage: Q1, group: target, exclusive: primary_target, specificity: 3,
+   when: {all: [{method: [NIR]}, {f: MeasurementTask.target, in: [api]}, {f: Sample.physical_form, in: [melt]}, {f: Sample.matrix, in: [polymer]}]},
+   match: 2, source: "S02 p14; REF D07", note: "Documented NIR reflection direction; no guaranteed error."}
+- {id: R_Q1_M01, stage: Q1, group: target, exclusive: primary_target, specificity: 3,
+   when: {all: [{method: [MIR]}, {f: MeasurementTask.target, in: [water]}, {f: Sample.matrix, in: [petroleum]}]},
+   match: 2, source: "REF D06, §5; S02 p13", note: "ATR and fiber are checked later; no guaranteed detection limit."}
+- {id: R_Q1_M02, stage: Q1, group: target, exclusive: primary_target, specificity: 3,
+   when: {all: [{method: [MIR]}, {f: MeasurementTask.target, in: [api]}, {f: Sample.physical_form, in: [melt]}, {f: Sample.matrix, in: [polymer]}]},
+   match: 2, source: "REF D07; S02 p14", note: "Documented MIR ATR direction; no proof of equal accuracy with NIR."}
+- {id: R_Q1_M03, stage: Q1, group: matrix, exclusive: matrix_background, specificity: 2,
+   when: {all: [{method: [MIR]}, {f: Sample.matrix, in: [aqueous_bioprocess, dairy]}, {not: {f: MeasurementTask.target, in: [water]}}]},
+   criterion: {op: band_overlap_known}, match: 1, mismatch: -2,
+   source: "S01 p5,16; REF §5", note: "Presence of water is not penalised automatically; unknown overlap = UNKNOWN; ATR may solve it."}
+- {id: R_Q1_R01, stage: Q1, group: target, exclusive: primary_target, specificity: 3,
+   when: {all: [{method: [Raman]}, {f: Sample.physical_form, in: [powder]}, {f: MeasurementTask.target, in: [api]}]},
+   match: 2, source: "S01 p14-15; REF D01", note: "Documented comparison candidate; not a mandatory second method."}
+- {id: R_Q1_R02, stage: Q1, group: matrix, exclusive: matrix_background, specificity: 2,
+   when: {method: [Raman]},
+   criterion: {f: Sample.optical_properties.fluorescence, in: [absent]}, match: 1, mismatch: -3,
+   source: "S01 p11; REF §5", note: "Unknown excitation/background = UNKNOWN; fluorescence without a spectrum does not forbid Raman."}
+- {id: R_Q1_R03, stage: Q1, group: matrix, exclusive: aqueous_raman, specificity: 3,
+   when: {all: [{method: [Raman]}, {f: Sample.matrix, in: [aqueous_bioprocess]}, {f: MeasurementTask.target, in: [glucose, lactate, acetate]}]},
+   match: 1, source: "S01 p16; REF D04", note: "Relative compatibility with the aqueous medium, not a ppm guarantee."}
+- {id: R_Q1_F01, stage: Q1, group: target, exclusive: primary_target, specificity: 3,
+   when: {method: [Fluorescence]},
+   criterion: {f: Sample.relevant_components.fluorophore, in: [known, marker_allowed]}, match: 2, mismatch: -3,
+   hard: {when: {all: [{f: Sample.relevant_components.fluorophore, in: [none_known]}, {f: CustomerRequest.proxy_allowed, in: ["no"]}]},
+          scope: method, reason: "Direct mode: no fluorescence mechanism and no allowed proxy/marker (R_Q1_02)."},
+   source: "S01 p5,16; REF §5; H03", note: "Without a fluorophore the direct concentration is a new hypothesis, not a fact."}
+- {id: R_Q1_F02, stage: Q1, group: target,
+   when: {all: [{method: [Fluorescence]}, {f: MeasurementTask.target, in: [glucose, viable_biomass, metabolic_state]}]},
+   criterion: {f: CustomerRequest.justification, in: [physical_basis]}, match: 1, mismatch: -2,
+   source: "S01 p16; REF §5; H03", note: "A metabolic indicator is not a glucose concentration or a viable cell count."}
+- {id: R_Q1_U01, stage: Q1, group: target, exclusive: primary_target, specificity: 2,
+   when: {all: [{method: [UV_VIS]}, {not: {f: MeasurementTask.target, in: [biomass, cell_density, viable_biomass]}}]},
+   criterion: {op: absorber_known_or_unknown}, match: 2, mismatch: -2,
+   source: "S01 p5,16; REF §5", note: "No named chromophore in the enquiry = UNKNOWN."}
+- {id: R_Q1_U03, stage: Q1, group: target, exclusive: primary_target, specificity: 3,
+   when: {all: [{method: [UV_VIS]}, {f: MeasurementTask.target, in: [biomass, cell_density, viable_biomass]}]},
+   criterion: {f: MeasurementTask.target, in: [biomass, cell_density]}, match: 1, mismatch: -2,
+   source: "S01 p16; REF §5", note: "Scattering is not viability; trend of optical density only."}
+
+# ------------------------------------------------------------------ Q1b achievability (spec 04) -- method
+- {id: R_Q1B_02, stage: Q1b, group: sensitivity, catalog_unknown: true,
+   when: {f: MeasurementTask.measurement_goal, in: [detect, quantify]},
+   source: "spec 04 §1; REF §3,5", note: "LOD/LOQ only from a scoped CapabilityProfile; the materials give none."}
+- {id: R_Q1B_03, stage: Q1b, group: sensitivity, exclusive: trace_sensitivity, specificity: 2,
+   when: {all: [{method: [NIR]}, {f: Sample.matrix, in: [aqueous_bioprocess]}]},
+   criterion: {op: never_known}, match: 0, mismatch: -2,
+   source: "S01 p16; REF §5", note: "Below ~0.1 % comparable mass fraction the source warns of a sensitivity risk; not a LOD, not a cut-off."}
+- {id: R_Q1B_04, stage: Q1b, group: error, catalog_unknown: true,
+   when: {f: MeasurementTask.measurement_goal, in: [quantify]},
+   source: "REF D01/D02 experiment; spec 04", note: "Achieved error vs allowed error needs a comparable metric; none in the materials."}
+- {id: R_Q1B_05, stage: Q1b, group: error,
+   when: {f: MeasurementTask.measurement_goal, in: [quantify, classify]},
+   criterion: {f: MeasurementTask.reference_method, in: [available]}, match: 1, mismatch: -2,
+   source: "REF D01,D02; H01", note: "A laboratory is not a known reference uncertainty."}
+- {id: R_Q1B_06, stage: Q1b, group: latency, catalog_unknown: true,
+   when: {f: MeasurementTask.time_requirements, in: [given]},
+   source: "spec 04 §1", note: "End-to-end latency needs a profile; spectral exposure alone is not the latency."}
+- {id: R_Q1B_08, stage: Q1b, group: range, catalog_unknown: true,
+   when: {f: MeasurementTask.target_range, in: [given]},
+   source: "REF D01,D02; S01 p16,18", note: "Both range ends must be inside the calibration/detector scope."}
+- {id: R_Q1B_10, stage: Q1b, group: sensitivity, diagnostic: true,
+   when: {method: [NIR, MIR, Raman, UV_VIS, Fluorescence]},
+   source: "XLSX sensitivity + notes", note: "Qualitative sensitivity rating: context only, never a score."}
+
+# ------------------------------------------------------------------ Q2 interface (spec 05 §2) -- level pair
+- {id: R_Q2_01, stage: Q2, group: compatibility, level: pair,
+   when: {op: always}, criterion: {op: documented_edge}, match: 1, mismatch: -3,
+   source: "XLSX; S01 p4-6", note: "Documented Method-interface edge (S01 Table 1)."}
+- {id: R_Q2_02, stage: Q2, group: compatibility, level: pair,
+   when: {op: always}, criterion: {op: forms_compatible}, match: 1, mismatch: -2,
+   hard: {when: {op: nonradiating_sample_on_emission_interface}, scope: pair,
+          reason: "This interface collects light emitted by the sample itself; the sample is not a light source."},
+   source: "XLSX; CL10", note: "A form missing from the list is UNKNOWN; MISMATCH only for a constructive conflict (solid vs liquid-only cell)."}
+- {id: R_Q2_03, stage: Q2, group: optical_access, level: pair,
+   when: {i: contact_mode, in: [contact]},
+   criterion: {f: Sample.sample_state_constraints.contact, in: [allowed]}, match: 1, mismatch: -3,
+   hard: {when: {f: Sample.sample_state_constraints.contact, in: [prohibited]}, scope: pair,
+          reason: "Contact or sampling is strictly prohibited and this interface needs it."},
+   source: "S01 p5,10", note: "Excludes only this pair; other interfaces stay. Taking a sample out is R_Q2_10 (one cause, one rule)."}
+- {id: R_Q2_04, stage: Q2, group: optical_access, level: pair, exclusive: transmission_attenuation, specificity: 1,
+   when: {i: geometry, in: [transmission, transflection]},
+   criterion: {op: optical_path_usable}, match: 2, mismatch: -3,
+   source: "S01 p16,18", note: "Turbidity without a spectrum is a risk, not a global exclusion. Check at maximum turbidity."}
+- {id: R_Q2_05, stage: Q2, group: optical_access, level: pair, exclusive: transmission_attenuation, specificity: 3,
+   when: {all: [{method: [NIR]}, {f: Sample.matrix, in: [dairy]}, {i: geometry, in: [transmission, transflection, diffuse_reflection]}]},
+   criterion: {op: dairy_geometry}, match: 2, mismatch: -2,
+   source: "S01 p17-18; REF D02,D03", note: "Clear whey -> transmission; opaque concentrate -> diffuse reflection; variable = both."}
+- {id: R_Q2_06, stage: Q2, group: optical_access, level: pair, specificity: 2,
+   when: {all: [{method: [MIR]}, {i: geometry, in: [atr]}]},
+   criterion: {f: Sample.sample_state_constraints.contact, in: [allowed]}, match: 2, mismatch: -2,
+   source: "S01 p5-6,10", note: "Strong absorption does not exclude MIR via ATR."}
+- {id: R_Q2_07, stage: Q2, group: representativity, level: pair,
+   when: {op: always}, criterion: {op: spatially_representative}, match: 2, mismatch: -2,
+   source: "S01 p8,13-14,17-18; REF D08", note: "A surface or local signal is not the bulk composition of a heterogeneous stream without a sampling plan."}
+- {id: R_Q2_08, stage: Q2, group: representativity, level: pair,
+   when: {any: [{f: Sample.heterogeneity, in: [heterogeneous]}, {f: Sample.variability.physical, in: [varies_uncontrolled]}]},
+   criterion: {f: MeasurementTask.sampling_plan, in: [stated]}, match: 1, mismatch: -2,
+   source: "REF D01,D02; S01 p15,17", note: "Particle/bubble/surface variation must be covered by a sampling or averaging plan. Our recommendation to average is not a plan (no MATCH from it)."}
+- {id: R_Q2_10, stage: Q2, group: sample_handling, level: pair,
+   when: {i: contact_mode, in: [sampling]},
+   criterion: {f: Sample.sample_state_constraints.sampling, in: [allowed]}, match: 1, mismatch: -3,
+   hard: {when: {f: Sample.sample_state_constraints.sampling, in: [prohibited]}, scope: pair,
+          reason: "Taking, diluting or destroying a sample is prohibited and this interface needs a sample taken out."},
+   source: "REF §3; S01 p3,16", note: "Hard only for this way of measuring (cuvette, layer, sphere); a lab pilot can be agreed separately."}
+- {id: R_Q2_11, stage: Q2, group: representativity, level: combination,
+   when: {any: [{f: Sample.heterogeneity, in: [heterogeneous]}, {f: MeasurementTask.spatial_scope, in: [local]}]},
+   criterion: {c: co_registered, in: [true]}, match: 1, mismatch: -2,
+   source: "S01 p7-9; S04 p1,3-4; REF D08", note: "Combination only: both channels see the same place and moment. A documented co-registered probe (S04) is MATCH; an undocumented one stays UNKNOWN. No bonus for the number of channels; not added to any single candidate."}
+
+# ------------------------------------------------------------------ Q3 concept (spec 05 §4) -- level config
+- {id: R_Q3C_01, stage: Q3, group: thermal_pressure, family: thermal, level: config,
+   when: {f: ProcessContext.temperature_range, in: [described_hot]},
+   criterion: {op: hot_process_documented}, match: 1, mismatch: -1,
+   source: "S02 p14; REF D07", note: "No numeric limit in the materials. Hot extrusion does not exclude MIR."}
+- {id: R_Q3C_04, stage: Q3, group: chemical, family: cleaning, level: config,
+   when: {all: [{f: ProcessContext.operation_constraints.fouling, in: [stated]}, {i: contact_mode, in: [contact]}]},
+   criterion: {op: never_known}, match: 1, mismatch: -2,
+   source: "REF D02,D07", note: "Fouling + contact interface needs a feasible cleaning/maintenance plan; a promise is not a match."}
+- {id: R_Q3C_05, stage: Q3, group: deployment, family: deployment, level: config,
+   when: {op: always},
+   criterion: {op: deployment_matches}, match: 2, mismatch: -2,
+   source: "REF §3", note: "Preference is soft; a lab interface stays valid for the feasibility experiment."}
+- {id: R_Q3C_06, stage: Q3, group: deployment, family: safety, level: config,
+   when: {f: ProcessContext.operation_constraints.hazardous, in: [stated]},
+   criterion: {op: never_known}, match: 1, mismatch: -2,
+   source: "design comparator", note: "Do not invent certification."}
+- {id: R_Q3C_07, stage: Q3, group: transport, family: distance, level: config,
+   when: {f: ProcessContext.instrument_distance, in: [remote]},
+   criterion: {op: never_known}, match: 1, mismatch: -1,
+   source: "S02 p6-10,18; S01 p15", note: "Long silica cables are documented; no universal allowed length."}
+- {id: R_Q3C_08, stage: Q3, group: transport, family: spectral_link, level: config,
+   when: {op: always},
+   criterion: {op: fiber_family_covers_method}, match: 1, mismatch: -3,
+   source: "S02 p6; REF §5", note: "Generic family is a soft concept check; a real cable with proven mismatch is R_Q3P_03."}
+- {id: R_Q3C_09, stage: Q3, group: deployment, family: asset, level: config,
+   when: {op: asset_fiber_stated},
+   criterion: {op: reuse_plan_ok}, match: 1, mismatch: -2,
+   source: "REF H01,H03,H04", note: "'There is a cable' does not mean 'must use it'."}
+# ------------------------------------------------------------------ Q3 component (spec 05 §5)
+- {id: R_Q3P_01, stage: Q3, group: thermal_pressure, family: thermal, level: config, component: true,
+   when: {op: temperature_rating_given},
+   criterion: {op: temperature_within_rating}, match: 2, mismatch: -3,
+   hard: {when: {op: temperature_outside_rating}, scope: configuration,
+          reason: "The stated process temperature range (both ends checked) lies outside the probe's data-sheet rating."},
+   source: "spec 05 §5; data sheet of the component (client or supplier)", note: "Only with a real rating of the proposed component; replaces R_Q3C_01 (family thermal). Excludes this assembly, never the method."}
+- {id: R_Q3P_03, stage: Q3, group: transport, family: spectral_link, level: config, component: true,
+   when: {all: [{c: link, in: [reuse]}, {f: ProcessContext.assets.fiber_profile, in: [confirmed]}]},
+   criterion: {op: fiber_family_covers_method}, match: 2, mismatch: -3,
+   hard: {when: {all: [{c: link, in: [reuse]}, {f: ProcessContext.assets.fiber_profile, in: [confirmed]}, {op: fiber_family_not_covering}]},
+          scope: configuration, reason: "Confirmed cable does not transmit the method's window (exclude this assembly only)."},
+   source: "S02 p6", note: "Only with the actual cable data; never excludes the whole method."}
+
+pending:   # translated later; behaviour today in brackets
+  - "R_Q1_02 (folded into R_Q1_F01 hard), R_Q1_08, R_Q1_09, R_Q1_U02 (not scored yet)"
+  - "R_Q1B_01, R_Q1B_07, R_Q1B_09 (covered by catalog_unknown R_Q1B_02/04/06)"
+  - "R_Q2_09, R_Q2_12 (not scored yet)"
+  - "R_Q3C_02, R_Q3C_03, R_Q3C_10, R_Q3P_02, R_Q3P_04..R_Q3P_10 (no component data in the cases)"
+  - "Combinations (spec 05 §6) and multigoal bundle min are computed in the engine, not as rules."

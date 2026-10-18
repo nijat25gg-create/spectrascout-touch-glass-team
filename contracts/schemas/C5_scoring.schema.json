@@ -1,0 +1,577 @@
+{
+  "$defs": {
+    "CriterionScore": {
+      "additionalProperties": false,
+      "properties": {
+        "criterion": {
+          "title": "Criterion",
+          "type": "string"
+        },
+        "score": {
+          "title": "Score",
+          "type": "number"
+        },
+        "rule_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Rule Id"
+        },
+        "note": {
+          "title": "Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "criterion",
+        "score",
+        "rule_id",
+        "note"
+      ],
+      "title": "CriterionScore",
+      "type": "object"
+    },
+    "GateQuestion": {
+      "additionalProperties": false,
+      "properties": {
+        "attribute": {
+          "enum": [
+            "target_defined",
+            "target_kind",
+            "target_class",
+            "targets_count",
+            "quantitative",
+            "reference_method",
+            "reference_uncertainty",
+            "acceptance_criteria",
+            "concentration_range",
+            "intended_use",
+            "domain",
+            "sample_form",
+            "optical_density",
+            "matrix_aqueous",
+            "heterogeneous",
+            "fluorophore",
+            "chromophore",
+            "matrix_fluorescence",
+            "formulation_changed",
+            "streams",
+            "physical_variation",
+            "temperature",
+            "fouling",
+            "distance",
+            "link_confirmed",
+            "existing_fiber",
+            "gmp",
+            "client_method",
+            "reuse_calibration",
+            "add_method_to_keep_calibration",
+            "justification",
+            "asks",
+            "cited_evidence",
+            "own_validation"
+          ],
+          "title": "Attribute",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "method",
+            "plan",
+            "lab_check"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "strength": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Share of answers that change the decision; null if forced or plan",
+          "title": "Strength"
+        },
+        "forced": {
+          "title": "Forced",
+          "type": "boolean"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "attribute",
+        "kind",
+        "strength",
+        "forced",
+        "text"
+      ],
+      "title": "GateQuestion",
+      "type": "object"
+    },
+    "GatesAssessment": {
+      "additionalProperties": false,
+      "description": "Output of engine.gates (v0.3), carried inside C5 as `assessment`.",
+      "properties": {
+        "rules_version": {
+          "title": "Rules Version",
+          "type": "string"
+        },
+        "decision_status": {
+          "enum": [
+            "provisional",
+            "insufficient_information",
+            "outside_scope"
+          ],
+          "title": "Decision Status",
+          "type": "string"
+        },
+        "selected": {
+          "description": "Top rows (at most 3), best first",
+          "items": {
+            "type": "string"
+          },
+          "title": "Selected",
+          "type": "array"
+        },
+        "combinations": {
+          "items": {
+            "items": {
+              "enum": [
+                "uv_vis",
+                "nir",
+                "mir",
+                "raman",
+                "fluorescence",
+                "scattering"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "Combinations",
+          "type": "array"
+        },
+        "rows": {
+          "description": "Every catalog row exactly once",
+          "items": {
+            "$ref": "#/$defs/RowResult"
+          },
+          "title": "Rows",
+          "type": "array"
+        },
+        "premise_flags": {
+          "items": {
+            "$ref": "#/$defs/PremiseFlag"
+          },
+          "title": "Premise Flags",
+          "type": "array"
+        },
+        "questions": {
+          "description": "Method questions (strongest first), then plan questions",
+          "items": {
+            "$ref": "#/$defs/GateQuestion"
+          },
+          "title": "Questions",
+          "type": "array"
+        },
+        "lab_checks": {
+          "description": "Checked on samples in step 0 of the plan, not asked",
+          "items": {
+            "$ref": "#/$defs/GateQuestion"
+          },
+          "title": "Lab Checks",
+          "type": "array"
+        },
+        "trace": {
+          "items": {
+            "$ref": "#/$defs/TraceStep"
+          },
+          "title": "Trace",
+          "type": "array"
+        },
+        "ignored_inputs": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "v0.3: attribute names or values the engine ignored (outside the vocabulary)",
+          "title": "Ignored Inputs"
+        }
+      },
+      "required": [
+        "rules_version",
+        "decision_status",
+        "selected",
+        "combinations",
+        "rows",
+        "premise_flags",
+        "questions",
+        "lab_checks",
+        "trace"
+      ],
+      "title": "GatesAssessment",
+      "type": "object"
+    },
+    "PremiseFlag": {
+      "additionalProperties": false,
+      "properties": {
+        "rule_id": {
+          "title": "Rule Id",
+          "type": "string"
+        },
+        "verdict": {
+          "enum": [
+            "contradicted",
+            "not_supported"
+          ],
+          "title": "Verdict",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "source": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Source",
+          "type": "array"
+        }
+      },
+      "required": [
+        "rule_id",
+        "verdict",
+        "text",
+        "source"
+      ],
+      "title": "PremiseFlag",
+      "type": "object"
+    },
+    "RejectedMethod": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "enum": [
+            "uv_vis",
+            "nir",
+            "mir",
+            "raman",
+            "fluorescence",
+            "scattering"
+          ],
+          "title": "Method",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "rule_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Rule Id"
+        },
+        "blocker": {
+          "description": "true = excluded by a hard rule, false = scored too low",
+          "title": "Blocker",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "method",
+        "reason",
+        "rule_id",
+        "blocker"
+      ],
+      "title": "RejectedMethod",
+      "type": "object"
+    },
+    "RowResult": {
+      "additionalProperties": false,
+      "description": "One catalog row (method x probe) after the gates (v0.3).",
+      "properties": {
+        "row": {
+          "description": "Catalog id, e.g. K03",
+          "title": "Row",
+          "type": "string"
+        },
+        "method": {
+          "enum": [
+            "uv_vis",
+            "nir",
+            "mir",
+            "raman",
+            "fluorescence",
+            "scattering"
+          ],
+          "title": "Method",
+          "type": "string"
+        },
+        "technique": {
+          "title": "Technique",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "candidate",
+            "needs_info",
+            "excluded"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "evidence": {
+          "enum": [
+            "application",
+            "analogy",
+            "physics_only",
+            "none"
+          ],
+          "title": "Evidence",
+          "type": "string"
+        },
+        "risks": {
+          "description": "rule_id: effect for each risk",
+          "items": {
+            "type": "string"
+          },
+          "title": "Risks",
+          "type": "array"
+        },
+        "reasons": {
+          "description": "All fired rules on this row, rule_id: effect",
+          "items": {
+            "type": "string"
+          },
+          "title": "Reasons",
+          "type": "array"
+        }
+      },
+      "required": [
+        "row",
+        "method",
+        "technique",
+        "status",
+        "evidence",
+        "risks",
+        "reasons"
+      ],
+      "title": "RowResult",
+      "type": "object"
+    },
+    "ScoredMethod": {
+      "additionalProperties": false,
+      "properties": {
+        "rank": {
+          "title": "Rank",
+          "type": "integer"
+        },
+        "method": {
+          "enum": [
+            "uv_vis",
+            "nir",
+            "mir",
+            "raman",
+            "fluorescence",
+            "scattering"
+          ],
+          "title": "Method",
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "transmission",
+            "transflection",
+            "atr",
+            "diffuse_reflectance",
+            "raman_backscatter",
+            "fluorescence_emission",
+            "combi_probe"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "spectral_range": {
+          "title": "Spectral Range",
+          "type": "string"
+        },
+        "fiber": {
+          "title": "Fiber",
+          "type": "string"
+        },
+        "probe": {
+          "title": "Probe",
+          "type": "string"
+        },
+        "score_total": {
+          "title": "Score Total",
+          "type": "number"
+        },
+        "scores": {
+          "items": {
+            "$ref": "#/$defs/CriterionScore"
+          },
+          "title": "Scores",
+          "type": "array"
+        },
+        "confidence": {
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ],
+          "title": "Confidence",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rank",
+        "method",
+        "mode",
+        "spectral_range",
+        "fiber",
+        "probe",
+        "score_total",
+        "scores",
+        "confidence"
+      ],
+      "title": "ScoredMethod",
+      "type": "object"
+    },
+    "TraceStep": {
+      "additionalProperties": false,
+      "properties": {
+        "step": {
+          "enum": [
+            "Q1",
+            "Q2",
+            "Q3",
+            "Q4",
+            "OUT"
+          ],
+          "title": "Step",
+          "type": "string"
+        },
+        "rule_id": {
+          "title": "Rule Id",
+          "type": "string"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Row id, or null for case-level rules",
+          "title": "Target"
+        },
+        "effect": {
+          "title": "Effect",
+          "type": "string"
+        },
+        "source": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Source",
+          "type": "array"
+        }
+      },
+      "required": [
+        "step",
+        "rule_id",
+        "target",
+        "effect",
+        "source"
+      ],
+      "title": "TraceStep",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "C5 · engine -> Semyon. Filled from the gates engine (rules/gates.yaml); `assessment` carries its full result",
+  "properties": {
+    "rules_version": {
+      "title": "Rules Version",
+      "type": "string"
+    },
+    "ranked": {
+      "description": "1-3 methods, rank 1 = best",
+      "items": {
+        "$ref": "#/$defs/ScoredMethod"
+      },
+      "title": "Ranked",
+      "type": "array"
+    },
+    "rejected": {
+      "items": {
+        "$ref": "#/$defs/RejectedMethod"
+      },
+      "title": "Rejected",
+      "type": "array"
+    },
+    "assessment": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/GatesAssessment"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "v0.3: gates engine result (statuses, premises, questions, trace)"
+    },
+    "assessment_b": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "v0.4 optional: method B engine result (spec spectroscopy-rules 1.2): Cases, Q1/Q1b/Q2/Q3 scores 0-9, suitability 0-36, Q4, confidence, sensitivity, questions",
+      "title": "Assessment B"
+    }
+  },
+  "required": [
+    "rules_version",
+    "ranked",
+    "rejected"
+  ],
+  "title": "Scoring",
+  "type": "object",
+  "$id": "spectrascout/0.2/C5"
+}

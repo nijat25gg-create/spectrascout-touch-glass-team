@@ -1,0 +1,221 @@
+# Method B catalog (spec spectroscopy-rules 1.2-draft).
+# Entities and field names follow the ER schema of spec file 09. Execution views follow spec 01 §3.
+# Status: source_supported_draft. Chemistry is a draft until Nikita confirms. No numbers are invented:
+# qualitative ratings are the S01 Table 1 ratings (XLSX transcription) and are context only (R_Q1_08, R_Q1B_10).
+version: b-1.2-draft.1
+spec: spectroscopy-rules 1.2-draft (18.10.2026)
+
+# ---------------------------------------------------------------------------------------------------
+# Typed facts the engine reads (execution views, spec 01 §3 and §8). Key = ER entity.field[.sub].
+# `domain` is the allowed Choice set; 'unknown' is always allowed and never a fact (E09).
+# `ask` is the question shown when the sensitivity check marks the fact as high/medium (AQ04-AQ06).
+# ---------------------------------------------------------------------------------------------------
+facts:
+  MeasurementTask.measurement_goal:
+    domain: [detect, identify, classify, quantify, trend, explore]
+    ask: "Which result do you need: a concentration (quantify), a class or pass/fail (classify), or a trend?"
+  MeasurementTask.target:
+    domain: [api, fat, protein, water, glucose, lactate, acetate, biomass, viable_biomass, metabolic_state,
+             cell_density, tissue_type, contaminant, other]
+    list: true
+    ask: "Which quantity exactly should be measured (analyte, property or class)?"
+  MeasurementTask.target_definition:   # derived from target + its status (09: target_definition_status removed)
+    domain: [defined, partial, undefined]
+    derived: true
+    ask: "What exactly is off-spec / what should the measurement decide? Which substance or property defines it?"
+  MeasurementTask.spatial_scope:
+    domain: [local, bulk]
+    ask: "Do you need the composition of the whole stream (bulk) or of a local spot/surface?"
+  MeasurementTask.sampling_plan:     # R_Q2_08: representative sampling / averaging over the variation
+    domain: [stated, none]
+    ask: "How will the measurement cover the variation at the measuring point (averaging, several spots, flow cell)?"
+  MeasurementTask.reference_method:
+    domain: [available, none]
+    ask: "Do you have an independent laboratory reference method for the target (which one)?"
+  MeasurementTask.performance_requirements:
+    domain: [given, none]
+    ask: "Which measurement error or decision threshold is acceptable?"
+  MeasurementTask.time_requirements:
+    domain: [given, none]
+    ask: "How fast must a result be available (latency, update period)?"
+  MeasurementTask.target_range:
+    domain: [given, none]
+    ask: "Which concentration range must be covered (with unit and basis)?"
+  MeasurementTask.business_goal:      # intended scope of use (R_Q4_07)
+    domain: [lab_research, pilot, in_line_production, clinical_in_vivo]
+    ask: "Is this for a lab study, a process pilot, routine production or in-vivo use?"
+  Sample.matrix:
+    domain: [pharma_blend, dairy, aqueous_bioprocess, petroleum, polymer, tissue, other]
+    ask: "What is the sample matrix (main components around the target)?"
+  Sample.phase:
+    domain: [liquid, solid, gas, multiphase]
+    ask: "Is the sample at the measuring point liquid, solid, gaseous or multiphase?"
+  Sample.physical_form:
+    domain: [solution, suspension, emulsion, powder, paste, melt, film, tissue, bulk_solid, radiating]
+    ask: "What is the physical form at the measuring point (solution, suspension/emulsion, powder, paste/melt, tissue)?"
+  Sample.optical_properties.opacity:
+    domain: [clear, translucent, opaque, variable]
+    ask: "Is the sample clear, turbid or opaque at the measuring point, and does it change?"
+  Sample.optical_properties.fluorescence:
+    domain: [present, absent]
+    ask: "Does the matrix fluoresce (known fluorescent components, colour)?"
+  Sample.heterogeneity:
+    domain: [homogeneous, heterogeneous]
+    ask: "Is the sample homogeneous at the measuring point or are there particles, layers, bubbles?"
+  Sample.variability.formulation:     # E12: change of API/excipient/matrix vs. the existing model
+    domain: [unchanged, changed]
+    ask: "Did the formulation (API, excipients, matrix) change compared with the existing model?"
+  Sample.variability.physical:
+    domain: [controlled, varies_uncontrolled]
+    ask: "Do particle size, density, temperature or texture vary in a way that is not controlled?"
+  Sample.sample_state_constraints.contact:
+    domain: [allowed, prohibited]
+    ask: "May a probe touch the product at the measuring point?"
+  Sample.sample_state_constraints.sampling:   # R_Q2_10: sample taken out, diluted or destroyed
+    domain: [allowed, prohibited]
+    ask: "May a sample be taken out (and diluted) for the measurement, e.g. into a cuvette?"
+  Sample.relevant_components.fluorophore:   # derived: fluorophore_known (spec 01 §8)
+    domain: [known, marker_allowed, none_known]
+    ask: "Is there a known fluorophore (or an allowed fluorescent marker) linked to the target?"
+  Sample.relevant_components.absorber:      # derived: specific_absorber_known
+    domain: [known, none_known]
+    ask: "Is there a known UV/Vis absorber (chromophore) linked to the target?"
+  ProcessContext.deployment_preference:
+    domain: [in_line, at_line, lab]
+    ask: "Should the measurement run in-line in the process, at-line, or in the lab?"
+  ProcessContext.temperature_range:   # class only (spec 01 §3 thermal_class); no invented thresholds (CL09)
+    domain: [described_hot, ambient, unspecified]
+    ask: "What is the process temperature range at the measuring point (including cleaning)?"
+  ProcessContext.temperature_c:        # numeric [min, max] in degC, only from the client (R_Q3P_01); never a default
+    numeric: true
+    unit: degC
+    ask: "What is the temperature range at the measuring point in degC, including cleaning (min and max)?"
+  Configuration.operating_envelope.temperature_c:   # component data sheet: {interface_id: [min, max] degC}
+    numeric: true
+    unit: degC
+    ask: "Which temperature rating (min and max, degC) does the data sheet of the proposed probe give?"
+  ProcessContext.operation_constraints.fouling:
+    domain: [stated, none]
+    ask: "Is fouling, coating or cleaning (CIP) an issue at the measuring point?"
+  ProcessContext.operation_constraints.hazardous:
+    domain: [stated, none]
+    ask: "Is the measuring point in a hazardous (Ex) or hygienic zone with special requirements?"
+  ProcessContext.instrument_distance:
+    domain: [local, remote]
+    ask: "How far is the analyzer from the measuring point (fiber route length)?"
+  ProcessContext.assets.fiber:        # existing link (E10)
+    domain: [silica_uv_vis, silica_vis_nir, chalcogenide, polycrystalline, hollow_waveguide, fluoride, none]
+    ask: "Which fiber link exists today (type, transmission window)?"
+  ProcessContext.assets.fiber_profile:  # actual cable data (R_Q3P_03 needs it for a hard decision)
+    domain: [confirmed, not_confirmed]
+    ask: "Can you send the data sheet of the existing cable (fiber type, length, transmission)?"
+  ProcessContext.assets.must_reuse:   # derived must_reuse_asset: explicit obligation only
+    domain: ["yes", "no"]
+    ask: "Must the existing link/instrument be reused, or is a new link acceptable?"
+  ProcessContext.assets.calibration_scope:   # existing model covers the current recipe?
+    domain: [covers, outside, no_model]
+    ask: "Does the existing calibration cover the current formulation and its variation?"
+  MeasurementTask.reference_method.independent:   # derived reference_independent / validation_batch_independent
+    domain: ["yes", "no"]
+    ask: "Will validation use independent batches/runs/patients, not spectra from the calibration set?"
+  ProcessContext.assets.method:       # method of the existing instrument/model (E10)
+    domain: [NIR, MIR, Raman, UV_VIS, Fluorescence, none]
+    ask: "Which method does the existing instrument/calibration use?"
+  CustomerRequest.justification:      # why the client prefers a method (H03)
+    domain: [physical_basis, sensitivity_only]
+    ask: "What links the proposed signal to the target (known fluorophore/absorber, published calibration)?"
+  CustomerRequest.proxy_allowed:      # marker / indirect quantity acceptable?
+    domain: ["yes", "no"]
+    ask: "Is an indirect (proxy) quantity or an added marker acceptable?"
+  CustomerRequest.claimed_readiness:  # client claims a study proves readiness (H06)
+    domain: [claimed, not_claimed]
+    derived: true
+
+# ---------------------------------------------------------------------------------------------------
+# Methods (ER Method). Five methods of spec 03 §2. spectral_region nominal, S01; band = nm for fiber check.
+# ---------------------------------------------------------------------------------------------------
+methods:
+  NIR:
+    method_name: NIR spectroscopy
+    physical_phenomenon: absorption (overtones, combinations)
+    spectral_region: {nm: [780, 2500], source: "S01 p10"}
+    fiber_families: [silica_vis_nir]
+  MIR:
+    method_name: MIR (IR) spectroscopy
+    physical_phenomenon: absorption (fundamental vibrations)
+    spectral_region: {nm: [2500, 25000], source: "S01 p9 (4000-400 cm-1)"}
+    fiber_families: [chalcogenide, polycrystalline, hollow_waveguide, fluoride]
+  Raman:
+    method_name: Raman spectroscopy
+    physical_phenomenon: Raman scattering (emission)
+    spectral_region: {nm: [400, 1100], source: "S01 p11 (detector region), S01 p15 (785 nm excitation)"}
+    fiber_families: [silica_vis_nir, silica_uv_vis]
+  UV_VIS:
+    method_name: UV/Visible spectroscopy
+    physical_phenomenon: absorption
+    spectral_region: {nm: [190, 780], source: "S01 p5"}
+    fiber_families: [silica_uv_vis]
+  Fluorescence:
+    method_name: Fluorimetry
+    physical_phenomenon: fluorescence (emission)
+    spectral_region: {nm: [190, 780], source: "S01 p12 (UV/Vis excitation, longer emission); nominal"}
+    fiber_families: [silica_uv_vis]
+
+fibers:   # S02 p6 families; bands approximate (spec 08 §1: not a real cable rating)
+  silica_uv_vis: [190, 1200]
+  silica_vis_nir: [350, 2400]
+  chalcogenide: [1100, 6500]
+  fluoride: [300, 5500]
+  polycrystalline: [3000, 17000]
+  hollow_waveguide: [2000, 18000]
+
+# ---------------------------------------------------------------------------------------------------
+# Sample interfaces (ER SampleInterface) = rows of S01 Table 1 p6 (XLSX transcription) + MIR transflection
+# probe (S01 p11 Fig 2.2). compatible edge Method -> interface is stored on the interface row (R_Q2_01).
+# geometry: transmission | transflection | atr | diffuse_reflection | scattering_90 | backscatter | emission
+# contact_mode: contact | non_contact | sampling (sample must be taken out: cuvette, layer, sphere)
+# sample_region: surface | volume ; deployment: in_line | lab
+# forms: XLSX sample_type mapped to Sample.physical_form classes (CL10: a missing form = unknown, not false)
+# ---------------------------------------------------------------------------------------------------
+interfaces:
+  MIR_ATR_PLATFORM:   {method: MIR, name: ATR platform, geometry: atr, contact_mode: sampling, sample_region: surface, path: "1-6 um", deployment: lab, forms: [solution, paste, tissue], sensitivity: average, selectivity: high, cost: high}
+  MIR_ATR_PROBE:      {method: MIR, name: ATR probe, geometry: atr, contact_mode: contact, sample_region: surface, path: "1-6 um", deployment: in_line, forms: [solution, paste, tissue], sensitivity: average, selectivity: high, cost: high}
+  MIR_CUVETTE:        {method: MIR, name: transmission cuvette, geometry: transmission, contact_mode: sampling, sample_region: volume, path: "10-100 um", deployment: lab, forms: [solution], sensitivity: high, selectivity: high, cost: average}
+  MIR_LAYER:          {method: MIR, name: thin sample layer, geometry: transmission, contact_mode: sampling, sample_region: volume, path: "5-50 um", deployment: lab, forms: [film], sensitivity: high, selectivity: high, cost: average}
+  MIR_SURFACE:        {method: MIR, name: surface diffuse reflection, geometry: diffuse_reflection, contact_mode: non_contact, sample_region: surface, path: "10 um", deployment: in_line, forms: [bulk_solid], sensitivity: average, selectivity: high, cost: average}
+  MIR_TRANSFLECTION:  {method: MIR, name: transflection probe, geometry: transflection, contact_mode: contact, sample_region: volume, path: unknown, deployment: in_line, forms: [], source: "S01 p11 Fig 2.2 (not in XLSX)", sensitivity: unknown, selectivity: unknown, cost: unknown}
+  NIR_CUVETTE:        {method: NIR, name: transmission cuvette, geometry: transmission, contact_mode: sampling, sample_region: volume, path: "1-5 mm", deployment: lab, forms: [solution], sensitivity: average, selectivity: average, cost: average}
+  NIR_TRANS_PROBE:    {method: NIR, name: transmission/transflection probe, geometry: transflection, contact_mode: contact, sample_region: volume, path: "1-10 mm", deployment: in_line, forms: [solution, suspension, emulsion], sensitivity: average, selectivity: average, cost: average}
+  NIR_DIFFUSE_PROBE:  {method: NIR, name: diffuse reflection probe, geometry: diffuse_reflection, contact_mode: contact, sample_region: surface, path: "0.5-1 mm", deployment: in_line, forms: [suspension, emulsion, powder], sensitivity: average, selectivity: average, cost: average}
+  NIR_SPHERE:         {method: NIR, name: integrating sphere, geometry: diffuse_reflection, contact_mode: sampling, sample_region: volume, path: "5-10 mm", deployment: lab, forms: [bulk_solid, powder], sensitivity: average, selectivity: average, cost: average}
+  NIR_DISTANCE:       {method: NIR, name: diffuse reflection at a distance, geometry: diffuse_reflection, contact_mode: non_contact, sample_region: surface, path: "2-5 mm", deployment: in_line, forms: [bulk_solid, powder], sensitivity: average, selectivity: average, cost: average}
+  RAMAN_CUVETTE:      {method: Raman, name: cuvette 90 deg, geometry: scattering_90, contact_mode: sampling, sample_region: volume, path: "2-5 mm", deployment: lab, forms: [solution], sensitivity: average, selectivity: high, cost: high}
+  RAMAN_PROBE:        {method: Raman, name: Raman probe, geometry: backscatter, contact_mode: contact, sample_region: volume, path: "2-5 mm", deployment: in_line, forms: [solution, powder, bulk_solid], sensitivity: average, selectivity: high, cost: high}
+  UV_CUVETTE:         {method: UV_VIS, name: transmission cuvette, geometry: transmission, contact_mode: sampling, sample_region: volume, path: "1-5 mm", deployment: lab, forms: [solution], sensitivity: high, selectivity: low, cost: low}
+  UV_ATR:             {method: UV_VIS, name: ATR probe, geometry: atr, contact_mode: contact, sample_region: surface, path: "0.1-1 um", deployment: in_line, forms: [solution], sensitivity: low, selectivity: low, cost: average}
+  UV_DIFFUSE:         {method: UV_VIS, name: diffuse reflection probe, geometry: diffuse_reflection, contact_mode: contact, sample_region: surface, path: "1-5 mm", deployment: in_line, forms: [bulk_solid], sensitivity: low, selectivity: low, cost: low}
+  UV_TRANS_PROBE:     {method: UV_VIS, name: transmission/transflection probe, geometry: transflection, contact_mode: contact, sample_region: volume, path: "1-10 mm", deployment: in_line, forms: [solution], sensitivity: low, selectivity: low, cost: low}
+  UV_LENS:            {method: UV_VIS, name: probe/lens for a radiating sample, geometry: emission, contact_mode: non_contact, sample_region: surface, path: any, deployment: in_line, forms: [radiating], sensitivity: high, selectivity: low, cost: low}
+  FL_CUVETTE:         {method: Fluorescence, name: cuvette 90 deg, geometry: scattering_90, contact_mode: sampling, sample_region: volume, path: "10 mm", deployment: lab, forms: [solution], sensitivity: high, selectivity: low, cost: low}
+  FL_PROBE:           {method: Fluorescence, name: fluorimetric probe, geometry: backscatter, contact_mode: contact, sample_region: surface, path: "1-5 mm", deployment: in_line, forms: [solution, bulk_solid], sensitivity: high, selectivity: low, cost: low}
+
+# ---------------------------------------------------------------------------------------------------
+# SuitabilityEvidence (ER) used by Q4. Only what the AFS materials document; none is a client test.
+# level: 1 = physical basis / other target or matrix; 2 = experimental or documented application on a
+# similar target and matrix (setup/process/validation differ). 3 is never reached without client data.
+# scope: lab | in_line | in_vitro | model_tissue
+# ---------------------------------------------------------------------------------------------------
+evidence:
+  - {id: EV_NIR_POWDER_API,  method: NIR, targets: [api], matrix: pharma_blend, geometry: diffuse_reflection, level: 2, scope: in_line, source: "S01 p14-15; REF D01", claim: "NIR diffuse reflection for API content in powder blends"}
+  - {id: EV_RAMAN_POWDER_API, method: Raman, targets: [api], matrix: pharma_blend, level: 2, scope: lab, source: "S01 p14-15; REF D01", claim: "Raman as comparison candidate for API in powder"}
+  - {id: EV_NIR_DAIRY,       method: NIR, targets: [fat, protein], matrix: dairy, level: 2, scope: lab, source: "S01 p17-18; REF D02, D03", claim: "NIR for fat/protein in dairy; geometry by opacity"}
+  - {id: EV_MIR_PETRO_WATER, method: MIR, targets: [water], matrix: petroleum, geometry: atr, level: 2, scope: in_line, source: "S02 p13; REF D06", claim: "MIR ATR for water in petroleum"}
+  - {id: EV_NIR_EXTRUSION,   method: NIR, targets: [api], matrix: polymer, geometry: diffuse_reflection, level: 2, scope: in_line, source: "S02 p14; REF D07", claim: "NIR reflection during hot melt extrusion"}
+  - {id: EV_MIR_EXTRUSION,   method: MIR, targets: [api], matrix: polymer, geometry: atr, level: 2, scope: in_line, source: "S02 p14; REF D07", claim: "MIR ATR during hot melt extrusion"}
+  - {id: EV_RAMAN_AQUEOUS,   method: Raman, targets: [glucose, lactate, acetate], matrix: aqueous_bioprocess, level: 2, scope: lab, source: "S01 p16; REF D04", claim: "Raman in aqueous bioprocess media"}
+  - {id: EV_MIR_FL_TISSUE,   method: MIR, targets: [tissue_type], matrix: tissue, geometry: atr, level: 2, scope: model_tissue, source: "S04 p1,3-5; REF D08", claim: "MIR ATR + fluorescence on chicken model tissues"}
+  - {id: EV_FL_TISSUE,       method: Fluorescence, targets: [tissue_type], matrix: tissue, level: 2, scope: model_tissue, source: "S04 p1,3-5; REF D08", claim: "fluorescence channel of the MIR+fluorescence combination"}
+  - {id: EV_LED_KIDNEY,      method: UV_VIS, targets: [tissue_type], matrix: tissue, level: 2, scope: in_vitro, source: "S03 p1-3, p6", claim: "LED spectroscopy on 14 in-vitro kidney samples (7 patients)"}
+  - {id: EV_NIR_WATER_PHYS,  method: NIR, targets: [water], matrix: any, level: 1, scope: lab, source: "S01 p10, p16", claim: "water -OH overtone bands in NIR (physical basis, not an application)"}
+  - {id: EV_MIR_WATER_PHYS,  method: MIR, targets: [water], matrix: any, level: 1, scope: lab, source: "S01 p9-10, p16", claim: "strong fundamental water absorption in MIR (physical basis)"}
+  - {id: EV_UV_BIOMASS,      method: UV_VIS, targets: [cell_density, biomass], matrix: aqueous_bioprocess, level: 1, scope: lab, source: "S01 p16; REF D05", claim: "optical density/scattering as a trend of cell density"}

@@ -1,0 +1,57 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Node
+node_modules/
+dist/
+build/
+.next/
+.vite/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local output
+*.log
+tmp/
+
+# Local backend pipeline notes
+backend/PIPELINE.md
+*.env
+# os / editors
+.DS_Store
+.idea/
+.vscode/
+*.log
+exports/
+node_modules/
+dist/
+
+# Claude Code personal files
+CLAUDE.local.md
+.claude/settings.local.json
+materials/
+
+# AFS material stays local (frontend demo texts and test briefings)
+frontend/cases.local.js
+frontend/fake-d01.json
+frontend/fake-h04.json

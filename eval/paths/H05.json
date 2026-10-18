@@ -1,0 +1,120 @@
+{
+  "decision_status": "insufficient_information",
+  "selected": [],
+  "excluded": [],
+  "premises": [
+    {
+      "rule_id": "P-EXACT-CONFIG-NOW",
+      "verdict": "not_supported",
+      "text": "An exact sensor configuration cannot be chosen before the target and the deviation are defined",
+      "source": [
+        "AFS ref §3 'Insufficient information can be the right answer'"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "title": "Q1 Task",
+      "shown": [
+        {
+          "rule_id": "P-TARGET-UNDEFINED",
+          "row": null,
+          "row_label": null,
+          "effect": "case_insufficient",
+          "because": "The target substance or quality variable is not named, so no method can be justified yet",
+          "source": [
+            "AFS ref §3 'Insufficient information can be the right answer'",
+            "S01 p.3 (samples of incompletely known composition: test several approaches to select the method)"
+          ]
+        }
+      ],
+      "hidden": 2
+    },
+    {
+      "title": "Q2 Signal",
+      "shown": [],
+      "hidden": 2
+    },
+    {
+      "title": "Q3 Interface and fiber",
+      "shown": [],
+      "hidden": 25
+    },
+    {
+      "title": "Q4 Premises and evidence",
+      "shown": [
+        {
+          "rule_id": "P-EXACT-CONFIG-NOW",
+          "row": null,
+          "row_label": null,
+          "effect": "premise_not_supported",
+          "because": "An exact sensor configuration cannot be chosen before the target and the deviation are defined",
+          "source": [
+            "AFS ref §3 'Insufficient information can be the right answer'"
+          ]
+        }
+      ],
+      "hidden": 0
+    }
+  ],
+  "questions": [
+    {
+      "attribute": "target_defined",
+      "kind": "method",
+      "strength": null,
+      "forced": true,
+      "text": "Which substance, property or deviation must be detected, and how is off-spec defined today?"
+    },
+    {
+      "attribute": "optical_density",
+      "kind": "method",
+      "strength": null,
+      "forced": true,
+      "text": "Is the liquid clear, turbid or opaque at the measurement point, and does it change?"
+    },
+    {
+      "attribute": "target_class",
+      "kind": "method",
+      "strength": null,
+      "forced": true,
+      "text": "Roughly what concentration level is expected: main component (percent range) or traces below about 0.1 %?"
+    },
+    {
+      "attribute": "fouling",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Can deposits form at the probe window, and how is the line cleaned (CIP, temperature, chemicals)?"
+    },
+    {
+      "attribute": "physical_variation",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Which physical and formulation changes occur between runs (temperature, texture, particle size, air bubbles, recipe)?"
+    },
+    {
+      "attribute": "temperature",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "What temperature, pressure and flow occur at the measurement point?"
+    },
+    {
+      "attribute": "reference_method",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Which independent reference method and sampling time can be used?"
+    },
+    {
+      "attribute": "acceptance_criteria",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "What concentration range, accuracy and response time must the measurement meet?"
+    }
+  ],
+  "lab_checks": [],
+  "evidence": {}
+}

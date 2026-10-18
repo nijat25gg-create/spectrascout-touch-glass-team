@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python contracts/check_contracts.py)",
+      "Bash(python3 contracts/check_contracts.py)",
+      "Bash(python -m engine.selftest)",
+      "Bash(python3 -m engine.selftest)",
+      "Bash(LLM_MOCK=1 python -m llm.selftest)",
+      "Bash(LLM_MOCK=1 python3 -m llm.selftest)",
+      "Bash(LLM_MOCK=1 python run_case.py *)",
+      "Bash(LLM_MOCK=1 python3 run_case.py *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./**/.env)",
+      "Read(./.env.local)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)"
+    ]
+  }
+}

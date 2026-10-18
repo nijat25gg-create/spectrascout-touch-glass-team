@@ -1,0 +1,181 @@
+{
+  "decision_status": "provisional",
+  "selected": [
+    "K03 NIR diffuse reflection probe",
+    "K02 NIR transmission / transflection probe"
+  ],
+  "excluded": [],
+  "premises": [],
+  "steps": [
+    {
+      "title": "Q1 Task",
+      "shown": [],
+      "hidden": 2
+    },
+    {
+      "title": "Q2 Signal",
+      "shown": [
+        {
+          "rule_id": "S-WATER",
+          "row": "K01",
+          "row_label": "MIR ATR probe",
+          "effect": "support_physics",
+          "because": "Water has -OH bands: overtones in NIR, strong fundamental absorption in MIR",
+          "source": [
+            "S01 p.10",
+            "S01 p.16 (strong water absorption in IR)",
+            "S02 p.13"
+          ]
+        },
+        {
+          "rule_id": "S-WATER",
+          "row": "K02",
+          "row_label": "NIR transmission / transflection probe",
+          "effect": "support_physics",
+          "because": "Water has -OH bands: overtones in NIR, strong fundamental absorption in MIR",
+          "source": [
+            "S01 p.10",
+            "S01 p.16 (strong water absorption in IR)",
+            "S02 p.13"
+          ]
+        },
+        {
+          "rule_id": "S-WATER",
+          "row": "K03",
+          "row_label": "NIR diffuse reflection probe",
+          "effect": "support_physics",
+          "because": "Water has -OH bands: overtones in NIR, strong fundamental absorption in MIR",
+          "source": [
+            "S01 p.10",
+            "S01 p.16 (strong water absorption in IR)",
+            "S02 p.13"
+          ]
+        },
+        {
+          "rule_id": "S-VIBRATIONAL-MAJOR",
+          "row": "K01",
+          "row_label": "MIR ATR probe",
+          "effect": "support_physics",
+          "because": "NIR and MIR carry composition information (-OH, -NH, -CH groups; MIR fingerprint bands)",
+          "source": [
+            "S01 p.4–5",
+            "S01 p.9–10"
+          ]
+        },
+        {
+          "rule_id": "S-VIBRATIONAL-MAJOR",
+          "row": "K02",
+          "row_label": "NIR transmission / transflection probe",
+          "effect": "support_physics",
+          "because": "NIR and MIR carry composition information (-OH, -NH, -CH groups; MIR fingerprint bands)",
+          "source": [
+            "S01 p.4–5",
+            "S01 p.9–10"
+          ]
+        },
+        {
+          "rule_id": "S-VIBRATIONAL-MAJOR",
+          "row": "K03",
+          "row_label": "NIR diffuse reflection probe",
+          "effect": "support_physics",
+          "because": "NIR and MIR carry composition information (-OH, -NH, -CH groups; MIR fingerprint bands)",
+          "source": [
+            "S01 p.4–5",
+            "S01 p.9–10"
+          ]
+        }
+      ],
+      "hidden": 4
+    },
+    {
+      "title": "Q3 Interface and fiber",
+      "shown": [
+        {
+          "rule_id": "L-LINK-LENGTH-MIR",
+          "row": "K01",
+          "row_label": "MIR ATR probe",
+          "effect": "needs_info",
+          "because": "Materials show 100–300 m silica Vis-NIR cables but only 2 m example IR fiber cables; a long IR link needs AFS confirmation of length and routing",
+          "source": [
+            "S02 p.7 (100–300 m silica cables)",
+            "S02 p.9 (PIR, HWG 2 m)",
+            "AFS ref §3 'Do not invent' (fiber lengths)"
+          ]
+        }
+      ],
+      "hidden": 25
+    },
+    {
+      "title": "Q4 Premises and evidence",
+      "shown": [
+        {
+          "rule_id": "APP-PETRO-WATER",
+          "row": "K01",
+          "row_label": "MIR ATR probe",
+          "effect": "support_application",
+          "because": "MIR ATR probes are shown for water content in petroleum",
+          "source": [
+            "S02 p.13"
+          ]
+        }
+      ],
+      "hidden": 0
+    }
+  ],
+  "questions": [
+    {
+      "attribute": "link_confirmed",
+      "kind": "method",
+      "strength": 0.5,
+      "forced": true,
+      "text": "Where would the analyzer stand, and what fiber length and routing would the link need?"
+    },
+    {
+      "attribute": "optical_density",
+      "kind": "method",
+      "strength": 0.75,
+      "forced": false,
+      "text": "Is the liquid clear, turbid or opaque at the measurement point, and does it change?"
+    },
+    {
+      "attribute": "fouling",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Can deposits form at the probe window, and how is the line cleaned (CIP, temperature, chemicals)?"
+    },
+    {
+      "attribute": "physical_variation",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Which physical and formulation changes occur between runs (temperature, texture, particle size, air bubbles, recipe)?"
+    },
+    {
+      "attribute": "temperature",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "What temperature, pressure and flow occur at the measurement point?"
+    },
+    {
+      "attribute": "reference_uncertainty",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Which assay, uncertainty and sampling time provide the reference values?"
+    },
+    {
+      "attribute": "acceptance_criteria",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "What concentration range, accuracy and response time must the measurement meet?"
+    }
+  ],
+  "lab_checks": [],
+  "evidence": {
+    "K03": "physics_only",
+    "K02": "physics_only"
+  }
+}

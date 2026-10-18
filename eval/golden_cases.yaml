@@ -1,0 +1,246 @@
+# Golden cases for gates v2. Draft 17.10. To be reviewed by Nikita (chemistry) and the team (engine).
+#
+# attrs   = what extraction (step A) should produce. Everything not listed is "unknown".
+#           Values are from the client text (status explicit) or a marked inference (status inferred).
+#           Nothing here comes from AFS sources: the client facts stay separate from the claims.
+# quotes  = verbatim client text for the key attributes (rule E01).
+# subcases = one per stream / target (T-SPLIT-*); they inherit attrs of the parent.
+# expect  = checked by rules/check_gates.py (reference evaluator):
+#   status            provisional | insufficient_information | outside_scope
+#   must_fire         rule ids that must fire (on the case or any subcase)
+#   top_include       rows that must be among the top-3 candidates
+#   top1              row that must be top-1 (only where an AFS source names the lead)
+#   top1_not          row that must not be top-1
+#   must_exclude      rows with status excluded
+#   must_exclude_config rows where a configuration is excluded
+#   premises          {rule id: contradicted | not_supported}
+#   ask_method        attributes that must appear among method questions
+#   ask_plan          attributes that must appear among plan questions
+#   ask_method_not    attributes that must NOT appear among method questions (noise guard)
+#   lab_check         attributes that must go to step 0 of the plan (checked on samples, not asked)
+#   ask_plan for D01/D02 = the topics of the AFS worked-example clarification questions (AFS ref §2)
+#   combinations      method pairs that must be proposed
+#   must_not_claim    phrases the written answer must not assert (checked in /eval on step B, not here)
+
+# DEV / TEST split (AGENTS.md): D01-D08 = development, H01-H06 = test, never tuned to H.
+# H expectations below are a DRAFT written by Claude on 17.10 from the H text and the AFS materials.
+# They are NOT independent: some engine mechanics were added after looking at H results (see
+# docs/rules-v2.md, section "Честность по H"). They are frozen (eval/h_frozen.sha256) on 18.10.
+# Nikita writes independent H expectations in eval/h_independent_nikita.yaml without looking at this file.
+
+cases:
+
+  H01:
+    title: "New formulation after an existing NIR pilot"
+    attrs: {domain: pharma_solid, sample_form: powder, target_defined: "yes", target_kind: api, targets_count: "1",
+            quantitative: "yes", intended_use: pilot, reuse_calibration: "yes", formulation_changed: "yes",
+            add_method_to_keep_calibration: "yes", client_method: nir, asks: assessment, streams: "1"}
+    quotes:
+      reuse_calibration: "would like to reuse the calibration"
+      formulation_changed: "introducing a different API and excipient blend"
+      add_method_to_keep_calibration: "adding Raman so that the old calibration will remain valid"
+    expect:
+      status: provisional
+      must_fire: [P-CALIBRATION, P-COMBO-NOT-FIX, P-ASSET-NOT-EVIDENCE, APP-PHARMA-BLEND, L-GMP, S-VIBRATIONAL-MAJOR, S-RAMAN-FLUOR-BG]
+      top_include: [K03, K05]
+      premises: {P-CALIBRATION: not_supported, P-COMBO-NOT-FIX: not_supported}
+      ask_plan: [reference_method, acceptance_criteria, gmp]
+      lab_check: [matrix_fluorescence]
+      ask_method_not: [matrix_fluorescence]
+      must_not_claim: ["the old calibration remains valid", "Raman keeps the calibration valid"]
+
+  H02:
+    title: "Composition monitoring across two dairy streams"
+    attrs: {domain: dairy, streams: "2plus", target_defined: "yes", quantitative: "yes", reference_method: available,
+            sample_form: liquid, intended_use: pilot, asks: assessment}
+    quotes:
+      streams: "both a relatively clear whey stream and an opaque milk concentrate"
+      reference_method: "using laboratory protein and fat results"
+    subcases:
+      H02-whey:
+        attrs: {optical_density: clear, target_kind: protein, matrix_aqueous: "yes"}   # aqueous: inferred (whey)
+        expect:
+          top_include: [K02]
+          must_fire: [I-CLEAR-TRANSMISSION, I-CLEAR-REFLECTION, APP-DAIRY]
+      H02-concentrate:
+        attrs: {optical_density: opaque, target_kind: fat}
+        expect:
+          top_include: [K03]
+          must_fire: [I-OPAQUE-TRANSMISSION, I-OPAQUE-REFLECTION, APP-DAIRY]
+    expect:
+      status: provisional
+      must_fire: [T-SPLIT-STREAMS]
+      ask_method_not: [distance]   # both streams: the analyzer position does not change the selected NIR row
+
+  H03:
+    title: "Fluorescence instrument requested for glucose and viable biomass"
+    attrs: {domain: bioprocess, targets_count: "2plus", target_defined: "yes", quantitative: "yes", sample_form: liquid,
+            matrix_aqueous: "yes", client_method: fluorescence, justification: sensitivity_only,
+            fluorophore: not_identified, asks: assessment}
+    quotes:
+      fluorophore: "We have not identified a fluorescent target, marker or reference relationship"
+      justification: "Our only justification is that fluorescence can be very sensitive"
+    # sample_form and matrix_aqueous: inferred from "during fermentation"
+    subcases:
+      H03-glucose:
+        attrs: {target_kind: glucose}
+        expect:
+          top_include: [K05]
+          must_exclude: [K10]
+          must_fire: [APP-BIO-METABOLITES, APP-BIO-NIR-GLUCOSE, S-AQUEOUS-RAMAN, S-AQUEOUS-IR]
+      H03-biomass:
+        attrs: {target_kind: biomass}
+        expect:
+          top_include: [K06]
+          must_exclude: [K10]
+          must_fire: [APP-BIO-BIOMASS, S-OD-NOT-VIABLE]
+    expect:
+      status: provisional
+      must_fire: [P-NO-FLUOROPHORE, P-SENSITIVITY-NOT-SELECTIVITY, P-ASSET-NOT-EVIDENCE, T-SPLIT-TARGETS, T-NO-REFERENCE]
+      premises: {P-SENSITIVITY-NOT-SELECTIVITY: contradicted}
+      ask_plan: [reference_method]
+      must_not_claim: ["fluorescence measures glucose directly", "viable biomass from optical density"]
+
+  H04:
+    title: "Reuse of a silica link for petroleum MIR ATR"
+    attrs: {domain: petroleum, target_kind: water, target_defined: "yes", sample_form: liquid, client_method: mir,
+            existing_fiber: silica_vis_nir, distance: other_building, asks: approve_concept}
+    quotes:
+      existing_fiber: "a silica fiber cable from a visible or NIR measurement setup"
+      distance: "The analyzer would be in another building"
+      asks: "Can the assistant approve this concept?"
+    # sample_form: inferred from "petroleum line"
+    expect:
+      status: provisional
+      must_fire: [P-FIBER-RANGE, L-FIBER-PARTIAL, L-LINK-LENGTH-MIR, L-REMOTE-SILICA, P-APPROVE-WITHOUT-DATA, APP-PETRO-WATER, S-WATER, P-ASSET-NOT-EVIDENCE, S-VIBRATIONAL-MAJOR]
+      must_exclude_config: [K01]
+      top1_not: K01
+      premises: {P-FIBER-RANGE: contradicted, P-APPROVE-WITHOUT-DATA: not_supported}
+      ask_method: [link_confirmed]
+      must_not_claim: ["the concept is approved", "a fiber length of"]
+
+  H05:
+    title: "Undefined off-specification liquid"
+    attrs: {sample_form: liquid, target_defined: "no", target_kind: contaminant, asks: exact_config_now, domain: other}
+    quotes:
+      target_defined: "we cannot yet name the contaminant or the affected quality variable"
+      asks: "recommend the best spectroscopy method and exact sensor configuration immediately"
+    expect:
+      status: insufficient_information
+      must_fire: [P-TARGET-UNDEFINED, P-EXACT-CONFIG-NOW, T-NO-REFERENCE]
+      ask_method_not: [matrix_fluorescence, chromophore]
+      premises: {P-EXACT-CONFIG-NOW: not_supported}
+      ask_method: [target_defined]
+      ask_plan: [reference_method]
+      must_not_claim: ["the best method is", "exact configuration"]
+
+  H06:
+    title: "Research sensor requested for immediate surgical use"
+    attrs: {domain: tissue, sample_form: soft_solid, intended_use: clinical_in_vivo, cited_evidence: research_paper,
+            own_validation: "no", asks: readiness_proof, client_method: nir, target_kind: tissue_type, target_defined: partial}
+    quotes:
+      intended_use: "guide tumor boundary decisions during live surgery"
+      own_validation: "We have no new in vivo data and no validation on our own setup"
+    expect:
+      status: outside_scope
+      must_fire: [P-EVIDENCE-SCOPE, P-CLINICAL-SCOPE, P-ASSET-NOT-EVIDENCE]
+      premises: {P-EVIDENCE-SCOPE: contradicted}
+      ask_method_not: [intended_use]
+      must_not_claim: ["ready for surgical use", "proves", "validated"]
+
+  D01:
+    title: "Blend potency in a tablet press feed frame"
+    attrs: {domain: pharma_solid, sample_form: powder, target_defined: "yes", target_kind: api, quantitative: "yes",
+            reference_method: available, intended_use: pilot, streams: "1"}
+    expect:
+      status: provisional
+      must_fire: [APP-PHARMA-BLEND, S-RAMAN-FLUOR-BG, L-GMP, I-SAMPLE-TYPE, S-VIBRATIONAL-MAJOR, T-PLAN-MINIMUM]
+      top_include: [K03, K05]
+      combinations: [[nir, raman]]
+      # AFS D01 clarification questions: range, reference assay + uncertainty, formulation/particle changes,
+      # response time / limits / access / cleaning
+      ask_plan: [acceptance_criteria, reference_uncertainty, physical_variation, fouling]
+      lab_check: [matrix_fluorescence]
+      ask_method_not: [intended_use, existing_fiber, matrix_fluorescence]
+
+  D02:
+    title: "Fat and protein in an opaque dairy product"
+    attrs: {domain: dairy, sample_form: liquid, optical_density: opaque, target_defined: "yes", targets_count: "2plus",
+            quantitative: "yes", reference_method: available, physical_variation: "yes"}
+    quotes:
+      physical_variation: "Product temperature and texture vary during production"
+    subcases:
+      D02-fat:     {attrs: {target_kind: fat},     expect: {top_include: [K03]}}
+      D02-protein: {attrs: {target_kind: protein}, expect: {top_include: [K03]}}
+    expect:
+      status: provisional
+      must_fire: [T-SPLIT-TARGETS, I-OPAQUE-TRANSMISSION, I-OPAQUE-REFLECTION, APP-DAIRY, I-FOULING-CONTACT, S-VIBRATIONAL-MAJOR, T-PLAN-MINIMUM, I-PHYSICAL-VARIATION, T-REFERENCE-QUALITY]
+      # AFS D02 clarification questions: product types / ranges / reference assays, variation (stated),
+      # representative sample and cleaning, accuracy / delay / installation / cleaning
+      ask_plan: [fouling, acceptance_criteria, reference_uncertainty]
+
+  D03:
+    title: "A clear whey stream that can become turbid"
+    attrs: {domain: dairy, sample_form: liquid, optical_density: varies, target_defined: "yes", target_kind: protein,
+            matrix_aqueous: "yes", quantitative: "yes", reference_method: available}
+    expect:
+      status: provisional
+      must_fire: [I-OD-VARIES, APP-DAIRY, T-PLAN-MINIMUM]
+      top_include: [K02, K03]
+      ask_method: [optical_density]
+      ask_method_not: [intended_use, existing_fiber]
+
+  D04:
+    title: "Glucose and lactate in an aqueous bioprocess"
+    attrs: {domain: bioprocess, sample_form: liquid, matrix_aqueous: "yes", target_defined: "yes", targets_count: "2plus",
+            quantitative: "yes", reference_method: available}
+    subcases:
+      D04-glucose: {attrs: {target_kind: glucose}, expect: {top_include: [K05], top1: K05}}
+      D04-lactate: {attrs: {target_kind: lactate}, expect: {top_include: [K05], must_fire: [S-AQUEOUS-NIR]}}
+    expect:
+      status: provisional
+      must_fire: [T-SPLIT-TARGETS, APP-BIO-METABOLITES, S-AQUEOUS-RAMAN, S-AQUEOUS-IR, S-UV-OVERLAP, S-VIBRATIONAL-MAJOR, T-PLAN-MINIMUM]
+      lab_check: [matrix_fluorescence]
+
+  D05:
+    title: "Biomass related monitoring during yeast fermentation"
+    attrs: {domain: bioprocess, sample_form: liquid, optical_density: varies, target_defined: partial, targets_count: "2plus"}
+    subcases:
+      D05-biomass:   {attrs: {target_kind: biomass}, expect: {top_include: [K06], must_fire: [I-UV-HIGH-OD, APP-BIO-BIOMASS, S-OD-NOT-VIABLE]}}
+      D05-metabolic: {attrs: {target_kind: metabolite_other}}
+    expect:
+      status: provisional
+      must_fire: [T-SPLIT-TARGETS, I-OD-VARIES]
+
+  D06:
+    title: "Water content in a petroleum stream"
+    attrs: {domain: petroleum, sample_form: liquid, target_defined: "yes", target_kind: water, quantitative: "yes",
+            reference_method: available, distance: outside_area}
+    expect:
+      status: provisional
+      must_fire: [APP-PETRO-WATER, S-WATER, L-LINK-LENGTH-MIR, S-VIBRATIONAL-MAJOR, T-PLAN-MINIMUM]
+      top1_not: K01
+      ask_plan: [acceptance_criteria]
+
+  D07:
+    title: "API concentration during hot polymer extrusion"
+    attrs: {domain: polymer_melt, sample_form: paste_melt, target_defined: "yes", target_kind: api, temperature: high,
+            fouling: high, reference_method: available}
+    # temperature 'high' and fouling 'high': inferred from "hot" and "may be exposed to material build up"
+    expect:
+      status: provisional
+      must_fire: [APP-EXTRUSION, L-COMPONENT-RATINGS, I-FOULING-CONTACT, I-SAMPLE-TYPE, T-PLAN-MINIMUM]
+      top_include: [K01, K03]
+      top1: K01        # AFS ref §5: MIR ATR lead for API in polymer extrusion (S02 p.14); Table 1 selectivity high
+      ask_plan: [temperature, fouling]
+
+  D08:
+    title: "Local measurements of heterogeneous model tissues"
+    attrs: {domain: tissue, sample_form: soft_solid, heterogeneous: "yes", intended_use: lab_research,
+            target_kind: tissue_type, target_defined: "yes"}
+    expect:
+      status: provisional
+      must_fire: [APP-TISSUE-LAB, I-ATR-SURFACE, I-SAMPLE-TYPE]
+      top_include: [K01, K10]
+      combinations: [[mir, fluorescence]]
+      must_not_claim: ["clinical", "diagnosis of patients"]

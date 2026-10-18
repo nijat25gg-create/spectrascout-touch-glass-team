@@ -1,0 +1,649 @@
+{
+  "$defs": {
+    "AttributeFact": {
+      "additionalProperties": false,
+      "description": "One attribute of the analysis request (v0.3). known = the customer says it (quote verbatim);\nassumed = a safe inference (no quote); unknown = not said; conflicting = the text says two things.",
+      "properties": {
+        "name": {
+          "enum": [
+            "target_defined",
+            "target_kind",
+            "target_class",
+            "targets_count",
+            "quantitative",
+            "reference_method",
+            "reference_uncertainty",
+            "acceptance_criteria",
+            "concentration_range",
+            "intended_use",
+            "domain",
+            "sample_form",
+            "optical_density",
+            "matrix_aqueous",
+            "heterogeneous",
+            "fluorophore",
+            "chromophore",
+            "matrix_fluorescence",
+            "formulation_changed",
+            "streams",
+            "physical_variation",
+            "temperature",
+            "fouling",
+            "distance",
+            "link_confirmed",
+            "existing_fiber",
+            "gmp",
+            "client_method",
+            "reuse_calibration",
+            "add_method_to_keep_calibration",
+            "justification",
+            "asks",
+            "cited_evidence",
+            "own_validation"
+          ],
+          "title": "Name",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One value from the vocabulary of this attribute, null if unknown",
+          "title": "Value"
+        },
+        "status": {
+          "enum": [
+            "known",
+            "assumed",
+            "unknown",
+            "conflicting"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact words from the customer text, null if assumed or unknown",
+          "title": "Quote"
+        }
+      },
+      "required": [
+        "name",
+        "value",
+        "status",
+        "quote"
+      ],
+      "title": "AttributeFact",
+      "type": "object"
+    },
+    "F_Accuracy": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "enum": [
+            "screening",
+            "quantitative",
+            "high_precision",
+            "unknown"
+          ],
+          "title": "Value",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "known",
+            "assumed",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "status"
+      ],
+      "title": "F_Accuracy",
+      "type": "object"
+    },
+    "F_Analyte": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "enum": [
+            "moisture",
+            "organic_compound",
+            "colored_compound",
+            "polymorph",
+            "particles_cells",
+            "trace_contaminant",
+            "other",
+            "unknown"
+          ],
+          "title": "Value",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "known",
+            "assumed",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "status"
+      ],
+      "title": "F_Analyte",
+      "type": "object"
+    },
+    "F_Conc": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "enum": [
+            "trace_ppm",
+            "low_percent",
+            "high_percent",
+            "unknown"
+          ],
+          "title": "Value",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "known",
+            "assumed",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "status"
+      ],
+      "title": "F_Conc",
+      "type": "object"
+    },
+    "F_Distance": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "enum": [
+            "short",
+            "medium",
+            "long",
+            "unknown"
+          ],
+          "title": "Value",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "known",
+            "assumed",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "status"
+      ],
+      "title": "F_Distance",
+      "type": "object"
+    },
+    "F_Fluor": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "enum": [
+            "low",
+            "high",
+            "unknown"
+          ],
+          "title": "Value",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "known",
+            "assumed",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "status"
+      ],
+      "title": "F_Fluor",
+      "type": "object"
+    },
+    "F_Fouling": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "unknown"
+          ],
+          "title": "Value",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "known",
+            "assumed",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "status"
+      ],
+      "title": "F_Fouling",
+      "type": "object"
+    },
+    "F_Hazard": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "enum": [
+            "yes",
+            "no",
+            "unknown"
+          ],
+          "title": "Value",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "known",
+            "assumed",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "status"
+      ],
+      "title": "F_Hazard",
+      "type": "object"
+    },
+    "F_Phase": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "enum": [
+            "liquid",
+            "solid_powder",
+            "slurry",
+            "emulsion",
+            "gas",
+            "solid_surface",
+            "unknown"
+          ],
+          "title": "Value",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "known",
+            "assumed",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "status"
+      ],
+      "title": "F_Phase",
+      "type": "object"
+    },
+    "F_Pressure": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "enum": [
+            "vacuum",
+            "ambient",
+            "elevated",
+            "high",
+            "unknown"
+          ],
+          "title": "Value",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "known",
+            "assumed",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "status"
+      ],
+      "title": "F_Pressure",
+      "type": "object"
+    },
+    "F_Temp": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "enum": [
+            "cryogenic",
+            "ambient",
+            "elevated",
+            "high",
+            "unknown"
+          ],
+          "title": "Value",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "known",
+            "assumed",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "status"
+      ],
+      "title": "F_Temp",
+      "type": "object"
+    },
+    "F_Turbidity": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "enum": [
+            "clear",
+            "turbid",
+            "opaque",
+            "unknown"
+          ],
+          "title": "Value",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "known",
+            "assumed",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "status"
+      ],
+      "title": "F_Turbidity",
+      "type": "object"
+    },
+    "F_Water": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "enum": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "unknown"
+          ],
+          "title": "Value",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "known",
+            "assumed",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "status"
+      ],
+      "title": "F_Water",
+      "type": "object"
+    },
+    "FactB": {
+      "additionalProperties": false,
+      "description": "One property for method B (v0.4): value + unit/category + source + status.\nkey = ER entity.field from rules/b/catalog_b.yaml. reported = the customer says it (quote verbatim);\ninferred = a safe inference (no quote); unknown = not said. Missing data is never filled.",
+      "properties": {
+        "key": {
+          "description": "Fact key from the method B catalog, e.g. 'Sample.physical_form'",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One allowed category (several targets: comma-separated), null if unknown",
+          "title": "Value"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Unit as the customer wrote it, or 'category'",
+          "title": "Unit"
+        },
+        "status": {
+          "enum": [
+            "reported",
+            "inferred",
+            "unknown",
+            "conflicting",
+            "confirmed_experiment",
+            "confirmed_expert"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Exact words from the customer text, null unless reported",
+          "title": "Quote"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "client_text | step A inference | expert | experiment",
+          "title": "Source"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "status"
+      ],
+      "title": "FactB",
+      "type": "object"
+    },
+    "Features": {
+      "additionalProperties": false,
+      "description": "Normalized, machine-readable view of the case. Input of the rules engine.",
+      "properties": {
+        "phase": {
+          "$ref": "#/$defs/F_Phase"
+        },
+        "water_level": {
+          "$ref": "#/$defs/F_Water"
+        },
+        "analyte_type": {
+          "$ref": "#/$defs/F_Analyte"
+        },
+        "concentration_level": {
+          "$ref": "#/$defs/F_Conc"
+        },
+        "accuracy_need": {
+          "$ref": "#/$defs/F_Accuracy"
+        },
+        "temperature_class": {
+          "$ref": "#/$defs/F_Temp"
+        },
+        "pressure_class": {
+          "$ref": "#/$defs/F_Pressure"
+        },
+        "fouling_risk": {
+          "$ref": "#/$defs/F_Fouling"
+        },
+        "distance_class": {
+          "$ref": "#/$defs/F_Distance"
+        },
+        "fluorescence_risk": {
+          "$ref": "#/$defs/F_Fluor"
+        },
+        "turbidity": {
+          "$ref": "#/$defs/F_Turbidity"
+        },
+        "hazardous_area": {
+          "$ref": "#/$defs/F_Hazard"
+        }
+      },
+      "required": [
+        "phase",
+        "water_level",
+        "analyte_type",
+        "concentration_level",
+        "accuracy_need",
+        "temperature_class",
+        "pressure_class",
+        "fouling_risk",
+        "distance_class",
+        "fluorescence_risk",
+        "turbidity",
+        "hazardous_area"
+      ],
+      "title": "Features",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "C4 · Semyon -> engine · call engine.score_methods(...) (gates engine since 18.10)",
+  "properties": {
+    "case_id": {
+      "title": "Case Id",
+      "type": "string"
+    },
+    "features": {
+      "$ref": "#/$defs/Features"
+    },
+    "attributes": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/AttributeFact"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "v0.3: C3.attributes (or the edited C8.attributes on recalculate); the gates engine reads these. Without them the attributes are derived from features",
+      "title": "Attributes"
+    },
+    "facts_b": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/FactB"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "v0.4 optional: C3.facts_b (or edited C8.facts_b); engine B reads these, else it bridges from the attributes",
+      "title": "Facts B"
+    }
+  },
+  "required": [
+    "case_id",
+    "features"
+  ],
+  "title": "ScoreInput",
+  "type": "object",
+  "$id": "spectrascout/0.2/C4"
+}

@@ -1,0 +1,153 @@
+{
+  "decision_status": "provisional",
+  "selected": [
+    "K02 NIR transmission / transflection probe",
+    "K03 NIR diffuse reflection probe",
+    "K01 MIR ATR probe"
+  ],
+  "excluded": [],
+  "premises": [],
+  "steps": [
+    {
+      "title": "Q1 Task",
+      "shown": [
+        {
+          "rule_id": "T-SPLIT-STREAMS",
+          "row": null,
+          "row_label": null,
+          "effect": "split_case",
+          "because": "Streams with different optical behaviour need their own interface choice",
+          "source": [
+            "S01 p.17–18"
+          ]
+        }
+      ],
+      "hidden": 2
+    },
+    {
+      "title": "Q2 Signal",
+      "shown": [
+        {
+          "rule_id": "S-VIBRATIONAL-MAJOR",
+          "row": "K01",
+          "row_label": "MIR ATR probe",
+          "effect": "support_physics",
+          "because": "NIR and MIR carry composition information (-OH, -NH, -CH groups; MIR fingerprint bands)",
+          "source": [
+            "S01 p.4–5",
+            "S01 p.9–10"
+          ]
+        },
+        {
+          "rule_id": "S-VIBRATIONAL-MAJOR",
+          "row": "K02",
+          "row_label": "NIR transmission / transflection probe",
+          "effect": "support_physics",
+          "because": "NIR and MIR carry composition information (-OH, -NH, -CH groups; MIR fingerprint bands)",
+          "source": [
+            "S01 p.4–5",
+            "S01 p.9–10"
+          ]
+        },
+        {
+          "rule_id": "S-VIBRATIONAL-MAJOR",
+          "row": "K03",
+          "row_label": "NIR diffuse reflection probe",
+          "effect": "support_physics",
+          "because": "NIR and MIR carry composition information (-OH, -NH, -CH groups; MIR fingerprint bands)",
+          "source": [
+            "S01 p.4–5",
+            "S01 p.9–10"
+          ]
+        }
+      ],
+      "hidden": 9
+    },
+    {
+      "title": "Q3 Interface and fiber",
+      "shown": [
+        {
+          "rule_id": "I-CLEAR-TRANSMISSION",
+          "row": "K02",
+          "row_label": "NIR transmission / transflection probe",
+          "effect": "fit",
+          "because": "Transmission/transflection with 1–10 mm path is preferred for clear liquids",
+          "source": [
+            "S01 p.16",
+            "S01 p.18"
+          ]
+        }
+      ],
+      "hidden": 25
+    },
+    {
+      "title": "Q4 Premises and evidence",
+      "shown": [
+        {
+          "rule_id": "APP-DAIRY",
+          "row": "K02",
+          "row_label": "NIR transmission / transflection probe",
+          "effect": "support_application",
+          "because": "NIR reflection (opaque products) and transmission/transflection (whey, skim milk) are used in-line in dairy",
+          "source": [
+            "S01 p.17–18"
+          ]
+        },
+        {
+          "rule_id": "APP-DAIRY",
+          "row": "K03",
+          "row_label": "NIR diffuse reflection probe",
+          "effect": "support_application",
+          "because": "NIR reflection (opaque products) and transmission/transflection (whey, skim milk) are used in-line in dairy",
+          "source": [
+            "S01 p.17–18"
+          ]
+        }
+      ],
+      "hidden": 0
+    }
+  ],
+  "questions": [
+    {
+      "attribute": "fouling",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Can deposits form at the probe window, and how is the line cleaned (CIP, temperature, chemicals)?"
+    },
+    {
+      "attribute": "physical_variation",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Which physical and formulation changes occur between runs (temperature, texture, particle size, air bubbles, recipe)?"
+    },
+    {
+      "attribute": "temperature",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "What temperature, pressure and flow occur at the measurement point?"
+    },
+    {
+      "attribute": "reference_uncertainty",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "Which assay, uncertainty and sampling time provide the reference values?"
+    },
+    {
+      "attribute": "acceptance_criteria",
+      "kind": "plan",
+      "strength": null,
+      "forced": false,
+      "text": "What concentration range, accuracy and response time must the measurement meet?"
+    }
+  ],
+  "lab_checks": [],
+  "evidence": {
+    "K02": "application",
+    "K03": "application",
+    "K01": "physics_only"
+  }
+}

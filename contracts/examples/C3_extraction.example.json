@@ -1,0 +1,374 @@
+{
+  "summary": "Restfeuchte eines pharmazeutischen Pulvers inline im Wirbelschichttrockner messen, statt stündlich Proben zu ziehen.",
+  "parameters": [
+    {
+      "id": "measurand",
+      "value": "Restfeuchte (Wasser)",
+      "status": "known",
+      "evidence_quote": "die Restfeuchte inline messen",
+      "source": "customer_text"
+    },
+    {
+      "id": "measurand_type",
+      "value": "Feuchte",
+      "status": "known",
+      "evidence_quote": "Restfeuchte",
+      "source": "customer_text"
+    },
+    {
+      "id": "matrix",
+      "value": "pharmazeutisches Pulver",
+      "status": "known",
+      "evidence_quote": "ein pharmazeutisches Pulver",
+      "source": "customer_text"
+    },
+    {
+      "id": "phase",
+      "value": "Pulver im Wirbelbett",
+      "status": "known",
+      "evidence_quote": "Pulver im Wirbelschichttrockner",
+      "source": "customer_text"
+    },
+    {
+      "id": "water_content",
+      "value": "1–5 %",
+      "status": "known",
+      "evidence_quote": "Zielbereich etwa 1–5 %",
+      "source": "customer_text"
+    },
+    {
+      "id": "concentration_range",
+      "value": "1–5 % Wasser",
+      "status": "known",
+      "evidence_quote": "Zielbereich etwa 1–5 %",
+      "source": "customer_text"
+    },
+    {
+      "id": "required_accuracy",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "temperature",
+      "value": "erhöht (Trocknung), genaue Temperatur nicht genannt",
+      "status": "assumed",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "pressure",
+      "value": "Normaldruck",
+      "status": "assumed",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "aggressiveness_fouling",
+      "value": "Staub, mögliche Ablagerung am Fenster",
+      "status": "assumed",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "installation_point",
+      "value": "Wirbelschichttrockner",
+      "status": "known",
+      "evidence_quote": "im Wirbelschichttrockner",
+      "source": "customer_text"
+    },
+    {
+      "id": "distance_to_instrument",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "measurement_frequency",
+      "value": "deutlich häufiger als stündlich",
+      "status": "assumed",
+      "evidence_quote": "stündlich Proben",
+      "source": "llm_assumption"
+    },
+    {
+      "id": "reference_method",
+      "value": "Karl-Fischer-Titration",
+      "status": "known",
+      "evidence_quote": "für Karl-Fischer-Titration",
+      "source": "customer_text"
+    },
+    {
+      "id": "samples_available",
+      "value": null,
+      "status": "unknown",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    },
+    {
+      "id": "regulatory",
+      "value": "GMP wahrscheinlich, ATEX wegen Pulverstaub prüfen",
+      "status": "assumed",
+      "evidence_quote": null,
+      "source": "llm_assumption"
+    }
+  ],
+  "features": {
+    "phase": {
+      "value": "solid_powder",
+      "status": "known"
+    },
+    "water_level": {
+      "value": "low",
+      "status": "known"
+    },
+    "analyte_type": {
+      "value": "moisture",
+      "status": "known"
+    },
+    "concentration_level": {
+      "value": "low_percent",
+      "status": "known"
+    },
+    "accuracy_need": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "temperature_class": {
+      "value": "elevated",
+      "status": "assumed"
+    },
+    "pressure_class": {
+      "value": "ambient",
+      "status": "assumed"
+    },
+    "fouling_risk": {
+      "value": "medium",
+      "status": "assumed"
+    },
+    "distance_class": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "fluorescence_risk": {
+      "value": "unknown",
+      "status": "unknown"
+    },
+    "turbidity": {
+      "value": "opaque",
+      "status": "assumed"
+    },
+    "hazardous_area": {
+      "value": "unknown",
+      "status": "unknown"
+    }
+  },
+  "attributes": [
+    {
+      "name": "target_defined",
+      "value": "yes",
+      "status": "known",
+      "quote": "die Restfeuchte inline messen"
+    },
+    {
+      "name": "target_kind",
+      "value": "water",
+      "status": "known",
+      "quote": "Restfeuchte"
+    },
+    {
+      "name": "target_class",
+      "value": "major_component",
+      "status": "known",
+      "quote": "Zielbereich etwa 1–5 %"
+    },
+    {
+      "name": "targets_count",
+      "value": "1",
+      "status": "assumed",
+      "quote": null
+    },
+    {
+      "name": "quantitative",
+      "value": "yes",
+      "status": "known",
+      "quote": "Zielbereich etwa 1–5 %"
+    },
+    {
+      "name": "reference_method",
+      "value": "available",
+      "status": "known",
+      "quote": "Karl-Fischer-Titration"
+    },
+    {
+      "name": "reference_uncertainty",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "acceptance_criteria",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "concentration_range",
+      "value": "given",
+      "status": "known",
+      "quote": "Zielbereich etwa 1–5 %"
+    },
+    {
+      "name": "intended_use",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "domain",
+      "value": "pharma_solid",
+      "status": "known",
+      "quote": "pharmazeutisches Pulver"
+    },
+    {
+      "name": "sample_form",
+      "value": "powder",
+      "status": "known",
+      "quote": "pharmazeutisches Pulver"
+    },
+    {
+      "name": "optical_density",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "matrix_aqueous",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "heterogeneous",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "fluorophore",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "chromophore",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "matrix_fluorescence",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "formulation_changed",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "streams",
+      "value": "1",
+      "status": "assumed",
+      "quote": null
+    },
+    {
+      "name": "physical_variation",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "temperature",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "fouling",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "distance",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "link_confirmed",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "existing_fiber",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "gmp",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "client_method",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "reuse_calibration",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "add_method_to_keep_calibration",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "justification",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "asks",
+      "value": "assessment",
+      "status": "assumed",
+      "quote": null
+    },
+    {
+      "name": "cited_evidence",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    },
+    {
+      "name": "own_validation",
+      "value": null,
+      "status": "unknown",
+      "quote": null
+    }
+  ],
+  "jev": null
+}

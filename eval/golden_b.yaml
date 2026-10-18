@@ -1,0 +1,163 @@
+# Method B golden facts for D01-D08 / H01-H06 (typed execution views, spec 01 §3, ER names of spec 09).
+# Checked 18.10 evening against the customer texts (D: AFS_Examples_and_Reference, H: final scenarios).
+# DRAFT for team review: only what the case text says; everything else stays unknown (E09).
+#
+# Fact form (engine/b/core.normalize_facts):
+#   {value, quote}                    status reported: the client says it, quote is verbatim client text
+#   {value, status: inferred, source} derived from the text (never counts as covered, spec 06 §4)
+# Not mentioned = not listed (unknown), never a default: no "other" matrix, no "none" reference.
+# `expect` = the behaviour of spec 07 §5 checked by engine/b/test_b.py. H expectations are not tuned to
+# engine output; a change there follows from a corrected fact and is named in the commit.
+cases:
+  D01:
+    facts:
+      MeasurementTask.measurement_goal: {value: quantify, status: inferred, source: "'follow API concentration changes' = a concentration"}
+      MeasurementTask.target: {value: [api], quote: "could follow API concentration changes"}
+      MeasurementTask.reference_method: {value: available, quote: "Laboratory checks tell us whether the blend is on target"}
+      MeasurementTask.business_goal: {value: pilot, quote: "Our first pilot should compare reasonable measurement options"}
+      Sample.matrix: {value: pharma_blend, quote: "a powder blend containing an active pharmaceutical ingredient and excipients"}
+      Sample.phase: {value: solid, status: inferred, source: "powder"}
+      Sample.physical_form: {value: powder, quote: "a powder blend"}
+      ProcessContext.deployment_preference: {value: in_line, quote: "a fiber based measurement in the feed frame"}
+    expect: {leader_methods: [NIR, Raman], fired: [R_Q1_N01, R_Q1_R01], combination: [NIR, Raman]}
+  D02:
+    facts:
+      MeasurementTask.measurement_goal: {value: quantify, status: inferred, source: "fat and protein analysis, composition changes"}
+      MeasurementTask.target: {value: [fat, protein], quote: "We currently sample it for fat and protein analysis"}
+      MeasurementTask.reference_method: {value: available, quote: "while retaining our laboratory checks"}
+      Sample.matrix: {value: dairy, quote: "an opaque, concentrated milk product"}
+      Sample.phase: {value: liquid, status: inferred, source: "'flows through a processing line'"}
+      Sample.optical_properties.opacity: {value: opaque, quote: "an opaque, concentrated milk product"}
+      Sample.variability.physical: {value: varies_uncontrolled, status: inferred,
+                                    source: "'Product temperature and texture vary'; control not stated"}
+    expect: {leader_methods: [NIR], leader_geometry: [diffuse_reflection], fired: [R_Q1_N03, R_Q2_05], cases: 2,
+             transmission_not_equal: true}
+  D03:
+    facts:
+      MeasurementTask.measurement_goal: {value: quantify, status: inferred, source: "'track protein concentration' against lab results"}
+      MeasurementTask.target: {value: [protein], quote: "track protein concentration as the stream changes"}
+      MeasurementTask.reference_method: {value: available, quote: "with laboratory results used as the reference"}
+      Sample.matrix: {value: dairy, quote: "Our dairy process includes a relatively clear whey stream"}
+      Sample.phase: {value: liquid, quote: "rather than assuming the liquid always remains clear"}
+      Sample.optical_properties.opacity: {value: variable, quote: "The stream can become more turbid under some operating conditions"}
+    expect: {leader_methods: [NIR], fired: [R_Q1_N03], unknown: [R_Q2_05]}
+  D04:
+    facts:
+      MeasurementTask.measurement_goal: {value: quantify, status: inferred, source: "checked against laboratory glucose/lactate"}
+      MeasurementTask.target: {value: [glucose, lactate], quote: "Glucose and lactate are measured from samples"}
+      MeasurementTask.reference_method: {value: available, quote: "checked against those existing laboratory measurements"}
+      MeasurementTask.business_goal: {value: pilot, quote: "We are exploring an in situ spectroscopy pilot"}
+      Sample.matrix: {value: aqueous_bioprocess, quote: "We run a cell culture process in an aqueous medium"}
+      Sample.phase: {value: liquid, status: inferred, source: "aqueous medium"}
+      ProcessContext.deployment_preference: {value: in_line, quote: "an in situ spectroscopy pilot"}
+    expect: {leader_methods: [Raman], fired: [R_Q1_R03], cases: 2, fluorescence_not_direct: true}
+  D05:
+    facts:
+      MeasurementTask.measurement_goal: {value: trend, status: inferred, source: "'follow growth and notice changes earlier'"}
+      MeasurementTask.target: {value: [biomass, metabolic_state],
+                               quote: "both a biomass signal and a metabolic signal, but these have not been defined as separate targets"}
+      MeasurementTask.target_definition: {value: partial, quote: "these have not been defined as separate targets"}
+      Sample.matrix: {value: aqueous_bioprocess, status: inferred, source: "yeast fermentation broth"}
+      Sample.phase: {value: liquid, status: inferred, source: "broth"}
+      Sample.optical_properties.opacity: {value: variable, quote: "The broth becomes more optically dense as the run develops"}
+    expect: {no_viable_claim: true, fired: [R_Q1_U03], cases: 2}
+  D06:
+    facts:
+      MeasurementTask.measurement_goal: {value: quantify, status: inferred, source: "laboratory water determination"}
+      MeasurementTask.target: {value: [water], quote: "send samples to a laboratory for water determination"}
+      MeasurementTask.reference_method: {value: available, quote: "currently send samples to a laboratory for water determination"}
+      Sample.matrix: {value: petroleum, quote: "We handle a petroleum stream"}
+      Sample.phase: {value: liquid, status: inferred, source: "petroleum stream"}
+      ProcessContext.instrument_distance: {value: remote, quote: "The analyzer would be outside the process area"}
+    expect: {leader_methods: [MIR], leader_geometry: [atr], fired: [R_Q1_M01], unknown: [R_Q3C_07]}
+  D07:
+    facts:
+      MeasurementTask.measurement_goal: {value: quantify, status: inferred, source: "composition changes against offline assays"}
+      MeasurementTask.target: {value: [api], quote: "incorporates an active pharmaceutical ingredient"}
+      MeasurementTask.reference_method: {value: available, quote: "We have offline assays"}
+      Sample.matrix: {value: polymer, quote: "a hot polymer extrusion process"}
+      Sample.phase: {value: liquid, status: inferred, source: "melt"}
+      Sample.physical_form: {value: melt, quote: "while the melt is being processed"}
+      ProcessContext.temperature_range: {value: described_hot, quote: "the process interface is hot"}
+      ProcessContext.operation_constraints.fouling: {value: stated, quote: "may be exposed to material build up"}
+    expect: {leader_methods: [MIR, NIR], fired: [R_Q1_M02, R_Q1_N04, R_Q3C_01], mir_not_excluded: true}
+  D08:
+    facts:
+      MeasurementTask.target: {value: [tissue_type], status: inferred, source: "classification of muscle, fat and liver"}
+      MeasurementTask.measurement_goal: {value: classify, quote: "This is a laboratory classification study"}
+      MeasurementTask.spatial_scope: {value: local, status: inferred,
+                                      source: "'sequential measurements may not sample the same location'"}
+      MeasurementTask.business_goal: {value: lab_research, quote: "This is a laboratory classification study"}
+      Sample.matrix: {value: tissue, quote: "model biological tissues such as chicken muscle, fat and liver"}
+      Sample.phase: {value: solid, status: inferred, source: "tissue"}
+      Sample.physical_form: {value: tissue, quote: "model biological tissues"}
+      Sample.heterogeneity: {value: heterogeneous, quote: "the material is heterogeneous"}
+    expect: {leader_methods: [MIR, Fluorescence], combination: [MIR, Fluorescence], fired: [R_Q2_07, R_Q2_11]}
+  H01:
+    facts:
+      MeasurementTask.measurement_goal: {value: quantify, status: inferred, source: "'follows API concentration'"}
+      MeasurementTask.target: {value: [api], quote: "follows API concentration in one powder formulation"}
+      MeasurementTask.business_goal: {value: pilot, quote: "Our existing NIR pilot"}
+      Sample.matrix: {value: pharma_blend, quote: "a different API and excipient blend"}
+      Sample.phase: {value: solid, status: inferred, source: "powder"}
+      Sample.physical_form: {value: powder, quote: "one powder formulation"}
+      Sample.variability.formulation: {value: changed, quote: "We are introducing a different API and excipient blend"}
+      ProcessContext.deployment_preference: {value: in_line, quote: "at the tablet press feed frame"}
+      ProcessContext.assets.method: {value: NIR, quote: "Our existing NIR pilot"}
+      ProcessContext.assets.calibration_scope: {value: outside, status: inferred,
+                                                source: "old calibration built on one formulation; API and excipients changed"}
+      CustomerRequest.combination_to_keep_calibration: {value: "yes", quote: "adding Raman so that the old calibration will remain valid"}
+      CustomerRequest.asks: {value: assessment, quote: "What should our first technical assessment and experiment be?"}
+    expect: {fired: [R_Q1_06], premise: [R_Q1_06], nir_not_excluded: true}
+  H02:
+    facts:
+      MeasurementTask.measurement_goal: {value: quantify, status: inferred, source: "composition monitoring against lab results"}
+      MeasurementTask.target: {value: [protein, fat], quote: "using laboratory protein and fat results where those variables are relevant"}
+      MeasurementTask.reference_method: {value: available, quote: "using laboratory protein and fat results"}
+      MeasurementTask.business_goal: {value: pilot, quote: "We want a pilot for composition monitoring"}
+      Sample.matrix: {value: dairy, quote: "Our dairy process"}
+      Sample.phase: {value: liquid, status: inferred, source: "whey stream, milk concentrate"}
+    streams:
+      - {id: whey, facts: {Sample.optical_properties.opacity: {value: clear, quote: "a relatively clear whey stream"}}}
+      - {id: concentrate, facts: {Sample.optical_properties.opacity: {value: opaque, quote: "an opaque milk concentrate"}}}
+    # 2 streams x 2 targets = 4 Cases (spec 01: Case = one task x one sample/stream). Was 2 while fat was missing.
+    expect: {cases: 4, different_geometry_per_stream: true}
+  H03:
+    facts:
+      MeasurementTask.measurement_goal: {value: quantify, quote: "report glucose concentration and viable biomass directly"}
+      MeasurementTask.target: {value: [glucose, viable_biomass], quote: "report glucose concentration and viable biomass directly"}
+      Sample.matrix: {value: aqueous_bioprocess, status: inferred, source: "fermentation"}
+      Sample.phase: {value: liquid, status: inferred, source: "fermentation broth"}
+      Sample.relevant_components.fluorophore: {value: none_known, quote: "We have not identified a fluorescent target, marker"}
+      ProcessContext.assets.method: {value: Fluorescence, quote: "We already have a fluorescence spectrometer"}
+      CustomerRequest.justification: {value: sensitivity_only, quote: "Our only justification is that fluorescence can be very sensitive"}
+      CustomerRequest.asks: {value: assessment, quote: "What should the assistant tell us?"}
+    expect: {fired: [R_Q1_F01, R_Q1_F02], premise: [R_Q1_F02], fluorescence_not_leader: true}
+  H04:
+    facts:
+      MeasurementTask.measurement_goal: {value: quantify, status: inferred, source: "'investigate water content'"}
+      MeasurementTask.target: {value: [water], quote: "investigate water content in a petroleum line"}
+      Sample.matrix: {value: petroleum, quote: "a petroleum line"}
+      Sample.phase: {value: liquid, status: inferred, source: "petroleum line"}
+      ProcessContext.instrument_distance: {value: remote, quote: "The analyzer would be in another building"}
+      ProcessContext.assets.fiber: {value: silica_vis_nir, quote: "a silica fiber cable from a visible or NIR measurement setup"}
+      ProcessContext.assets.fiber_profile: {value: not_confirmed, quote: "The link length, routing and operating conditions have not yet been supplied"}
+      CustomerRequest.asks: {value: approve_concept, quote: "Can the assistant approve this concept?"}
+    expect: {mir_not_excluded: true, reuse_mismatch: true, premise: [R_Q3C_08], new_link_branch: true}
+  H05:
+    facts:
+      MeasurementTask.target_definition: {value: undefined, quote: "we cannot yet name the contaminant or the affected quality variable"}
+      Sample.phase: {value: liquid, quote: "We have a liquid process"}
+      CustomerRequest.asks: {value: exact_config_now, quote: "recommend the best spectroscopy method and exact sensor configuration immediately"}
+    expect: {status: needs_target, ask: [MeasurementTask.target_definition], premise: [R_Q1_01]}
+  H06:
+    facts:
+      MeasurementTask.measurement_goal: {value: classify, status: inferred, source: "tumor boundary decisions"}
+      MeasurementTask.target: {value: [tissue_type], status: inferred, source: "'tumor boundary decisions' = tumor vs normal tissue"}
+      MeasurementTask.target_definition: {value: partial, status: inferred, source: "boundary criterion not defined"}
+      MeasurementTask.business_goal: {value: clinical_in_vivo, quote: "to guide tumor boundary decisions during live surgery"}
+      Sample.matrix: {value: tissue, status: inferred, source: "live surgery, tumor boundary"}
+      Sample.phase: {value: solid, status: inferred, source: "tissue"}
+      Sample.physical_form: {value: tissue, status: inferred, source: "tissue"}
+      CustomerRequest.asks: {value: readiness_proof, quote: "Can we quote its findings as proof that the proposed sensor is ready for that use?"}
+    expect: {premise: [R_Q4_07], deployment: outside_supported_evidence_scope}

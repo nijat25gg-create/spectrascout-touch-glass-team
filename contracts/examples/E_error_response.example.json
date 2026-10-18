@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Der Text ist zu kurz. Bitte mindestens 20 Zeichen eingeben.",
+    "details": "text: min_length=20"
+  }
+}
