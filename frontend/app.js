@@ -91,13 +91,20 @@ function errorText(error, t) {
 // neither bundles nor requires it: a missing file just means no texts.
 let localCases = {};
 const LOCAL_FILE = "./cases.local.js";
-import(/* @vite-ignore */ LOCAL_FILE).then((m) => { localCases = m.LOCAL_CASES ?? {}; }).catch(() => {});
+import(/* @vite-ignore */ LOCAL_FILE)
+  .then((m) => { localCases = m.LOCAL_CASES ?? {}; })
+  .catch(() => {})
+  .finally(buildDemoButtons);
 
 // Rows: D01–D08, H01–H06 (AFS) and S (team). The title shows on hover.
+// Only cases with a text get a button: without cases.local.js the AFS rows are not shown at all.
+function buildDemoButtons() {
 for (const group of DEMO_GROUPS) {
+  const cases = group.cases.filter((demo) => demo.text ?? localCases[demo.id]?.text);
+  if (!cases.length) continue;
   const row = document.createElement("div");
   row.className = "row demo-row";
-  for (const demo of group.cases) {
+  for (const demo of cases) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "chip-btn";
@@ -118,6 +125,7 @@ for (const group of DEMO_GROUPS) {
   }
   document.getElementById("demo-cases").append(row);
 }
+}
 
 // typing by hand = no demo case any more
 textBox.addEventListener("input", () => {
@@ -132,6 +140,12 @@ textBox.addEventListener("input", () => {
 form.addEventListener("submit", async (event) => {
   event.preventDefault(); // stop the browser from reloading the page
   const t = makeT(uiLanguage);
+  if (textBox.value.trim().length < 20) { // the backend needs at least 20 characters
+    showStatus(uiLanguage === "de" ? "Der Text ist zu kurz. Bitte mindestens 20 Zeichen eingeben."
+                                   : "The text is too short. Please enter at least 20 characters.", true);
+    textBox.focus();
+    return;
+  }
 
   analyzeButton.disabled = true; // no second request while the first one runs
   const timer = startProgress(t);
