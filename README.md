@@ -1,6 +1,79 @@
 # SpectraScout: How a Spectroscopic Analysis Method Is Selected
 
-SpectraScout (Touch Glass team, schubKI 2026, Art Fiber Systems challenge) prepares a first technical assessment of an in-line spectroscopy request for an AFS expert. How to run it, where to put the API keys and what it costs: [Quick start](#quick-start) and [API costs](#api-costs) at the end. Deutsch: [README.de.md](README.de.md).
+SpectraScout (Touch Glass team, schubKI 2026, Art Fiber Systems challenge) prepares a first technical assessment of an in-line spectroscopy request for an AFS expert. How to run it and where to put the API keys: [Quick start](#quick-start) right below. Costs: [API costs](#api-costs) at the end. Deutsch: [README.de.md](README.de.md).
+
+## Quick start
+
+> **Tip:** you can paste this whole section into an AI assistant (ChatGPT, Claude, …) and ask:
+> *"Help me run this project on my computer step by step. My operating system is …"*
+
+You need **Python 3.10+**, **Node.js 20.19+** (or 22) and **git**. Commands are for macOS/Linux; Windows notes are at the end of this section.
+
+### 1. Get the code and install
+
+```bash
+git clone https://github.com/nijat25gg-create/spectrascout-touch-glass-team.git
+cd spectrascout-touch-glass-team
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r backend/requirements.txt      # also installs requirements.txt
+cp .env.example .env
+```
+
+### 2. Add the API keys (file `.env` in the project root)
+
+Open `.env` in any text editor and replace `[API KEY needed]`:
+
+| Field in `.env` | What to put there | Needed for |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | your Anthropic key (`sk-ant-…`, from [console.anthropic.com](https://console.anthropic.com)) | live analysis (steps A and B, Claude) |
+| `LLM_MOCK` | `0` = real Claude calls, `1` = built-in examples, no key, no cost | always (default `1`) |
+| `OPENROUTER_API_KEY` | your OpenRouter key (`sk-or-…`, from [openrouter.ai](https://openrouter.ai)) | only the optional Jev cross-check |
+| `JEV_LIVE` | `1` = Jev on, `0` = off | optional (default `0`) |
+
+Without any key the app runs in demo mode (`LLM_MOCK=1`): every text then returns the same example briefing (moisture in a pharmaceutical powder), so set `LLM_MOCK=0` and the key to analyse your own text. `.env` is git-ignored: never commit it.
+
+### 3. Start the backend (terminal 1)
+
+```bash
+cd spectrascout-touch-glass-team
+source .venv/bin/activate
+cd backend
+uvicorn app.main:app --port 8000
+```
+
+Check: <http://localhost:8000/health> answers `{"status":"ok"}`.
+
+### 4. Start the frontend (terminal 2)
+
+```bash
+cd spectrascout-touch-glass-team/frontend
+npm install
+npm run dev
+```
+
+Open <http://localhost:5173>. Paste a customer text (at least 20 characters) or click **Feuchte**, choose the language and click **Analyze**. A live analysis takes about 30–90 seconds.
+
+### Without the web app
+
+```bash
+LLM_MOCK=1 python run_case.py                                  # demo, no key
+python run_case.py "We want to measure moisture in a powder in-line." en   # live, needs the key in .env
+```
+
+### Tests
+
+```bash
+python contracts/check_contracts.py
+python -m pytest -q engine/test_gates.py engine/b/test_b.py
+cd backend && pytest -q
+```
+
+### Windows (PowerShell)
+
+Use `python` instead of `python3`, activate with `.venv\Scripts\Activate.ps1`, copy with `copy .env.example .env`, and set variables like this: `$env:LLM_MOCK=1; python run_case.py`.
+
+## What the System Does
 
 The customer describes their business problem, material, and process conditions. The system turns the request into structured facts, compares spectroscopic measurement options, and produces a preliminary recommendation: suitable methods and sample interfaces, a configuration concept, the reasons for the recommendation, significant unknowns, and an initial experiment. An expert confirms the final technical assessment.
 
@@ -248,74 +321,6 @@ The ranked list includes the method, sample interface, configuration concept, fo
 Detailed description of method B: [docs/method-b.md](docs/method-b.md) (Russian); rules in [rules/b/rules_b.yaml](rules/b/rules_b.yaml), catalog in [rules/b/catalog_b.yaml](rules/b/catalog_b.yaml). Its thresholds and weights are initial project parameters. The clarifications of the official Noul and Score semantics and of the API in this README apply when the JEV adapter is extended.
 
 Official TypeSafe pages were checked on 18 October 2026. The sources used are typesafe.ai and docs.typesafe.ai; similarly named sites and third-party summaries were not used as the basis for the formulas.
-
-## Quick start
-
-You need **Python 3.10+**, **Node.js 20.19+** (or 22) and **git**. Commands are for macOS/Linux; Windows notes are at the end of this section.
-
-### 1. Get the code and install
-
-```bash
-git clone https://github.com/nijat25gg-create/spectrascout-touch-glass-team.git
-cd spectrascout-touch-glass-team
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r backend/requirements.txt      # also installs requirements.txt
-cp .env.example .env
-```
-
-### 2. Add the API keys (file `.env` in the project root)
-
-Open `.env` in any text editor and replace `[API KEY needed]`:
-
-| Field in `.env` | What to put there | Needed for |
-|---|---|---|
-| `ANTHROPIC_API_KEY` | your Anthropic key (`sk-ant-…`, from [console.anthropic.com](https://console.anthropic.com)) | live analysis (steps A and B, Claude) |
-| `LLM_MOCK` | `0` = real Claude calls, `1` = built-in examples, no key, no cost | always (default `1`) |
-| `OPENROUTER_API_KEY` | your OpenRouter key (`sk-or-…`, from [openrouter.ai](https://openrouter.ai)) | only the optional Jev cross-check |
-| `JEV_LIVE` | `1` = Jev on, `0` = off | optional (default `0`) |
-
-Without any key the app runs in demo mode (`LLM_MOCK=1`): every text then returns the same example briefing (moisture in a pharmaceutical powder), so set `LLM_MOCK=0` and the key to analyse your own text. `.env` is git-ignored: never commit it.
-
-### 3. Start the backend (terminal 1)
-
-```bash
-cd spectrascout-touch-glass-team
-source .venv/bin/activate
-cd backend
-uvicorn app.main:app --port 8000
-```
-
-Check: <http://localhost:8000/health> answers `{"status":"ok"}`.
-
-### 4. Start the frontend (terminal 2)
-
-```bash
-cd spectrascout-touch-glass-team/frontend
-npm install
-npm run dev
-```
-
-Open <http://localhost:5173>. Paste a customer text (at least 20 characters) or click **Feuchte**, choose the language and click **Analyze**. A live analysis takes about 30–90 seconds.
-
-### Without the web app
-
-```bash
-LLM_MOCK=1 python run_case.py                                  # demo, no key
-python run_case.py "We want to measure moisture in a powder in-line." en   # live, needs the key in .env
-```
-
-### Tests
-
-```bash
-python contracts/check_contracts.py
-python -m pytest -q engine/test_gates.py engine/b/test_b.py
-cd backend && pytest -q
-```
-
-### Windows (PowerShell)
-
-Use `python` instead of `python3`, activate with `.venv\Scripts\Activate.ps1`, copy with `copy .env.example .env`, and set variables like this: `$env:LLM_MOCK=1; python run_case.py`.
 
 ## API costs
 
